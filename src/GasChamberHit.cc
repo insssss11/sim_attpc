@@ -1,0 +1,175 @@
+/// \file GasChamberHit.cc
+/// \brief Implementation of the GasChamberHit class
+
+#include "GasChamberHit.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "G4ios.hh"
+#include "G4UnitsTable.hh"
+#include "G4PrimaryParticle.hh"
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4ThreadLocal G4Allocator<GasChamberHit> *GasChamberHitAllocator;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+GasChamberHit::GasChamberHit()
+    : G4VHit(),
+    fEventId(-1), fTrackId(-1), fZ(0), fCharge(0),
+    fEdepSum(0), fTrackLen(0)
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+GasChamberHit::GasChamberHit(const G4DynamicParticle *pDynamic, G4int evtId, G4int trkId)
+    : G4VHit(),
+    fEdepSum(0), fTrackLen(0)
+{
+    auto pDef = pDynamic->GetDefinition();
+    SetPartName(pDef->GetParticleName());
+    SetCharge(pDynamic->GetCharge());
+    SetMass(pDef->GetPDGMass());
+    SetAtomicNumber(pDef->GetAtomicNumber());
+    SetEventId(evtId);
+    SetTrackId(trkId);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+GasChamberHit::~GasChamberHit()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+GasChamberHit::GasChamberHit(const GasChamberHit &right)
+    : G4VHit()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+const GasChamberHit &GasChamberHit::operator=(const GasChamberHit &right)
+{
+    return *this;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool GasChamberHit::operator==(const GasChamberHit &right) const
+{
+    return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::Print()
+{
+    for(int j = 0;j < GetNbOfStepPoints();++j)
+    {
+        G4ThreeVector mom(fMomX.at(j), fMomY.at(j), fMomZ.at(j));
+        G4cout << std::setw(10) << std::right << G4BestUnit(fPosX.at(j), "Length")
+            << std::setw(10) << G4BestUnit(fPosY.at(j), "Length")
+            << std::setw(10) << G4BestUnit(fPosZ.at(j), "Length")
+            << std::setw(10) << mom.getX()/mom.mag()
+            << std::setw(10) << mom.getY()/mom.mag()
+            << std::setw(10) << mom.getZ()/mom.mag()
+            << std::setw(10) << G4BestUnit(fEdep.at(j), "Energy")
+            << std::setw(10) << G4BestUnit(sqrt(mom.mag2() + fMass*fMass) - fMass, "Energy") << G4endl;
+    }
+    G4cout << std::setw(40) << std::left << "Total Track Length : " << std::setw(10) << std::right << G4BestUnit(fTrackLen, "Length") << G4endl;
+    G4cout << std::setw(40) << std::left << "Total Energy Deposit : " << std::setw(10) << std::right << G4BestUnit(fEdepSum, "Energy") << G4endl;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AddEdepSum(G4double de)
+{
+    fEdepSum += de;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AppendEdep(G4double de)
+{
+    fEdep.push_back(de);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AppendTime(G4double t)
+{
+    fTime.push_back(t);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AppendPosition(const G4ThreeVector &pos)
+{
+    fPosX.push_back(pos[0]);
+    fPosY.push_back(pos[1]);
+    fPosZ.push_back(pos[2]);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AppendMomentum(const G4ThreeVector &mom)
+{
+    fMomX.push_back(mom[0]);
+    fMomY.push_back(mom[1]);
+    fMomZ.push_back(mom[2]);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AddTrackLength(G4double leng)
+{
+    fTrackLen += leng;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetTrackId(G4double id)
+{
+    fTrackId = id;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetEventId(G4double id)
+{
+    fEventId = id;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetAtomicNumber(G4double z)
+{
+    fZ = z;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetCharge(G4double q)
+{
+    fCharge = q;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetMass(G4double mass)
+{
+    fMass = mass;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::SetPartName(const G4String &name)
+{
+    fPartName = name;
+}
+
+void GasChamberHit::SetNbStepPoints(G4int nStep)
+{
+    fNbOfStepPoints = nStep;
+}

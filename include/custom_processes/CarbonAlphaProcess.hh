@@ -7,10 +7,12 @@
 #include "G4GenericMessenger.hh"
 #include "G4VDiscreteProcess.hh"
 #include "G4IonTable.hh"
+#include "G4PhysicalConstants.hh"
 
 #include <vector>
 #include <array>
 
+#include "TGenPhaseSpace.h"
 
 /// This process forces interaction if a carbon beam energy is smaller than a given value.
 class CarbonAlphaProcess final : public G4VDiscreteProcess
@@ -34,19 +36,28 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
     CarbonAlphaProcess& operator=(const CarbonAlphaProcess &right) = delete;
     CarbonAlphaProcess(const CarbonAlphaProcess&) = delete;
     
-    void SetHeliumCharge(G4double charge){fAlphaCharge = charge;}
-    // forced reactions
+    void SetOxygenCharge(G4double charge){fOxygenCharge = charge;}
     protected:
-    
+        G4int verboseLevel;
     private:
+        // generate random momentom vector whose magnitude follows Maxwell-Moltzmann dist.
+        // non relativistic
+        G4ThreeVector GenerateMomInTempNR(const G4ParticleDefinition *pDef, G4double tepm = STP_Temperature);
+
+        // to be used for UI commands
+        void ForceReactionByKinE(G4double kinE);
+        void ForceReactionByTrackLen(G4double length);
         void DefineCommands();
     private:
-        G4DynamicParticle *fDynamicAlpha, *fDynamicGamma;
-        static constexpr G4int kIonAtomicMass = 12;
-        static constexpr G4int kIonAtomicNum = 6;
-        const G4ParticleDefinition *kDefAlpha, *kDefGamma;
-        G4double fAlphaCharge;
+        TGenPhaseSpace *fGenPhaseSpace;
+        G4DynamicParticle *fDynamicOxygen, *fDynamicGamma;
+        G4double fOxygenCharge;
+        G4double fEnergyOfReaction, fTrackLenOfReaction;
         G4GenericMessenger *fMessenger;
+        const G4ParticleDefinition *kDefAlpha, *kDefOxygen, *kDefGamma;
+
+        static constexpr G4int kIonAtomicMass = 12;
+        static constexpr G4int kIonAtomicNum = 6;        
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

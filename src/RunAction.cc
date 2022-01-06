@@ -17,6 +17,7 @@ RunAction::RunAction(EventAction *eventAction)
     fEventAction(eventAction), fAnalysisManager(nullptr)
 {
     fAnalysisManager = G4AnalysisManager::Instance();
+    fAnalysisManager->SetFileName("");
     // If running in MT, merge all tuples after the end of run.
     if(G4RunManager::GetRunManager()->GetNumberOfThreads() > 1)
         fAnalysisManager->SetNtupleMerging(true);
@@ -41,7 +42,9 @@ void RunAction::BeginOfRunAction(const G4Run * /*run*/)
     fAnalysisManager->FinishNtuple();
 
     fAnalysisManager->SetActivation(fAnaActivated);
-    fAnalysisManager->OpenFile(fFileName);
+    // if output file name has been changed, open new file.
+    if(fFileName != fAnalysisManager->GetFileName())
+        fAnalysisManager->OpenFile(fFileName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

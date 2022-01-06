@@ -4,7 +4,7 @@
 #ifndef RunAction_h
 #define RunAction_h 1
 
-#include "G4RootAnalysisManager.hh"
+#include "AnalysisManager.hh"
 #include "G4UserRunAction.hh"
 #include "G4GenericMessenger.hh"
 #include "globals.hh"
@@ -15,7 +15,6 @@ class G4Run;
 
 /// Run action class
 
-using G4AnalysisManager = G4RootAnalysisManager;
 
 class RunAction : public G4UserRunAction
 {

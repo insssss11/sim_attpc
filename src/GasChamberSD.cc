@@ -78,10 +78,11 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
         fHitsCollection->insert(new GasChamberHit(pDynamic, fEventId, fTrackId));
     }
     auto hit = (*fHitsCollection)[fSizeOfHCE - 1];
-    hit->AppendEdep(step->GetTotalEnergyDeposit());
     hit->AppendPosition(track->GetPosition());
     hit->AppendMomentum(track->GetMomentum());
+    hit->AppendEdep(step->GetTotalEnergyDeposit());
     hit->AppendCharge(pDynamic->GetCharge());
+    hit->AppendTime(track->GetGlobalTime());
     hit->AddEdepSum(step->GetTotalEnergyDeposit());
     hit->AddTrackLength(step->GetStepLength());
 

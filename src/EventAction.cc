@@ -3,6 +3,7 @@
 
 #include "EventAction.hh"
 #include "GasChamberHit.hh"
+#include "AnalysisManager.hh"
 
 #include "G4UnitsTable.hh"
 #include "G4Event.hh"
@@ -13,7 +14,6 @@
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
-#include "g4analysis.hh"
 
 // Utility function which finds a hit collection with the given Id
 // and print warnings if not found 
@@ -72,60 +72,7 @@ void EventAction::BeginOfEventAction(const G4Event *)
 
 void EventAction::EndOfEventAction(const G4Event *)
 {
-    //
-    // Fill histograms & ntuple
-    // 
-    /*
-    // Get analysis manager
-    auto analysisManager = G4AnalysisManager::Instance();
-
-    for (G4int iDet = 0; iDet < kDim; ++iDet) {
-      auto hc = GetHC(event, fCalHCID[iDet]);
-      if ( ! hc ) return;
-
-      totalCalHit[iDet] = 0;
-      totalCalEdep[iDet] = 0.;
-      for (unsigned long i = 0; i < hc->GetSize(); ++i) {
-        G4double edep = 0.;
-        // The EM and Had calorimeter hits are of different types
-        if (iDet == 0) {
-          auto hit = static_cast<GasChamberHit*>(hc->GetHit(i));
-          edep = hit->GetEdep();
-        } else {
-          auto hit = static_cast<HadCalorimeterHit*>(hc->GetHit(i));
-          edep = hit->GetEdep();
-        }
-        if ( edep > 0. ) {
-          totalCalHit[iDet]++;
-          totalCalEdep[iDet] += edep;
-        }
-        fCalEdep[iDet][i] = edep;
-      }
-      // columns 2, 3
-      analysisManager->FillNtupleDColumn(iDet + 2, totalCalEdep[iDet]);
-    }
-
-    //
-    // Print diagnostics
-    //
-
-    auto printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
-    if ( printModulo == 0 || event->GetEventID() % printModulo != 0) return;
-
-    auto primary = event->GetPrimaryVertex(0)->GetPrimary(0);
-    G4cout
-      << G4endl
-      << ">>> Event " << event->GetEventID() << " >>> Simulation truth : "
-      << primary->GetG4code()->GetParticleName()
-      << " " << primary->GetMomentum() << G4endl;
-
-    // Calorimeters
-    array<G4String, kDim> calName = {{ "EM", "Hadron" }};
-    for (G4int iDet = 0; iDet < kDim; ++iDet) {
-      G4cout << calName[iDet] << " Calorimeter has " << totalCalHit[iDet] << " hits."
-             << " Total Edep is " << totalCalEdep[iDet]/MeV << " (MeV)" << G4endl;
-    }
-    */
+    FillNtupleGasChamber();
     PrintGasChamberHits();
 }
 
@@ -163,7 +110,44 @@ void EventAction::PrintBeginOfEvent()
 void EventAction::FillNtupleGasChamber()
 {
     auto hitCol = GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId);
-    
+    auto analysisManager = G4AnalysisManager::Instance();
+
+    // tuple saved by event
+    analysisManager->FillNtupleIColumn(0, 0, hitCol->GetSize());
+    analysisManager->AddNtupleRow(0);
+
+    // tuple saved by track
+    for(size_t i = 0;i < hitCol->GetSize();++i)
+    {
+        auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
+        analysisManager->FillNtupleIColumn(1, 0, G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID());
+        analysisManager->FillNtupleIColumn(1, 1, hit->GetNbOfStepPoints());
+        analysisManager->FillNtupleIColumn(1, 2, hit->GetAtomicNumber());
+        analysisManager->FillNtupleDColumn(1, 3, hit->GetMass());
+        analysisManager->FillNtupleDColumn(1, 4, hit->GetTrackLength());
+        analysisManager->FillNtupleDColumn(1, 5, hit->GetEdepSum());
+        analysisManager->FillNtupleSColumn(1, 6, hit->GetPartName());
+        analysisManager->AddNtupleRow(1);
+    }
+
+    // tuple saved by step
+    for(size_t i = 0;i < hitCol->GetSize();++i)
+    {
+        auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
+        for(int j = 0;j < hit->GetNbOfStepPoints();++j)
+        {
+            analysisManager->FillNtupleDColumn(2, 0, hit->GetPosX().at(j));
+            analysisManager->FillNtupleDColumn(2, 1, hit->GetPosY().at(j));
+            analysisManager->FillNtupleDColumn(2, 2, hit->GetPosZ().at(j));
+            analysisManager->FillNtupleDColumn(2, 3, hit->GetMomX().at(j));
+            analysisManager->FillNtupleDColumn(2, 4, hit->GetMomY().at(j));
+            analysisManager->FillNtupleDColumn(2, 5, hit->GetMomZ().at(j));
+            analysisManager->FillNtupleDColumn(2, 6, hit->GetEdep().at(j));
+            analysisManager->FillNtupleDColumn(2, 7, hit->GetTime().at(j));
+            analysisManager->FillNtupleDColumn(2, 8, hit->GetCharge().at(j));
+            analysisManager->AddNtupleRow(2);
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

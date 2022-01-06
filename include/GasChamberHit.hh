@@ -61,7 +61,7 @@ class GasChamberHit : public G4VHit
     void SetAtomicNumber(G4double z);
     void SetMass(G4double mass);
     void SetPartName(const G4String &name);
-    void SetNbStepPoints(G4int nSteps);
+    void SetNbOfStepPoints(G4int nSteps);
 
     private:
     // by steps

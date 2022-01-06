@@ -171,7 +171,7 @@ void GasChamberHit::SetPartName(const G4String &name)
     fPartName = name;
 }
 
-void GasChamberHit::SetNbStepPoints(G4int nStep)
+void GasChamberHit::SetNbOfStepPoints(G4int nStep)
 {
     fNbOfStepPoints = nStep;
 }

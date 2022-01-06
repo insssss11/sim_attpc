@@ -58,7 +58,7 @@ void GasChamberSD::EndOfEvent(G4HCofThisEvent *)
 {
     // fill the # of the step points of the last track if more than one.
     if(fNbOfStepPoints > 0)
-        (*fHitsCollection)[fSizeOfHCE - 1]->SetNbStepPoints(fNbOfStepPoints);
+        (*fHitsCollection)[fSizeOfHCE - 1]->SetNbOfStepPoints(fNbOfStepPoints);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,7 +71,7 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
     if(fTrackId != track->GetTrackID())
     {
         if(fSizeOfHCE > 0)
-            (*fHitsCollection)[fSizeOfHCE - 1]->SetNbStepPoints(fNbOfStepPoints);
+            (*fHitsCollection)[fSizeOfHCE - 1]->SetNbOfStepPoints(fNbOfStepPoints);
         ++fSizeOfHCE;
         fNbOfStepPoints = 0;
         fTrackId = track->GetTrackID();

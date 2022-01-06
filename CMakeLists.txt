@@ -25,11 +25,11 @@ find_package(ROOT REQUIRED)
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE} ${ROOT_USE_FILE})
-
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS})
 file(GLOB sources
@@ -44,7 +44,7 @@ file(GLOB headers
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(sim_attpc sim_attpc.cc ${sources} ${headers})
-target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBARARIES})
+target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

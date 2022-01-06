@@ -29,7 +29,6 @@ private:
     void InitHcIds();
     void PrintBeginOfEvent();
 
-    void InitNtupleGasChamber();
     void FillNtupleGasChamber();
     void PrintGasChamberHits();
     

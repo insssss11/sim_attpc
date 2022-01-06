@@ -31,7 +31,6 @@ class GasChamberSD : public G4VSensitiveDetector
     G4int fTrackId;
     G4int fSizeOfHCE;
     G4int fNbOfStepPoints;
-    static constexpr G4int kNbOfSkipPrint = 10;
 
     private:
     void DefineCommands();

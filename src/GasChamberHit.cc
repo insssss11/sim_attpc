@@ -16,7 +16,7 @@ G4ThreadLocal G4Allocator<GasChamberHit> *GasChamberHitAllocator;
 
 GasChamberHit::GasChamberHit()
     : G4VHit(),
-    fEventId(-1), fTrackId(-1), fZ(0), fCharge(0),
+    fEventId(-1), fTrackId(-1), fZ(0),
     fEdepSum(0), fTrackLen(0)
 {}
 
@@ -28,7 +28,6 @@ GasChamberHit::GasChamberHit(const G4DynamicParticle *pDynamic, G4int evtId, G4i
 {
     auto pDef = pDynamic->GetDefinition();
     SetPartName(pDef->GetParticleName());
-    SetCharge(pDynamic->GetCharge());
     SetMass(pDef->GetPDGMass());
     SetAtomicNumber(pDef->GetAtomicNumber());
     SetEventId(evtId);
@@ -70,14 +69,17 @@ void GasChamberHit::Print()
         G4cout << std::setw(10) << std::right << G4BestUnit(fPosX.at(j), "Length")
             << std::setw(10) << G4BestUnit(fPosY.at(j), "Length")
             << std::setw(10) << G4BestUnit(fPosZ.at(j), "Length")
-            << std::setw(10) << mom.getX()/mom.mag()
+            << std::setw(12) << mom.getX()/mom.mag()
             << std::setw(10) << mom.getY()/mom.mag()
             << std::setw(10) << mom.getZ()/mom.mag()
             << std::setw(10) << G4BestUnit(fEdep.at(j), "Energy")
-            << std::setw(10) << G4BestUnit(sqrt(mom.mag2() + fMass*fMass) - fMass, "Energy") << G4endl;
+            << std::setw(10) << G4BestUnit(sqrt(mom.mag2() + fMass*fMass) - fMass, "Energy")
+            << std::setw(10) << fCharge.at(j) << G4endl;
     }
+    G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
     G4cout << std::setw(40) << std::left << "Total Track Length : " << std::setw(10) << std::right << G4BestUnit(fTrackLen, "Length") << G4endl;
     G4cout << std::setw(40) << std::left << "Total Energy Deposit : " << std::setw(10) << std::right << G4BestUnit(fEdepSum, "Energy") << G4endl;
+    G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
 }
 
 
@@ -150,9 +152,9 @@ void GasChamberHit::SetAtomicNumber(G4double z)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetCharge(G4double q)
+void GasChamberHit::AppendCharge(G4double q)
 {
-    fCharge = q;
+    fCharge.push_back(q);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

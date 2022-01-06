@@ -4,6 +4,7 @@
 #include "EventAction.hh"
 #include "GasChamberHit.hh"
 
+#include "G4UnitsTable.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
@@ -143,16 +144,16 @@ void EventAction::PrintBeginOfEvent()
     if(verboseLevel > 0)
     {
         int prec = G4cout.precision(4);
-        G4cout << "-----------------------------------------------------------------------------------------" << G4endl;
+        G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
         G4cout << std::setw(40) << std::left << "Primary particle " <<  " : " << std::setw(10) << std::right;
         // put "Generic Ion" in front of a partice name if it is a generic ion.
         if(primary->GetParticleDefinition()->IsGeneralIon())
             G4cout << " Generic Ion ";
-        G4cout << primary->GetParticleDefinition()->GetParticleName() << "(+" << (G4int)primary->GetCharge() << ") at " << primary->GetKineticEnergy()/MeV << " MeV" << G4endl;
-        G4cout << std::setw(40) << std::left << "Atomic Mass" << " : " << std::setw(20) << std::right
+        G4cout << primary->GetParticleDefinition()->GetParticleName() << " " << (G4int)primary->GetCharge() << "+" << G4endl;
+        G4cout << std::setw(40) << std::left << "Atomic Mass" << " : " << std::setw(10) << std::right
             << primary->GetParticleDefinition()->GetPDGMass()/(931.5*MeV) << " u" << G4endl;
-        G4cout << std::setw(40) << std::left << "Kinetic Energy" << " : " << std::setw(20) << std::right
-            << primary->GetKineticEnergy()/MeV << " (MeV/c2)" << G4endl;
+        G4cout << std::setw(40) << std::left << "Kinetic Energy" << " : " << std::setw(10) << std::right
+            << G4BestUnit(primary->GetKineticEnergy(), "Energy") << G4endl;
         G4cout.precision(prec);
     }
 }
@@ -179,26 +180,27 @@ void EventAction::PrintGasChamberHits()
     {
         auto hitCol = GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId);
         int prec = G4cout.precision(4);
-        G4cout << "-----------------------------------------------------------------------------------------" << G4endl;
+        G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
         G4cout << std::setw(40) << std::left << "The # of tracks in this event" << " : " << std::setw(10) << std::right << hitCol->GetSize() << G4endl;
-        G4cout << "-----------------------------------------------------------------------------------------" << G4endl;
+        G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
         if(verboseLevel > 1)
         {
             for(size_t i = 0;i < hitCol->GetSize();++i)
             {
                 auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
-                G4cout << std::setw(5) << i + 1 << std::left <<  std::setw(35) << "-th track info" << " : "
+                G4cout << std::setw(3) << i + 1 << std::left <<  std::setw(37) << "-th track info" << " : "
                     << std::setw(10) << std::right << hit->GetPartName()
-                    << " with " << hit->GetNbOfStepPoints() << " step points." << G4endl;
+                    << " with " << std::setw(10) << hit->GetNbOfStepPoints() << " steps." << G4endl;
                 if(verboseLevel > 2)
                 {
                     G4cout << std::setw(13) << "PosX" << std::setw(13) << "PosY" << std::setw(13) << "PosZ"
-                        << std::setw(10) << "DirX" << std::setw(10) << "DirY" << std::setw(10) << "DirZ"
-                        << std::setw(14) << "Edep" << std::setw(14) << "kinE" << G4endl;
+                        << std::setw(14) << "DirX" << std::setw(10) << "DirY" << std::setw(10) << "DirZ"
+                        << std::setw(14) << "Edep" << std::setw(14) << "kinE" << std::setw(14) << "Charge" << G4endl;
                     hit->Print();
                 }
             }
-            G4cout << "-----------------------------------------------------------------------------------------" << G4endl;
+            G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
+
         }
         G4cout.precision(prec);
     }

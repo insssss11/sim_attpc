@@ -38,12 +38,12 @@ class GasChamberHit : public G4VHit
     std::vector<G4double> GetMomX() const { return fMomX; }
     std::vector<G4double> GetMomY() const { return fMomY; }
     std::vector<G4double> GetMomZ() const { return fMomZ; }
+    std::vector<G4double> GetCharge() const {return fCharge;}
     G4double GetEdepSum() const { return fEdepSum; }
     G4double GetTrackLength() const {return fTrackLen;}
     G4int GetTrackId() const {return fTrackId;}
     G4int GetEventId() const {return fEventId;}
     G4int GetAtomicNumber() const {return fZ;}
-    G4int GetCharge() const {return fCharge;}
     G4double GetMass() const {return fMass;}
     G4String GetPartName() const {return fPartName;}
     G4int GetNbOfStepPoints() const {return fNbOfStepPoints;}
@@ -51,6 +51,7 @@ class GasChamberHit : public G4VHit
     // to save information
     void AppendEdep(G4double de);
     void AppendTime(G4double t);
+    void AppendCharge(G4double q);
     void AppendPosition(const G4ThreeVector &pos);
     void AppendMomentum(const G4ThreeVector &mom);
     void AddEdepSum(G4double de);
@@ -58,17 +59,16 @@ class GasChamberHit : public G4VHit
     void SetTrackId(G4double id);
     void SetEventId(G4double id);
     void SetAtomicNumber(G4double z);
-    void SetCharge(G4double q);
     void SetMass(G4double mass);
     void SetPartName(const G4String &name);
     void SetNbStepPoints(G4int nSteps);
 
     private:
-    // by steppoints
-    std::vector<G4double> fPosX, fPosY, fPosZ, fMomX, fMomY, fMomZ, fEdep, fTime;
+    // by steps
+    std::vector<G4double> fPosX, fPosY, fPosZ, fMomX, fMomY, fMomZ, fEdep, fTime, fCharge;
     
     // by tracks
-    G4int fTrackId, fEventId, fZ, fCharge, fNbOfStepPoints;
+    G4int fEventId, fTrackId, fZ, fNbOfStepPoints;
     G4double fEdepSum, fTrackLen, fMass;
     G4String fPartName;
 };

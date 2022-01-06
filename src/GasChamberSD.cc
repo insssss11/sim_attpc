@@ -54,7 +54,7 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberSD::EndOfEvent(G4HCofThisEvent *HCE)
+void GasChamberSD::EndOfEvent(G4HCofThisEvent *)
 {
     // fill the # of the step points of the last track if more than one.
     if(fNbOfStepPoints > 0)
@@ -65,13 +65,8 @@ void GasChamberSD::EndOfEvent(G4HCofThisEvent *HCE)
 
 G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
-    static G4int cnt = kNbOfSkipPrint;
-
-    auto preStepPoint = step->GetPreStepPoint();
-    auto postStepPoint = step->GetPreStepPoint();
     const auto track = step->GetTrack();
     const auto pDynamic = step->GetTrack()->GetDynamicParticle();
-    const auto pDefinition = pDynamic->GetParticleDefinition();
     // if new track
     if(fTrackId != track->GetTrackID())
     {
@@ -86,8 +81,10 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
     hit->AppendEdep(step->GetTotalEnergyDeposit());
     hit->AppendPosition(track->GetPosition());
     hit->AppendMomentum(track->GetMomentum());
+    hit->AppendCharge(pDynamic->GetCharge());
     hit->AddEdepSum(step->GetTotalEnergyDeposit());
     hit->AddTrackLength(step->GetStepLength());
+
     ++fNbOfStepPoints;
     return true;
 }
@@ -97,5 +94,6 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
 void GasChamberSD::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/gasChamber/", "Gas Chamger SD control");
-    auto fVerboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
+    // auto fVerboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
+    fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
 }

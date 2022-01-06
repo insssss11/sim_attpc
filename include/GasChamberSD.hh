@@ -29,7 +29,6 @@ class GasChamberSD : public G4VSensitiveDetector
     G4int fHCID;
     G4int fEventId;
     G4int fTrackId;
-    G4int fSizeOfHCE;
     G4int fNbOfStepPoints;
 
     private:

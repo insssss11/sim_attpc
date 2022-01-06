@@ -21,7 +21,7 @@
 GasChamberSD::GasChamberSD(G4String name, G4int verbose)
     : G4VSensitiveDetector(name),
     fHitsCollection(nullptr), fMessenger(nullptr), fHCID(-1), fEventId(-1), fTrackId(-1),
-    fSizeOfHCE(0), fNbOfStepPoints(0)
+    fNbOfStepPoints(0)
 {
     verboseLevel = verbose;
     collectionName.insert("GasChamberHColl");
@@ -47,7 +47,6 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
     hce->AddHitsCollection(fHCID, fHitsCollection);
 
     fNbOfStepPoints = 0;
-    fSizeOfHCE = 0;
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
 }
@@ -57,8 +56,8 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
 void GasChamberSD::EndOfEvent(G4HCofThisEvent *)
 {
     // fill the # of the step points of the last track if more than one.
-    if(fNbOfStepPoints > 0)
-        (*fHitsCollection)[fSizeOfHCE - 1]->SetNbOfStepPoints(fNbOfStepPoints);
+    if(fHitsCollection->GetSize() > 0)
+        (*fHitsCollection)[fHitsCollection->GetSize() - 1]->SetNbOfStepPoints(fNbOfStepPoints);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -70,14 +69,13 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
     // if new track
     if(fTrackId != track->GetTrackID())
     {
-        if(fSizeOfHCE > 0)
-            (*fHitsCollection)[fSizeOfHCE - 1]->SetNbOfStepPoints(fNbOfStepPoints);
-        ++fSizeOfHCE;
+        if(fHitsCollection->GetSize() > 0)
+            (*fHitsCollection)[fHitsCollection->GetSize() - 1]->SetNbOfStepPoints(fNbOfStepPoints);
         fNbOfStepPoints = 0;
         fTrackId = track->GetTrackID();
         fHitsCollection->insert(new GasChamberHit(pDynamic, fEventId, fTrackId));
     }
-    auto hit = (*fHitsCollection)[fSizeOfHCE - 1];
+    auto hit = (*fHitsCollection)[fHitsCollection->GetSize() - 1];
     hit->AppendPosition(track->GetPosition());
     hit->AppendMomentum(track->GetMomentum());
     hit->AppendEdep(step->GetTotalEnergyDeposit());

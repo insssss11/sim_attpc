@@ -20,8 +20,7 @@ RunAction::RunAction(EventAction *eventAction)
     fAnalysisManager = G4AnalysisManager::Instance();
     
     // If running in MT, merge all tuples after the end of run.
-    if(G4RunManager::GetRunManager()->GetNumberOfThreads() > 1)
-        fAnalysisManager->SetNtupleMerging(true);
+    fAnalysisManager->SetNtupleMerging(true);
     
     // creating ntuples
     // why tuples must be created in constructor of user RunAction class, not in RunAction::BeginOfRunAction?

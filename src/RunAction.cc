@@ -3,12 +3,12 @@
 
 #include "RunAction.hh"
 #include "EventAction.hh"
+#include "analysis/TuplePostProcessor.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction(EventAction *eventAction)
@@ -18,7 +18,7 @@ RunAction::RunAction(EventAction *eventAction)
 {
     // it is recommened that analysis manager instance be created in user run action constructor.
     fAnalysisManager = G4AnalysisManager::Instance();
-    
+    fAnalysisManager->SetVerboseLevel(1);
     // If running in MT, merge all tuples after the end of run.
     fAnalysisManager->SetNtupleMerging(true);
     
@@ -55,6 +55,15 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
     if(fAnalysisManager->GetActivation())
         fAnalysisManager->Write();
     fAnalysisManager->CloseFile();
+    if(fAnalysisManager->GetActivation())
+    {
+        if(IsMaster())
+        {
+            TuplePostProcessor postPro(fFileName.data());
+            postPro.PostProcessTuples();
+            postPro.Close();
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -87,9 +96,17 @@ void RunAction::CreateTuplesGasChamber()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void RunAction::PostProcessTuples(const G4String &fileName)
+{}
+
 void RunAction::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/output/", "File output control");
     fMessenger->DeclareProperty("fileName", fFileName, "Output file name");
-    fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
+    
+    auto activateCmd = fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
+    activateCmd.SetParameterName("active", true);
+    activateCmd.SetDefaultValue("true");
+
+    fMessenger->DeclareMethod("postProcess", &RunAction::PostProcessTuples, "Postprocess tuple data");
 }

@@ -18,7 +18,6 @@ RunAction::RunAction(EventAction *eventAction)
 {
     // it is recommened that analysis manager instance be created in user run action constructor.
     fAnalysisManager = G4AnalysisManager::Instance();
-    fAnalysisManager->SetFileName("");
     // If running in MT, merge all tuples after the end of run.
     if(G4RunManager::GetRunManager()->GetNumberOfThreads() > 1)
         fAnalysisManager->SetNtupleMerging(true);
@@ -43,9 +42,7 @@ void RunAction::BeginOfRunAction(const G4Run * /*run*/)
     fAnalysisManager->FinishNtuple();
 
     fAnalysisManager->SetActivation(fAnaActivated);
-    // if output file name has been changed, open new file.
-    if(fFileName != fAnalysisManager->GetFileName())
-        fAnalysisManager->OpenFile(fFileName);
+    fAnalysisManager->OpenFile(fFileName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

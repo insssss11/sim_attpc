@@ -11,7 +11,7 @@
 
 MagneticField::MagneticField()
     : G4MagneticField(),
-    fMessenger(nullptr), fBx(1.0 * tesla)
+    fMessenger(nullptr), fBx(2.0 * tesla)
 {
     // define commands for this class
     DefineCommands();
@@ -44,7 +44,7 @@ void MagneticField::DefineCommands()
                                     &MagneticField::SetField,
                                     "Set field strength.");
     valueCmd.SetParameterName("field", true);
-    valueCmd.SetDefaultValue("1.");
+    valueCmd.SetDefaultValue("2.");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

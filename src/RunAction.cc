@@ -18,9 +18,15 @@ RunAction::RunAction(EventAction *eventAction)
 {
     // it is recommened that analysis manager instance be created in user run action constructor.
     fAnalysisManager = G4AnalysisManager::Instance();
+    
     // If running in MT, merge all tuples after the end of run.
     if(G4RunManager::GetRunManager()->GetNumberOfThreads() > 1)
         fAnalysisManager->SetNtupleMerging(true);
+    
+    // creating ntuples
+    // why tuples must be created in constructor of user RunAction class, not in RunAction::BeginOfRunAction?
+    CreateTuplesGasChamber();
+    fAnalysisManager->FinishNtuple();
 
     DefineCommands();
 }
@@ -37,10 +43,6 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run * /*run*/)
 {
-    // creating ntuples
-    CreateTuplesGasChamber();
-    fAnalysisManager->FinishNtuple();
-
     fAnalysisManager->SetActivation(fAnaActivated);
     fAnalysisManager->OpenFile(fFileName);
 }

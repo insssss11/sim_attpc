@@ -18,7 +18,9 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+# to enable to complie with ROOT lib.
 find_package(ROOT REQUIRED)
+set(CMAKE_CXX_STANDARD 14)
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
@@ -35,10 +37,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/*.cc
+  ${PROJECT_SOURCE_DIR}/src/analysis/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
-  ${PROJECT_SOURCE_DIR}/include/custom_processes/*.hh)
+  ${PROJECT_SOURCE_DIR}/include/custom_processes/*.hh
+  ${PROJECT_SOURCE_DIR}/include/analysis/*.hh
+  )
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries

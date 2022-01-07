@@ -85,9 +85,6 @@ DetectorConstruction::DetectorConstruction()
 DetectorConstruction::~DetectorConstruction()
 {
     delete fMessenger;
-    delete fLogicWorld;
-    delete fLogicGas;
-    delete fLogicMag;
     // delete fLogicChamber;
     for(auto visAttributes : fVisAttributes)
         delete visAttributes;

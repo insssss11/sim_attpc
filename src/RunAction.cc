@@ -103,4 +103,5 @@ void RunAction::DefineCommands()
     auto activateCmd = fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
     activateCmd.SetParameterName("active", true);
     activateCmd.SetDefaultValue("true");
+    fMessenger->DeclareProperty("setFileName", fFileName, "Set Name of output file.");
 }

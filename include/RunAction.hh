@@ -29,7 +29,6 @@ class RunAction : public G4UserRunAction
     void CreateTuplesGasChamber();
 
     // for messenger and UI
-    void PostProcessTuples(const G4String &fileName);
     void DefineCommands();
     private:
     G4bool fAnaActivated;

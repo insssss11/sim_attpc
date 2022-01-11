@@ -56,14 +56,12 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
         fAnalysisManager->Write();
     fAnalysisManager->CloseFile();
     if(fAnalysisManager->GetActivation())
-    {
         if(IsMaster())
         {
             TuplePostProcessor postPro(fFileName.data());
             postPro.PostProcessTuples();
             postPro.Close();
         }
-    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,12 +73,13 @@ void RunAction::CreateTuplesGasChamber()
 
     fAnalysisManager->CreateNtuple("tree_gc2", "gas chamber hit data saved by trk");
     fAnalysisManager->CreateNtupleIColumn("evtId"); // 1 0
-    fAnalysisManager->CreateNtupleIColumn("Nstp"); // 1 1
-    fAnalysisManager->CreateNtupleIColumn("Z"); // 1 2
-    fAnalysisManager->CreateNtupleDColumn("mass"); // 1 3
-    fAnalysisManager->CreateNtupleDColumn("Ltrk"); // 1 4
-    fAnalysisManager->CreateNtupleDColumn("EdepSum"); // 1 5
-    fAnalysisManager->CreateNtupleSColumn("part"); // 1 6
+    fAnalysisManager->CreateNtupleIColumn("trkId"); // 1 1
+    fAnalysisManager->CreateNtupleIColumn("Nstep"); // 1 2
+    fAnalysisManager->CreateNtupleIColumn("atomNum"); // 1 3
+    fAnalysisManager->CreateNtupleDColumn("mass"); // 1 4
+    fAnalysisManager->CreateNtupleDColumn("trkLen"); // 1 5
+    fAnalysisManager->CreateNtupleDColumn("eDepSum"); // 1 6
+    fAnalysisManager->CreateNtupleSColumn("part"); // 1 7
 
     fAnalysisManager->CreateNtuple("tree_gc3", "gas chamber hit data saved by steps");
     fAnalysisManager->CreateNtupleDColumn("x"); // 2 0
@@ -89,15 +88,12 @@ void RunAction::CreateTuplesGasChamber()
     fAnalysisManager->CreateNtupleDColumn("px"); // 2 3
     fAnalysisManager->CreateNtupleDColumn("py"); // 2 4
     fAnalysisManager->CreateNtupleDColumn("pz"); // 2 5
-    fAnalysisManager->CreateNtupleDColumn("Edep"); // 2 6
+    fAnalysisManager->CreateNtupleDColumn("eDep"); // 2 6
     fAnalysisManager->CreateNtupleDColumn("t"); // 2 7
     fAnalysisManager->CreateNtupleDColumn("q"); // 2 8
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::PostProcessTuples(const G4String &fileName)
-{}
 
 void RunAction::DefineCommands()
 {
@@ -107,6 +103,4 @@ void RunAction::DefineCommands()
     auto activateCmd = fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
     activateCmd.SetParameterName("active", true);
     activateCmd.SetDefaultValue("true");
-
-    fMessenger->DeclareMethod("postProcess", &RunAction::PostProcessTuples, "Postprocess tuple data");
 }

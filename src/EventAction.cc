@@ -121,12 +121,13 @@ void EventAction::FillNtupleGasChamber()
     {
         auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
         analysisManager->FillNtupleIColumn(1, 0, G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID());
-        analysisManager->FillNtupleIColumn(1, 1, hit->GetNbOfStepPoints());
-        analysisManager->FillNtupleIColumn(1, 2, hit->GetAtomicNumber());
-        analysisManager->FillNtupleDColumn(1, 3, hit->GetMass());
-        analysisManager->FillNtupleDColumn(1, 4, hit->GetTrackLength());
-        analysisManager->FillNtupleDColumn(1, 5, hit->GetEdepSum());
-        analysisManager->FillNtupleSColumn(1, 6, hit->GetPartName());
+        analysisManager->FillNtupleIColumn(1, 1, hit->GetTrackId());
+        analysisManager->FillNtupleIColumn(1, 2, hit->GetNbOfStepPoints());
+        analysisManager->FillNtupleIColumn(1, 3, hit->GetAtomicNumber());
+        analysisManager->FillNtupleDColumn(1, 4, hit->GetMass());
+        analysisManager->FillNtupleDColumn(1, 5, hit->GetTrackLength());
+        analysisManager->FillNtupleDColumn(1, 6, hit->GetEdepSum());
+        analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
         analysisManager->AddNtupleRow(1);
     }
 

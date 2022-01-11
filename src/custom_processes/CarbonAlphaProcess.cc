@@ -163,14 +163,14 @@ void CarbonAlphaProcess::ForceReactionByTrackLen(G4double length)
 void CarbonAlphaProcess::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/process/CarbonAlpha/", "Carbon alpha process control");
-    auto verboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Verbosity control ot the process");
+    auto verboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Verbosity control of the process");
     verboseCmd.SetParameterName("verbose", false);
     verboseCmd.SetRange("verbose >= 0");
     auto forceByKinEcmd = fMessenger->DeclareMethodWithUnit("forceByKinEnergy", "MeV",
         &CarbonAlphaProcess::ForceReactionByKinE, "The reaction will occur at a given kinetic energy.");
     forceByKinEcmd.SetParameterName("kinE", false);
     forceByKinEcmd.SetRange("kinE > 0");
-    auto forceByLengCmd = fMessenger->DeclareMethodWithUnit("forceByTrackLen", "MeV",
+    auto forceByLengCmd = fMessenger->DeclareMethodWithUnit("forceByTrackLen", "mm",
         &CarbonAlphaProcess::ForceReactionByKinE, "The reaction will occur at a given track length.");
     forceByLengCmd.SetParameterName("tracklen", false);
     forceByLengCmd.SetRange("tracklen > 0");

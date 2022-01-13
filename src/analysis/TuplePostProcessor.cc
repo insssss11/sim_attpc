@@ -52,8 +52,6 @@ void TuplePostProcessor::Close()
     }
 }
 
-using namespace G4Root;
-
 void TuplePostProcessor::PostProcessTuplesGasChamber()
 {
     static constexpr G4int kMaxNbOfSteps = 5000;

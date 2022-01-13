@@ -18,9 +18,19 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+# check Geant4 version
+if(${Geant4_VERSION} VERSION_LESS 11.0.0)
+  message(FATAL_ERROR "Geant4 version must be higher than 11.0.0")
+endif()
+
 # to enable to complie with ROOT lib.
 find_package(ROOT REQUIRED)
-set(CMAKE_CXX_STANDARD 14)
+# check ROOT version
+if(${ROOT_VERSION} VERSION_LESS 6.24/00)
+  message(FATAL_ERROR "ROOT version must be higher than 6.24/00")
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions

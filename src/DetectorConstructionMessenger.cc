@@ -63,7 +63,7 @@ void DetectorConstructionMessenger::PassArgsToSetGas(const G4String &newValues)
     G4double frac2 = StoD(token());
     G4double pressure = 1.0;
     G4String sPressure = token();
-    if(!sPressure.isNull())
+    if(!sPressure.empty())
         pressure = StoD(sPressure);
     fDetector->SetGas(gas1, frac1, gas2, frac2, pressure*atmosphere);
 }

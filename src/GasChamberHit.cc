@@ -24,7 +24,7 @@ GasChamberHit::GasChamberHit()
 
 GasChamberHit::GasChamberHit(const G4DynamicParticle *pDynamic, G4int evtId, G4int trkId)
     : G4VHit(),
-    fEdepSum(0), fTrackLen(0)
+    fEdepSum(0), fTrackLen(0), fMass(0), fPartName()
 {
     auto pDef = pDynamic->GetDefinition();
     SetPartName(pDef->GetParticleName());
@@ -43,12 +43,45 @@ GasChamberHit::~GasChamberHit()
 
 GasChamberHit::GasChamberHit(const GasChamberHit &right)
     : G4VHit()
-{}
+{
+    fPosX = right.GetPosX();
+    fPosY = right.GetPosY();
+    fPosZ = right.GetPosZ();
+    fMomX = right.GetMomX();
+    fMomY = right.GetMomY();
+    fMomZ = right.GetMomZ();
+    fEdep = right.GetEdep();
+    fTime = right.GetTime();
+    fCharge = right.GetCharge();
+    fEventId = right.GetEventId();
+    fZ = right.GetAtomicNumber();
+    fNbOfStepPoints = right.GetNbOfStepPoints();
+    fEdepSum = right.GetEdepSum();
+    fTrackLen = right.GetTrackLength();
+    fMass = right.GetMass();
+    fPartName = right.GetPartName();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const GasChamberHit &GasChamberHit::operator=(const GasChamberHit &right)
 {
+    fPosX = right.GetPosX();
+    fPosY = right.GetPosY();
+    fPosZ = right.GetPosZ();
+    fMomX = right.GetMomX();
+    fMomY = right.GetMomY();
+    fMomZ = right.GetMomZ();
+    fEdep = right.GetEdep();
+    fTime = right.GetTime();
+    fCharge = right.GetCharge();
+    fEventId = right.GetEventId();
+    fZ = right.GetAtomicNumber();
+    fNbOfStepPoints = right.GetNbOfStepPoints();
+    fEdepSum = right.GetEdepSum();
+    fTrackLen = right.GetTrackLength();
+    fMass = right.GetMass();
+    fPartName = right.GetPartName();
     return *this;
 }
 
@@ -56,7 +89,22 @@ const GasChamberHit &GasChamberHit::operator=(const GasChamberHit &right)
 
 G4bool GasChamberHit::operator==(const GasChamberHit &right) const
 {
-    return true;
+    return fPosX == right.GetPosX() &&
+    fPosY == right.GetPosY() &&
+    fPosZ == right.GetPosZ() &&
+    fMomX == right.GetMomX() &&
+    fMomY == right.GetMomY() &&
+    fMomZ == right.GetMomZ() &&
+    fEdep == right.GetEdep() &&
+    fTime == right.GetTime() &&
+    fCharge == right.GetCharge() &&
+    fEventId == right.GetEventId() &&
+    fZ == right.GetAtomicNumber() &&
+    fNbOfStepPoints == right.GetNbOfStepPoints() &&
+    fEdepSum == right.GetEdepSum() &&
+    fTrackLen == right.GetTrackLength() &&
+    fMass == right.GetMass() &&
+    fPartName == right.GetPartName();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -171,7 +171,7 @@ void CarbonAlphaProcess::DefineCommands()
     forceByKinEcmd.SetParameterName("kinE", false);
     forceByKinEcmd.SetRange("kinE > 0");
     auto forceByLengCmd = fMessenger->DeclareMethodWithUnit("forceByTrackLen", "mm",
-        &CarbonAlphaProcess::ForceReactionByKinE, "The reaction will occur at a given track length.");
+        &CarbonAlphaProcess::ForceReactionByTrackLen, "The reaction will occur at a given track length.");
     forceByLengCmd.SetParameterName("tracklen", false);
     forceByLengCmd.SetRange("tracklen > 0");
 }

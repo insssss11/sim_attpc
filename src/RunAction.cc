@@ -97,10 +97,10 @@ void RunAction::CreateTuplesGasChamber()
 void RunAction::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/output/", "File output control");
-    fMessenger->DeclareProperty("fileName", fFileName, "Output file name");
     
     auto activateCmd = fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
     activateCmd.SetParameterName("active", true);
     activateCmd.SetDefaultValue("true");
+
     fMessenger->DeclareProperty("setFileName", fFileName, "Set Name of output file.");
 }

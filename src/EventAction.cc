@@ -8,7 +8,6 @@
 #include "G4UnitsTable.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
-#include "G4EventManager.hh"
 #include "G4HCofThisEvent.hh"
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
@@ -46,6 +45,12 @@ EventAction::EventAction()
     : G4UserEventAction(),
     verboseLevel(0), fHcIdsInitialized(false), fGasChamberHcId(-1)
 {
+    fVectorContainerD = new TupleVectorContainerD;
+    fVectorContainerI = new TupleVectorContainerI;
+
+    // initialize vector container for each tuple
+    InitNtuplesVectorGasChamber();
+
     // set printing per each event
     G4RunManager::GetRunManager()->SetPrintProgress(1);
     DefineCommands();
@@ -54,7 +59,10 @@ EventAction::EventAction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::~EventAction()
-{}
+{
+    delete fVectorContainerD;
+    delete fVectorContainerI;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -75,6 +83,22 @@ void EventAction::EndOfEventAction(const G4Event *)
     FillNtupleGasChamber();
     PrintGasChamberHits();
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+vector<G4double> *EventAction::GetVectorPtrD(const std::string &tName, const std::string &vecName) const
+{
+    return fVectorContainerD->GetVectorPtr(tName, vecName);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+vector<G4int> *EventAction::GetVectorPtrI(const std::string &tName, const std::string &vecName) const
+{
+    return fVectorContainerI->GetVectorPtr(tName, vecName);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::InitHcIds()
 {
@@ -107,6 +131,18 @@ void EventAction::PrintBeginOfEvent()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void EventAction::InitNtuplesVectorGasChamber()
+{
+    fVectorContainerD->AddTuple("tree_gc2");
+    G4cout << "fuck3" << G4endl;    
+    fVectorContainerD->AddVectors("tree_gc2",
+        {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q"});
+    G4cout << "fuck3" << G4endl;    
+    fVectorContainerD->ReserveAll("tree_gc2", 5000);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void EventAction::FillNtupleGasChamber()
 {
     auto hitCol = GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId);
@@ -127,27 +163,20 @@ void EventAction::FillNtupleGasChamber()
         analysisManager->FillNtupleDColumn(1, 4, hit->GetMass());
         analysisManager->FillNtupleDColumn(1, 5, hit->GetTrackLength());
         analysisManager->FillNtupleDColumn(1, 6, hit->GetEdepSum());
-        analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
-        analysisManager->AddNtupleRow(1);
-    }
+        // analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
 
-    // tuple saved by step
-    for(size_t i = 0;i < hitCol->GetSize();++i)
-    {
-        auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
-        for(int j = 0;j < hit->GetNbOfStepPoints();++j)
-        {
-            analysisManager->FillNtupleDColumn(2, 0, hit->GetPosX().at(j));
-            analysisManager->FillNtupleDColumn(2, 1, hit->GetPosY().at(j));
-            analysisManager->FillNtupleDColumn(2, 2, hit->GetPosZ().at(j));
-            analysisManager->FillNtupleDColumn(2, 3, hit->GetMomX().at(j));
-            analysisManager->FillNtupleDColumn(2, 4, hit->GetMomY().at(j));
-            analysisManager->FillNtupleDColumn(2, 5, hit->GetMomZ().at(j));
-            analysisManager->FillNtupleDColumn(2, 6, hit->GetEdep().at(j));
-            analysisManager->FillNtupleDColumn(2, 7, hit->GetTime().at(j));
-            analysisManager->FillNtupleDColumn(2, 8, hit->GetCharge().at(j));
-            analysisManager->AddNtupleRow(2);
-        }
+        // vector part
+        *GetVectorPtrD("tree_gc2", "x") = hit->GetPosX();
+        *GetVectorPtrD("tree_gc2", "y") = hit->GetPosY();
+        *GetVectorPtrD("tree_gc2", "z") = hit->GetPosZ();
+        *GetVectorPtrD("tree_gc2", "px") = hit->GetMomX();
+        *GetVectorPtrD("tree_gc2", "py") = hit->GetMomY();
+        *GetVectorPtrD("tree_gc2", "pz") = hit->GetMomZ();
+        *GetVectorPtrD("tree_gc2", "eDep") = hit->GetTime();
+        *GetVectorPtrD("tree_gc2", "t") = hit->GetPosY();
+        *GetVectorPtrD("tree_gc2", "q") = hit->GetPosZ();
+        analysisManager->AddNtupleRow(1);
+        fVectorContainerD->ClearAll("tree_gc2");
     }
 }
 

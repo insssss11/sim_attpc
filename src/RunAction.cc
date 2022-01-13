@@ -3,7 +3,6 @@
 
 #include "RunAction.hh"
 #include "EventAction.hh"
-#include "analysis/TuplePostProcessor.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -54,13 +53,6 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
     if(fAnalysisManager->GetActivation())
         fAnalysisManager->Write();
     fAnalysisManager->CloseFile();
-    if(fAnalysisManager->GetActivation())
-        if(IsMaster())
-        {
-            TuplePostProcessor postPro(fFileName.data());
-            postPro.PostProcessTuples();
-            postPro.Close();
-        }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,18 +70,18 @@ void RunAction::CreateTuplesGasChamber()
     fAnalysisManager->CreateNtupleDColumn("mass"); // 1 4
     fAnalysisManager->CreateNtupleDColumn("trkLen"); // 1 5
     fAnalysisManager->CreateNtupleDColumn("eDepSum"); // 1 6
-    fAnalysisManager->CreateNtupleSColumn("part"); // 1 7
-
-    fAnalysisManager->CreateNtuple("tree_gc3", "gas chamber hit data saved by steps");
-    fAnalysisManager->CreateNtupleDColumn("x"); // 2 0
-    fAnalysisManager->CreateNtupleDColumn("y"); // 2 1
-    fAnalysisManager->CreateNtupleDColumn("z"); // 2 2
-    fAnalysisManager->CreateNtupleDColumn("px"); // 2 3
-    fAnalysisManager->CreateNtupleDColumn("py"); // 2 4
-    fAnalysisManager->CreateNtupleDColumn("pz"); // 2 5
-    fAnalysisManager->CreateNtupleDColumn("eDep"); // 2 6
-    fAnalysisManager->CreateNtupleDColumn("t"); // 2 7
-    fAnalysisManager->CreateNtupleDColumn("q"); // 2 8
+    // fAnalysisManager->CreateNtupleSColumn("part"); // 1 7
+    
+    // vector part
+    fAnalysisManager->CreateNtupleDColumn("x", *fEventAction->GetVectorPtrD("tree_gc2", "x"));
+    fAnalysisManager->CreateNtupleDColumn("y", *fEventAction->GetVectorPtrD("tree_gc2", "y"));
+    fAnalysisManager->CreateNtupleDColumn("z", *fEventAction->GetVectorPtrD("tree_gc2", "z"));
+    fAnalysisManager->CreateNtupleDColumn("px", *fEventAction->GetVectorPtrD("tree_gc2", "px"));
+    fAnalysisManager->CreateNtupleDColumn("py", *fEventAction->GetVectorPtrD("tree_gc2", "py"));
+    fAnalysisManager->CreateNtupleDColumn("pz", *fEventAction->GetVectorPtrD("tree_gc2", "pz"));
+    fAnalysisManager->CreateNtupleDColumn("eDep", *fEventAction->GetVectorPtrD("tree_gc2", "eDep"));
+    fAnalysisManager->CreateNtupleDColumn("t", *fEventAction->GetVectorPtrD("tree_gc2", "t"));
+    fAnalysisManager->CreateNtupleDColumn("q", *fEventAction->GetVectorPtrD("tree_gc2", "q"));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

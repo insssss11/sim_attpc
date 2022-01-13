@@ -14,8 +14,6 @@ class EventAction;
 class G4Run;
 
 /// Run action class
-
-
 class RunAction : public G4UserRunAction
 {
     public:
@@ -26,6 +24,7 @@ class RunAction : public G4UserRunAction
     virtual void   EndOfRunAction(const G4Run *);
 
     private:
+    // create tuples in AnalysisManager for each detector SD
     void CreateTuplesGasChamber();
 
     // for messenger and UI

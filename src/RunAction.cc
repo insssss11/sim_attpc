@@ -34,7 +34,6 @@ RunAction::RunAction(EventAction *eventAction)
 
 RunAction::~RunAction()
 {
-    delete fAnalysisManager;
     delete fMessenger;
 }
 

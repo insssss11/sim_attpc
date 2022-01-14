@@ -134,10 +134,8 @@ void EventAction::PrintBeginOfEvent()
 void EventAction::InitNtuplesVectorGasChamber()
 {
     fVectorContainerD->AddTuple("tree_gc2");
-    G4cout << "fuck3" << G4endl;    
     fVectorContainerD->AddVectors("tree_gc2",
         {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q"});
-    G4cout << "fuck3" << G4endl;    
     fVectorContainerD->ReserveAll("tree_gc2", 5000);
 }
 

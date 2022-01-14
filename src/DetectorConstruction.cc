@@ -46,7 +46,6 @@
 #include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
-#include "G4UserLimits.hh"
 
 #include "G4FieldManager.hh"
 #include "G4SDManager.hh"
@@ -65,7 +64,8 @@ G4ThreadLocal G4FieldManager *DetectorConstruction::fFieldManager = 0;
 
 DetectorConstruction::DetectorConstruction()
     : G4VUserDetectorConstruction(),
-    fMessenger(nullptr), fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
+    fMessenger(nullptr), fUserLimits(nullptr),
+    fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
     fGasMat(nullptr),
     fGasName1("He"), fGasName2("iC4H10"), fFrac1(90.), fFrac2(10.), fPressure(0.1*atmosphere),
@@ -73,6 +73,7 @@ DetectorConstruction::DetectorConstruction()
     fGasMatMap(nullptr)
 {
     fGasMatMap = new std::unordered_map<std::string, std::string>;
+    fUserLimits = new G4UserLimits(0.1*mm);
     // Construct materials
     ConstructMaterials();
     // initiaize gas material
@@ -85,6 +86,7 @@ DetectorConstruction::DetectorConstruction()
 DetectorConstruction::~DetectorConstruction()
 {
     delete fMessenger;
+    delete fUserLimits;
     // delete fLogicChamber;
     for(auto visAttributes : fVisAttributes)
         delete visAttributes;
@@ -121,8 +123,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         false, 0, checkOverlaps);
 
     // set step limit in tube with magnetic field  
-    G4UserLimits *userLimits = new G4UserLimits(0.1*mm);
-    fLogicMag->SetUserLimits(userLimits);
+    fLogicMag->SetUserLimits(fUserLimits);
 
     // visualization attributes ------------------------------------------------
     auto visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
@@ -167,7 +168,7 @@ void DetectorConstruction::ConstructMaterials()
     nist->FindOrBuildMaterial("G4_AIR");
     auto air = G4Material::GetMaterial("G4_AIR");
     nist->BuildMaterialWithNewDensity("Vacuum", "G4_AIR", 1.0e-7*air->GetDensity());
-    
+
     // ref [1] : Coupled cluster calculations of mean excitation energies of the noble gas atoms He, Ne and Ar and of the H2 molecule
     // ref [2] : Techiniques for Nuclear and Particle Physics Experiments 
     // ref [3] : Mean excitation energies and energy deposition characteristics of bio-organic molecules.
@@ -182,7 +183,7 @@ void DetectorConstruction::ConstructMaterials()
     G4Material *Ne = nist->FindOrBuildMaterial("G4_Ne");
     Ne->GetIonisation()->SetMeanExcitationEnergy(137.2*eV); // ref [1]
     Ne->GetIonisation()->SetMeanEnergyPerIonPair(36*eV); // ref [2]
-    RegisterGasMat("Ne", Ne->GetName());    
+    RegisterGasMat("Ne", Ne->GetName());
 
     G4Material *Ar = nist->FindOrBuildMaterial("G4_Ar");
     Ar->GetIonisation()->SetMeanExcitationEnergy(188.5*eV); // ref [1]
@@ -192,7 +193,7 @@ void DetectorConstruction::ConstructMaterials()
     G4Material *CO2 = nist->FindOrBuildMaterial("G4_CARBON_DIOXIDE");
     CO2->GetIonisation()->SetMeanExcitationEnergy(90.0*eV); // ref [3]
     CO2->GetIonisation()->SetMeanEnergyPerIonPair(33*eV); // ref[2]
-    RegisterGasMat("CO2", CO2->GetName());    
+    RegisterGasMat("CO2", CO2->GetName());
 
     G4Material *CH4 = nist->FindOrBuildMaterial("G4_METHANE");
     CH4->GetIonisation()->SetMeanExcitationEnergy(43.3*eV); // ref [3]
@@ -224,9 +225,9 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
         message << "Sum of frac1 and frac2 is not close enough to 100%%.";
         G4Exception("DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure)",
             "GeomGasMat0000", JustWarning, message);
-        return;    
+        return;
     }
-    else{
+    else {
         // update variables
         fGasName1 = gas1;
         fGasName2 = gas2;
@@ -242,7 +243,7 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
     G4double massFrac1 = density1/(density1 + density2);
     G4double massFrac2 = density2/(density1 + density2);
     ++fNbOfGasMat;
-    
+
     // warning message if too many instances
     if(fNbOfGasMat > kNbOfGatMatWarning)
     {
@@ -250,7 +251,7 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
         message << "Changing gas properties creates new G4Material instances. It may occupy large memory.";
         G4Exception("DetectorConstruction::DetectorConstruction::UpdateGas()",
             "GeomGasMat0001", JustWarning, message);
-        return;        
+        return;
     }
     fGasMat = new G4Material("Gas", density, 2);
     fGasMat->AddMaterial(gasMat1, massFrac1);
@@ -260,8 +261,40 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
         fLogicGas->SetMaterial(fGasMat);
         // tell G4RunManager that we change the geometry
         G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-        G4cout << "Gas mixture changed to " << GetGasMixtureStat() << G4endl;          
+        G4cout << "Gas mixture changed to " << GetGasMixtureStat() << G4endl;
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetLimitStep(G4double ustepMax)
+{
+    fUserLimits->SetMaxAllowedStep(ustepMax);
+    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetLimitTrack(G4double utrakMax)
+{
+    fUserLimits->SetUserMaxTrackLength(utrakMax);
+    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetLimitTime(G4double utimeMax)
+{
+    fUserLimits->SetUserMaxTime(utimeMax);
+    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetMinKinE(G4double uekinMax)
+{
+    fUserLimits->SetUserMinEkine(uekinMax);
+    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

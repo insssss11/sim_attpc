@@ -8,7 +8,7 @@
 
 DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstruction *detector)
     :G4UImessenger(), fDetector(detector), fDetectorDirectory(nullptr),
-    fSetGasCmd(nullptr)
+    fSetGasCmd(nullptr), fSetMaxStep(nullptr), fSetMaxTrack(nullptr), fSetMaxTime(nullptr), fSetMinKinE(nullptr)
 {
     fDetectorDirectory = new G4UIdirectory("/attpc/gas/");
     fDetectorDirectory->SetGuidance("Gas volume control");
@@ -35,6 +35,30 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     param->SetDefaultValue(1.);
     fSetGasCmd->SetParameter(param);
     fSetGasCmd->SetRange("frac1 > 0 && frac2 > 0 && pressure > 0 && frac1 < 100 && frac2 < 100");
+
+    fSetMaxStep = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setStepLimit", this);
+    fSetMaxStep->SetGuidance("Set maximum of allowed step length.");
+    fSetMaxStep->SetParameterName("ustepMax", false);
+    fSetMaxStep->SetDefaultUnit("mm");
+    fSetMaxStep->SetRange("ustepMax > 0");
+
+    fSetMaxTrack = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setTrackLimit", this);
+    fSetMaxTrack->SetGuidance("Limit length of track.");
+    fSetMaxTrack->SetParameterName("utrakMax", false);
+    fSetMaxTrack->SetDefaultUnit("mm");
+    fSetMaxTrack->SetRange("utrakMax > 0");
+
+    fSetMaxTime = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setTimeLimit", this);
+    fSetMaxTime->SetGuidance("Limit global time of track.");
+    fSetMaxTime->SetParameterName("utimeMax", false);
+    fSetMaxTime->SetDefaultUnit("ns");
+    fSetMaxTime->SetRange("utimeMax > 0");
+
+    fSetMinKinE = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setMinKinE", this);
+    fSetMinKinE->SetGuidance("Set minimum kinetic remaining.");
+    fSetMinKinE->SetParameterName("ukineMin", false);
+    fSetMinKinE->SetDefaultUnit("MeV");
+    fSetMinKinE->SetRange("ukineMin > 0");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -42,6 +66,11 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
 DetectorConstructionMessenger::~DetectorConstructionMessenger()
 {
     delete fDetectorDirectory;
+    delete fSetGasCmd;
+    delete fSetMaxStep;
+    delete fSetMaxTrack;
+    delete fSetMaxTime;
+    delete fSetMinKinE;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -50,6 +79,14 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String n
 {
     if(command == fSetGasCmd)
         PassArgsToSetGas(newValues);
+    else if(command == fSetMaxStep)
+        fDetector->SetLimitStep(fSetMaxStep->GetNewDoubleValue(newValues));
+    else if(command == fSetMaxTrack)
+        fDetector->SetLimitTrack(fSetMaxTrack->GetNewDoubleValue(newValues));
+    else if(command == fSetMaxTime)
+        fDetector->SetLimitTime(fSetMaxTime->GetNewDoubleValue(newValues));
+    else if(command == fSetMinKinE)
+        fDetector->SetMinKinE(fSetMinKinE->GetNewDoubleValue(newValues));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -30,6 +30,10 @@ private:
     G4UIdirectory *fDetectorDirectory;
     // UI commands
     G4UIcommand *fSetGasCmd;
+    G4UIcmdWithADoubleAndUnit *fSetMaxStep;
+    G4UIcmdWithADoubleAndUnit *fSetMaxTrack;
+    G4UIcmdWithADoubleAndUnit *fSetMaxTime;
+    G4UIcmdWithADoubleAndUnit *fSetMinKinE;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

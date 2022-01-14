@@ -25,6 +25,8 @@ class PhysicsList : public G4VModularPhysicsList
 
     void AddIonGasProcess();
     void AddCarbonAlphaProcess();
+    void AddLimiterProcess();
+
     void DefineCommands();
 
     private:

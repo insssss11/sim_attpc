@@ -47,12 +47,10 @@ int main(int argc, char **argv)
     // Mandatory user initialization classes
     runManager->SetUserInitialization(new DetectorConstruction);
 
-    auto physicsList = new PhysicsList();
-    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    runManager->SetUserInitialization(physicsList);
+    runManager->SetUserInitialization(new PhysicsList);
 
     // User action initialization
-    runManager->SetUserInitialization(new ActionInitialization());
+    runManager->SetUserInitialization(new ActionInitialization);
 
     // Visualization manager construction
     auto visManager = new G4VisExecutive;

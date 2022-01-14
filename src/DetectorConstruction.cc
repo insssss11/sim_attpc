@@ -121,7 +121,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         false, 0, checkOverlaps);
 
     // set step limit in tube with magnetic field  
-    G4UserLimits *userLimits = new G4UserLimits(1 * mm, 300*mm);
+    G4UserLimits *userLimits = new G4UserLimits(0.1*mm);
     fLogicMag->SetUserLimits(userLimits);
 
     // visualization attributes ------------------------------------------------

@@ -3,6 +3,10 @@
 
 #include "G4ProcessManager.hh"
 
+// step and track limiter process
+#include "G4StepLimiter.hh"
+#include "G4UserSpecialCuts.hh"
+
 // particle constructors
 #include "G4BosonConstructor.hh"
 #include "G4LeptonConstructor.hh"
@@ -71,6 +75,7 @@ void PhysicsList::ConstructProcess()
     AddTransportation();
     AddIonGasProcess();
     AddCarbonAlphaProcess();
+    AddLimiterProcess();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -91,7 +96,7 @@ void PhysicsList::AddIonGasProcess()
     {
         G4ParticleDefinition *pDefinition = pIterator->value();
         G4String pName = pDefinition->GetParticleName();
-        if(pName == "alpha" || pName == "He3" || pName == "GenericIon")
+        if(pName == "proton" || pName == "He3" || pName == "alpha" || pName == "GenericIon")
         {
             // effective charge and energy loss model of ion
             G4ionIonisation *iIon = new G4ionIonisation();
@@ -99,12 +104,12 @@ void PhysicsList::AddIonGasProcess()
             G4BetheBlochIonGasModel *bbIgm = new G4BetheBlochIonGasModel();
             bIgm->SetActivationHighEnergyLimit(2.*MeV*pDefinition->GetPDGMass()/proton_mass_c2);
             bbIgm->SetActivationLowEnergyLimit(2.*MeV*pDefinition->GetPDGMass()/proton_mass_c2);
-            
+
             iIon->AddEmModel(0, bIgm, new G4IonFluctuations);
             iIon->AddEmModel(0, bbIgm, new G4UniversalFluctuation);
             // no delta ray
             iIon->ActivateSecondaryBiasing("World", 1e-10, 100*TeV);
-            
+
             G4hMultipleScattering *hMsc = new G4hMultipleScattering();
             hMsc->AddEmModel(0, new G4UrbanMscModel());
             G4CoulombScattering *csc = new G4CoulombScattering();
@@ -134,6 +139,27 @@ void PhysicsList::AddCarbonAlphaProcess()
         {
             CarbonAlphaProcess *cap = new CarbonAlphaProcess();
             ph->RegisterProcess(cap, pDefinition);
+        }
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsList::AddLimiterProcess()
+{
+    auto ph = G4PhysicsListHelper::GetPhysicsListHelper();
+    auto pIterator = GetParticleIterator();
+    pIterator->reset();
+    G4StepLimiter *slt = new G4StepLimiter();
+    G4UserSpecialCuts *usc = new G4UserSpecialCuts();
+    while((*pIterator)())
+    {
+        G4ParticleDefinition *pDefinition = pIterator->value();
+        G4String pName = pDefinition->GetParticleName();
+        if(pName == "proton" || pName == "He3" || pName == "alpha" || pName == "GenericIon")
+        {
+            ph->RegisterProcess(slt, pDefinition);
+            ph->RegisterProcess(usc, pDefinition);
         }
     }
 }

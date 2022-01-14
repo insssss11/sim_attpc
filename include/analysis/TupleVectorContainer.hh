@@ -49,6 +49,7 @@ class TupleVectorContainer
 };
 
 using TupleVectorContainerD = TupleVectorContainer<G4double>;
+using TupleVectorContainerF = TupleVectorContainer<G4float>;
 using TupleVectorContainerI = TupleVectorContainer<G4int>;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

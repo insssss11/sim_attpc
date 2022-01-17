@@ -27,7 +27,7 @@
 /// \file DetectorConstruction.cc
 /// \brief Implementation of the DetectorConstruction class
 
-#include "DetectorConstruction.hh"
+#include "detector_construction/DetectorConstruction.hh"
 #include "GasChamberSD.hh"
 
 #include "G4Exception.hh"
@@ -67,17 +67,14 @@ DetectorConstruction::DetectorConstruction()
     fMessenger(nullptr), fUserLimits(nullptr),
     fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
-    fGasMat(nullptr),
-    fGasName1("He"), fGasName2("iC4H10"), fFrac1(90.), fFrac2(10.), fPressure(0.1*atmosphere),
+    fGasMat(nullptr), fGasName1("He"), fGasName2("iC4H10"), fFrac1(90.), fFrac2(10.), fPressure(0.1*atmosphere),
     fNbOfGasMat(0),
     fGasMatMap(nullptr)
 {
     fGasMatMap = new std::unordered_map<std::string, std::string>;
-    fUserLimits = new G4UserLimits(0.1*mm);
-    // Construct materials
-    ConstructMaterials();
-    // initiaize gas material
-    SetGas(fGasName1, fFrac1, fGasName2, fFrac2, fPressure);
+    
+    fUserLimits = new G4UserLimits(1*mm);
+
     fMessenger = new DetectorConstructionMessenger(this);
 }
 
@@ -98,64 +95,11 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
-    auto vacuum = G4Material::GetMaterial("Vacuum");
-    // Option to switch on/off checking of volumes overlaps
-    G4bool checkOverlaps = true;
+    ConstructMaterials();
+    SetGas(fGasName1, fFrac1, fGasName2, fFrac2, fPressure);
+    ConstructGeometry();
 
-    // geometries --------------------------------------------------------------
-    auto solidWorld = new G4Box("SolidWorld", 500 * mm, 500 * mm, 500 * mm);
-    fLogicWorld = new G4LogicalVolume(solidWorld, vacuum, "LogicWorld");
-    auto physWorld = new G4PVPlacement(
-        0, G4ThreeVector(),
-        fLogicWorld, "PhysWorld", 0,
-        false, 0, checkOverlaps);
-
-    // Tube with Local Magnetic field
-
-    auto solidMag = new G4Tubs("SolidMag", 0., 100 * mm, 100 * mm, 0., 360. * deg);
-    fLogicMag = new G4LogicalVolume(solidMag, fGasMat, "LogicMag");
-    fLogicGas = fLogicMag; // For now, magnetic field volume and gas volume completly coincide.
-    // placement of Tube
-    G4RotationMatrix *fieldRot = new G4RotationMatrix();
-    fieldRot->rotateY(90. * deg);
-    new G4PVPlacement(fieldRot, G4ThreeVector(),
-        fLogicMag, "PhysMagnetic", fLogicWorld,
-        false, 0, checkOverlaps);
-
-    // set step limit in tube with magnetic field  
-    fLogicMag->SetUserLimits(fUserLimits);
-
-    // visualization attributes ------------------------------------------------
-    auto visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
-    visAttributes->SetVisibility(false);
-    fLogicWorld->SetVisAttributes(visAttributes);
-    fVisAttributes.push_back(visAttributes);
-
-    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9));   // LightGray
-    fLogicMag->SetVisAttributes(visAttributes);
-    fVisAttributes.push_back(visAttributes);
-    // return the world physical volume ----------------------------------------
-    return physWorld;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::ConstructSDandField()
-{
-    // sensitive detectors -----------------------------------------------------
-    auto sdManager = G4SDManager::GetSDMpointer();
-    G4String SDname;
-
-    auto gasChamberSD = new GasChamberSD(SDname = "/gasChamber");
-    sdManager->AddNewDetector(gasChamberSD);
-    fLogicGas->SetSensitiveDetector(gasChamberSD);
-    // magnetic field ----------------------------------------------------------
-    fMagneticField = new MagneticField();
-    fFieldManager = new G4FieldManager();
-    fFieldManager->SetDetectorField(fMagneticField);
-    fFieldManager->CreateChordFinder(fMagneticField);
-    G4bool forceToAllDaughters = true;
-    fLogicMag->SetFieldManager(fFieldManager, forceToAllDaughters);
+    return fPhysWorld;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -163,18 +107,24 @@ void DetectorConstruction::ConstructSDandField()
 void DetectorConstruction::ConstructMaterials()
 {
     auto nist = G4NistManager::Instance();
-
-    // Vacuum "Air with low density"
+    
     nist->FindOrBuildMaterial("G4_AIR");
-    auto air = G4Material::GetMaterial("G4_AIR");
-    nist->BuildMaterialWithNewDensity("Vacuum", "G4_AIR", 1.0e-7*air->GetDensity());
+
+    // Vacuum "Hydrogen gas with very low density"
+    G4double atomicNumber = 1.;
+    G4double massOfMole = 1.008*g/mole;
+    G4double density = 1.e-25*g/cm3;
+    G4double temperature = 2.73*kelvin;
+    G4double pressure = 3.e-18*pascal;
+    new G4Material(
+        "Vacuum", atomicNumber, massOfMole,
+        density, kStateGas, temperature, pressure);
 
     // ref [1] : Coupled cluster calculations of mean excitation energies of the noble gas atoms He, Ne and Ar and of the H2 molecule
     // ref [2] : Techiniques for Nuclear and Particle Physics Experiments 
     // ref [3] : Mean excitation energies and energy deposition characteristics of bio-organic molecules.
     // ref [4] : Geant4 simulation of DRAGON's hybrid detector
 
-    // gas definition
     G4Material *He = nist->FindOrBuildMaterial("G4_He");
     He->GetIonisation()->SetMeanExcitationEnergy(41.8*eV); // ref [1]
     He->GetIonisation()->SetMeanEnergyPerIonPair(41.*eV); // ref[2]
@@ -211,14 +161,71 @@ void DetectorConstruction::ConstructMaterials()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DetectorConstruction::ConstructGeometry()
+{
+    auto vacuum = G4Material::GetMaterial("Vacuum");
+    // Option to switch on/off checking of volumes overlaps
+    G4bool checkOverlaps = true;
+
+    // geometries --------------------------------------------------------------
+    auto solidWorld = new G4Box("SolidWorld", 500 * mm, 500 * mm, 500 * mm);
+    fLogicWorld = new G4LogicalVolume(solidWorld, vacuum, "LogicWorld");
+    fPhysWorld = new G4PVPlacement(
+        0, G4ThreeVector(), fLogicWorld, "PhysWorld", 0,
+        false, 0, checkOverlaps);
+
+    // Tube with Local Magnetic field
+    auto solidMagnet = new G4Tubs("solidMagnet", 0., 100 * mm, 100 * mm, 0., 360. * deg);
+    fLogicMagnet = new G4LogicalVolume(solidMagnet, fGasMat, "LogicMagnet");
+    fLogicMagnet->SetUserLimits(fUserLimits);    
+    // For now, magnetic field volume and gas volume completly coincide.
+    fLogicGas = fLogicMagnet; 
+    // placement of Tube
+    G4RotationMatrix *magnetRot = new G4RotationMatrix();
+    magnetRot->rotateY(90. * deg);
+    fPhysMagnet = new G4PVPlacement(
+        magnetRot, G4ThreeVector(), fLogicMagnet, "PhysMagnet", fLogicWorld,
+        false, 0, checkOverlaps);
+    
+    // visualization attributes ------------------------------------------------
+    auto visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+    visAttributes->SetVisibility(false);
+    fLogicWorld->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);
+
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9));   // LightGray
+    fLogicMagnet->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::ConstructSDandField()
+{
+    // sensitive detectors -----------------------------------------------------
+    auto sdManager = G4SDManager::GetSDMpointer();
+    G4String SDname;
+
+    auto gasChamberSD = new GasChamberSD(SDname = "/gasChamber");
+    sdManager->AddNewDetector(gasChamberSD);
+    fLogicGas->SetSensitiveDetector(gasChamberSD);
+    // magnetic field ----------------------------------------------------------
+    fMagneticField = new MagneticField();
+    fFieldManager = new G4FieldManager();
+    fFieldManager->SetDetectorField(fMagneticField);
+    fFieldManager->CreateChordFinder(fMagneticField);
+    G4bool forceToAllDaughters = true;
+    fLogicMagnet->SetFieldManager(fFieldManager, forceToAllDaughters);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure)
 {
     G4Material *gasMat1 = FindGasMat(gas1);
     G4Material *gasMat2 = FindGasMat(gas2);
     if(gasMat1 == nullptr || gasMat2 == nullptr)
-    {
         return;
-    }
     else if((frac1 + frac2 - 100)*(frac1 + frac2 - 100)/10000 > 1e-6)
     {
         std::ostringstream message;
@@ -227,7 +234,8 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
             "GeomGasMat0000", JustWarning, message);
         return;
     }
-    else {
+    else
+    {
         // update variables
         fGasName1 = gas1;
         fGasName2 = gas2;
@@ -256,13 +264,13 @@ void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4
     fGasMat = new G4Material("Gas", density, 2);
     fGasMat->AddMaterial(gasMat1, massFrac1);
     fGasMat->AddMaterial(gasMat2, massFrac2);
-    if(fLogicGas != nullptr)
+    // if SetGas is called after Construct (by UI command)
+    if(fLogicGas)
     {
         fLogicGas->SetMaterial(fGasMat);
-        // tell G4RunManager that we change the geometry
         G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-        G4cout << "Gas mixture changed to " << GetGasMixtureStat() << G4endl;
     }
+    G4cout << "Gas mixture : " << GetGasMixtureStat() << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

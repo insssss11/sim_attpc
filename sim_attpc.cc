@@ -1,7 +1,7 @@
 /// \file sim_attpc.cc
 /// \brief Main program of the sim_attpc
 
-#include "DetectorConstruction.hh"
+#include "detector_construction/DetectorConstruction.hh"
 #include "ActionInitialization.hh"
 #include "PhysicsList.hh"
 

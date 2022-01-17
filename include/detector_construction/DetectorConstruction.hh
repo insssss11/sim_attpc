@@ -5,9 +5,12 @@
 #define DetectorConstruction_h 1
 
 #include "globals.hh"
-#include "DetectorConstructionMessenger.hh"
+#include "detector_construction/DetectorConstructionMessenger.hh"
 #include "MagneticField.hh"
 
+#include "G4VSolid.hh"
+#include "G4PVPlacement.hh"
+#include "G4LogicalVolume.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VisAttributes.hh"
 #include "G4FieldManager.hh"
@@ -30,8 +33,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void ConstructMaterials();
-
     // messenger commands for gas control
     // Gas mixture density is estimated using the ideal gas law, so it may be unaccurate in a certain situation.    
     void SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure);
@@ -41,6 +42,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void SetMinKinE(G4double uekinMax);
 
     private:
+    void ConstructMaterials();
+    void ConstructGeometry();
+
     void RegisterGasMat(const G4String &key, const G4String &val);
     G4Material *FindGasMat(const G4String &key);
     G4String GetGasMixtureStat();
@@ -52,7 +56,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     static G4ThreadLocal MagneticField *fMagneticField;
     static G4ThreadLocal G4FieldManager *fFieldManager;
 
-    G4LogicalVolume *fLogicWorld, *fLogicMag, *fLogicGas, *fLogicChamber;
+    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicGas, *fLogicChamber;
+    G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysGas, *fPhysChamber;
 
     std::vector<G4VisAttributes*> fVisAttributes;
     // variables containing gas information

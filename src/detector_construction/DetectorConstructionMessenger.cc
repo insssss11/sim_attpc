@@ -1,7 +1,7 @@
 /// \file DetectorConstructionMessenger.cc
 /// \brief Definition of the DetectorConstructionMessenger class
 
-#include "DetectorConstructionMessenger.hh"
+#include "detector_construction/DetectorConstructionMessenger.hh"
 #include "G4IonTable.hh"
 #include "G4Tokenizer.hh"
 #include "G4SystemOfUnits.hh"

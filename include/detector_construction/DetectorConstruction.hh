@@ -11,16 +11,18 @@
 #include "G4VSolid.hh"
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolume.hh"
+
+#include "G4RotationMatrix.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VisAttributes.hh"
 #include "G4FieldManager.hh"
 #include "G4UserLimits.hh"
+#include "G4Material.hh"
 
 #include <vector>
 #include <string>
 #include <unordered_map>
 
-class G4Material;
 class DetectorConstructionMessenger;
 
 /// Detector construction
@@ -43,7 +45,15 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     private:
     void ConstructMaterials();
+    // overall geometry
     void ConstructGeometry();
+    // individuals
+    void BuildMagnet();
+    void BuildMagField();
+    void BuildGas();
+    void BuildChamber();
+    
+    void SetVisAttributes();
 
     void RegisterGasMat(const G4String &key, const G4String &val);
     G4Material *FindGasMat(const G4String &key);
@@ -55,9 +65,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     static G4ThreadLocal MagneticField *fMagneticField;
     static G4ThreadLocal G4FieldManager *fFieldManager;
-
-    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicGas, *fLogicChamber;
-    G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysGas, *fPhysChamber;
+    
+    // Option to switch on/off checking of volumes overlaps
+    G4RotationMatrix *fGeoRotation;
+    const G4bool fCheckOverlaps;
+    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicGas, *fLogicChamber;
+    G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysMagField, *fPhysGas, *fPhysChamber;
 
     std::vector<G4VisAttributes*> fVisAttributes;
     // variables containing gas information
@@ -72,7 +85,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     int fNbOfGasMat;
     // key : gas name, Value : pair of pointer to material and its density at 1 atm
     std::unordered_map<std::string, std::string> *fGasMatMap;
-
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

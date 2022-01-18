@@ -35,17 +35,15 @@
 #include "G4TransportationManager.hh"
 #include "G4Mag_UsualEqRhs.hh"
 
-#include "G4Material.hh"
 #include "G4Element.hh"
 #include "G4MaterialTable.hh"
 #include "G4NistManager.hh"
 
-#include "G4RotationMatrix.hh"
-
+#include "G4MultiUnion.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "G4ExtrudedSolid.hh"
 
 #include "G4FieldManager.hh"
 #include "G4SDManager.hh"
@@ -55,6 +53,7 @@
 
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4ThreadLocal MagneticField *DetectorConstruction::fMagneticField = 0;
@@ -65,6 +64,7 @@ G4ThreadLocal G4FieldManager *DetectorConstruction::fFieldManager = 0;
 DetectorConstruction::DetectorConstruction()
     : G4VUserDetectorConstruction(),
     fMessenger(nullptr), fUserLimits(nullptr),
+    fCheckOverlaps(true),
     fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
     fGasMat(nullptr), fGasName1("He"), fGasName2("iC4H10"), fFrac1(90.), fFrac2(10.), fPressure(0.1*atmosphere),
@@ -72,7 +72,7 @@ DetectorConstruction::DetectorConstruction()
     fGasMatMap(nullptr)
 {
     fGasMatMap = new std::unordered_map<std::string, std::string>;
-    
+
     fUserLimits = new G4UserLimits(1*mm);
 
     fMessenger = new DetectorConstructionMessenger(this);
@@ -84,6 +84,7 @@ DetectorConstruction::~DetectorConstruction()
 {
     delete fMessenger;
     delete fUserLimits;
+    delete fGeoRotation;
     // delete fLogicChamber;
     for(auto visAttributes : fVisAttributes)
         delete visAttributes;
@@ -98,7 +99,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     ConstructMaterials();
     SetGas(fGasName1, fFrac1, fGasName2, fFrac2, fPressure);
     ConstructGeometry();
-
     return fPhysWorld;
 }
 
@@ -107,7 +107,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 void DetectorConstruction::ConstructMaterials()
 {
     auto nist = G4NistManager::Instance();
-    
+
     nist->FindOrBuildMaterial("G4_AIR");
 
     // Vacuum "Hydrogen gas with very low density"
@@ -164,37 +164,150 @@ void DetectorConstruction::ConstructMaterials()
 void DetectorConstruction::ConstructGeometry()
 {
     auto vacuum = G4Material::GetMaterial("Vacuum");
-    // Option to switch on/off checking of volumes overlaps
-    G4bool checkOverlaps = true;
 
     // geometries --------------------------------------------------------------
-    auto solidWorld = new G4Box("SolidWorld", 500 * mm, 500 * mm, 500 * mm);
+    auto solidWorld = new G4Box("SolidWorld", 1000 * mm, 1000 * mm, 1000 * mm);
     fLogicWorld = new G4LogicalVolume(solidWorld, vacuum, "LogicWorld");
     fPhysWorld = new G4PVPlacement(
         0, G4ThreeVector(), fLogicWorld, "PhysWorld", 0,
-        false, 0, checkOverlaps);
+        false, 0, fCheckOverlaps);
 
-    // Tube with Local Magnetic field
-    auto solidMagnet = new G4Tubs("solidMagnet", 0., 100 * mm, 100 * mm, 0., 360. * deg);
-    fLogicMagnet = new G4LogicalVolume(solidMagnet, fGasMat, "LogicMagnet");
-    fLogicMagnet->SetUserLimits(fUserLimits);    
-    // For now, magnetic field volume and gas volume completly coincide.
-    fLogicGas = fLogicMagnet; 
-    // placement of Tube
-    G4RotationMatrix *magnetRot = new G4RotationMatrix();
-    magnetRot->rotateY(90. * deg);
-    fPhysMagnet = new G4PVPlacement(
-        magnetRot, G4ThreeVector(), fLogicMagnet, "PhysMagnet", fLogicWorld,
-        false, 0, checkOverlaps);
+    fGeoRotation = new G4RotationMatrix();
+    fGeoRotation->rotateY(90. * deg);
+    BuildMagnet();
+    BuildMagField();
+    BuildGas();
+    BuildChamber();
+
+    SetVisAttributes();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::BuildMagnet()
+{
+    const G4double dRim = 45*mm;
+    const G4double dRimChamfer = 100*mm, dBodyChamfer = 80*mm, dMidChamferPosY = dBodyChamfer, dMidChamferNegY = 200*mm;
     
-    // visualization attributes ------------------------------------------------
+    const G4double xBody = 750*mm/2, yPosBody = 625*mm, yNegBody = -370*mm;
+    const G4double xMid = xBody, yPosMid = yPosBody, yNegMid = 160*mm;
+    
+    const G4double zRim = 35*mm/2, zMid = 150*mm/2, zBody = (560*mm - 4*zMid - 4*zRim)/2;
+    
+    const G4double rVoidTube = 150*mm;
+
+    // defining vertice on the top surface of volume in clockwise.
+    std::vector<G4TwoVector> verticeMid;
+    verticeMid.emplace_back(xMid - dMidChamferPosY, yPosMid);
+    verticeMid.emplace_back(xMid, yPosMid - dMidChamferPosY);
+    verticeMid.emplace_back(xMid, yNegMid + dMidChamferNegY);
+    verticeMid.emplace_back(xMid - dMidChamferNegY, yNegMid);
+    verticeMid.emplace_back(-xMid + dMidChamferNegY, yNegMid);
+    verticeMid.emplace_back(-xMid, yNegMid + dMidChamferNegY);
+    verticeMid.emplace_back(-xMid, yPosMid - dMidChamferPosY);
+    verticeMid.emplace_back(-xMid + dMidChamferPosY, yPosMid);
+    auto solidMid = new G4ExtrudedSolid("SolidMagnetMid", verticeMid, zMid + 2*zBody + 2*zRim, G4TwoVector(), 1., G4TwoVector(), 1.);
+
+    std::vector<G4TwoVector> verticeBody;
+    verticeBody.emplace_back(xBody - dBodyChamfer, yPosBody);
+    verticeBody.emplace_back(xBody, yPosBody - dBodyChamfer);
+    verticeBody.emplace_back(xBody, yNegBody + dBodyChamfer);
+    verticeBody.emplace_back(xBody - dBodyChamfer, yNegBody);
+    verticeBody.emplace_back(-xBody + dBodyChamfer, yNegBody);
+    verticeBody.emplace_back(-xBody, yNegBody + dBodyChamfer);
+    verticeBody.emplace_back(-xBody, yPosBody - dBodyChamfer);
+    verticeBody.emplace_back(-xBody + dBodyChamfer, yPosBody);
+    auto solidBody = new G4ExtrudedSolid("SolidMagnetBody", verticeBody, zBody, G4TwoVector(), 1., G4TwoVector(), 1.);
+
+    std::vector<G4TwoVector> verticeRim;
+    verticeRim.emplace_back(xBody + dRim - dRimChamfer, yPosBody+ dRim);
+    verticeRim.emplace_back(xBody + dRim, yPosBody + dRim - dRimChamfer);
+    verticeRim.emplace_back(xBody + dRim, yNegBody - dRim + dRimChamfer);
+    verticeRim.emplace_back(xBody + dRim - dRimChamfer, yNegBody - dRim);
+    verticeRim.emplace_back(-xBody - dRim + dRimChamfer, yNegBody - dRim);
+    verticeRim.emplace_back(-xBody - dRim, yNegBody - dRim + dRimChamfer);
+    verticeRim.emplace_back(-xBody - dRim, yPosBody + dRim - dRimChamfer);
+    verticeRim.emplace_back(-xBody - dRim + dRimChamfer, yPosBody + dRim);
+    auto solidRim = new G4ExtrudedSolid("SolidMagnetRim", verticeRim, zRim, G4TwoVector(), 1., G4TwoVector(), 1.);
+
+    G4Transform3D transMid;
+    G4MultiUnion *solidMagnetWithOutHole = new G4MultiUnion("SolidMagnetWithOutHole");
+    solidMagnetWithOutHole->AddNode(*solidMid, transMid);
+
+    G4RotationMatrix emptyRotation;
+    G4Transform3D transBodyUp(emptyRotation, G4ThreeVector(0., 0., zMid + zBody));
+    G4Transform3D transBodyDown(emptyRotation, G4ThreeVector(0., 0., -zMid - zBody));
+    solidMagnetWithOutHole->AddNode(*solidBody, transBodyUp);
+    solidMagnetWithOutHole->AddNode(*solidBody, transBodyDown);
+    
+    G4Transform3D transRimUp(emptyRotation, G4ThreeVector(0., 0., zMid + 2*zBody + zRim));
+    G4Transform3D transRimDown(emptyRotation, G4ThreeVector(0., 0., -zMid - 2*zBody - zRim));
+    solidMagnetWithOutHole->AddNode(*solidRim, transRimUp);
+    solidMagnetWithOutHole->AddNode(*solidRim, transRimDown);
+    
+    solidMagnetWithOutHole->Voxelize();
+
+    auto solidVolidTube = new G4Tubs("SolidMagnetVolidTube", 0., rVoidTube, 1.1*(zMid + 2*zBody + 2*zRim), 0., twopi);    
+    auto solidMagnet = new G4SubtractionSolid("solidMagnet", solidMagnetWithOutHole, solidVolidTube);
+
+    fLogicMagnet = new G4LogicalVolume(solidMagnet, fGasMat, "LogicMagnet");
+    fPhysMagnet = new G4PVPlacement(fGeoRotation, G4ThreeVector(), fLogicMagnet, "PhysMagnet", fLogicWorld, false, 0, fCheckOverlaps);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::BuildMagField()
+{
+    const G4double rMagField = 150*mm, pDzMagField = 200*mm/2;
+    auto solidMagField = new G4Tubs("solidMagField", 0., rMagField, pDzMagField, 0., 360. * deg);
+    fLogicMagField = new G4LogicalVolume(solidMagField, fGasMat, "LogicMagField");
+    fLogicMagField->SetUserLimits(fUserLimits);
+    fPhysMagField = new G4PVPlacement(
+        fGeoRotation, G4ThreeVector(), fLogicMagField, "PhysMagField", fLogicWorld,
+        false, 0, fCheckOverlaps);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::BuildGas()
+{
+    // For now, magnetic field volume and gas volume completly coincide.
+    fLogicGas = fLogicMagField;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::BuildChamber()
+{
+    const G4double xChamber = 100*mm/2, yChamber = 100*mm/2, zChamber = 100*mm/2; 
+    auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
+    fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
+    fPhysChamber = new G4PVPlacement(
+        fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysMagField", fLogicMagField,
+        false, 0, fCheckOverlaps);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetVisAttributes()
+{
     auto visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
     visAttributes->SetVisibility(false);
     fLogicWorld->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
-    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9));   // LightGray
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9, 1)); // light grey
     fLogicMagnet->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);
+
+    visAttributes = new G4VisAttributes(G4Colour(1, 1, 1));
+    visAttributes->SetVisibility(false);
+    visAttributes->SetDaughtersInvisible(false);
+    fLogicMagField->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);
+
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.1, 0.1, 0.6));
+    fLogicChamber->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 }
 
@@ -202,20 +315,18 @@ void DetectorConstruction::ConstructGeometry()
 
 void DetectorConstruction::ConstructSDandField()
 {
-    // sensitive detectors -----------------------------------------------------
     auto sdManager = G4SDManager::GetSDMpointer();
     G4String SDname;
-
     auto gasChamberSD = new GasChamberSD(SDname = "/gasChamber");
     sdManager->AddNewDetector(gasChamberSD);
     fLogicGas->SetSensitiveDetector(gasChamberSD);
-    // magnetic field ----------------------------------------------------------
+
     fMagneticField = new MagneticField();
     fFieldManager = new G4FieldManager();
     fFieldManager->SetDetectorField(fMagneticField);
     fFieldManager->CreateChordFinder(fMagneticField);
     G4bool forceToAllDaughters = true;
-    fLogicMagnet->SetFieldManager(fFieldManager, forceToAllDaughters);
+    fLogicMagField->SetFieldManager(fFieldManager, forceToAllDaughters);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

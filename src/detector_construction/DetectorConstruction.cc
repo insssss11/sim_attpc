@@ -178,6 +178,7 @@ void DetectorConstruction::ConstructGeometry()
     BuildMagField();
     BuildGas();
     BuildChamber();
+    BuildBeamPipe();
 
     SetVisAttributes();
 }
@@ -279,12 +280,30 @@ void DetectorConstruction::BuildGas()
 
 void DetectorConstruction::BuildChamber()
 {
-    const G4double xChamber = 100*mm/2, yChamber = 100*mm/2, zChamber = 100*mm/2; 
+    const G4double xChamber = 150*mm/2, yChamber = 150*mm/2, zChamber = 150*mm/2; 
     auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fPhysChamber = new G4PVPlacement(
         fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysMagField", fLogicMagField,
         false, 0, fCheckOverlaps);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::BuildBeamPipe()
+{
+    const G4double rPipe = 25*mm;
+    const G4double zPipe = 150*mm/2;
+    const G4double xPos = 0.*mm, yPos = -70*mm, zPos = -150*mm - zPipe;
+
+    auto Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("Vacuum");
+
+    auto solidPipe = new G4Tubs("SolidPipe", 0.*mm, rPipe, zPipe, 0, twopi);
+    fLogicPipe = new G4LogicalVolume(solidPipe, Vacuum, "LogicPipe");
+    fPhysPipe = new G4PVPlacement(
+        nullptr, G4ThreeVector(xPos, yPos, zPos), fLogicPipe, "PhysPipe",
+        fLogicWorld, false, 0, fCheckOverlaps
+    );
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -296,19 +315,21 @@ void DetectorConstruction::SetVisAttributes()
     fLogicWorld->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
-    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9, 1)); // light grey
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9, 0.5)); // light grey
     fLogicMagnet->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
-    visAttributes = new G4VisAttributes(G4Colour(1, 1, 1));
-    visAttributes->SetVisibility(false);
-    visAttributes->SetDaughtersInvisible(false);
+    visAttributes = new G4VisAttributes(G4Colour(1, 0.5, 1, 0.2));
     fLogicMagField->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
-    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.1, 0.1, 0.6));
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.5, 0.3, 0.2));
     fLogicChamber->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
+
+    visAttributes = new G4VisAttributes(G4Colour(0.9, 0.1, 0.1, 0.2));
+    fLogicPipe->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

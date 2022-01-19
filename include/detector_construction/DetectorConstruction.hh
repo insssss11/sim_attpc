@@ -52,6 +52,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void BuildMagField();
     void BuildGas();
     void BuildChamber();
+    void BuildBeamPipe();
     
     void SetVisAttributes();
 
@@ -69,8 +70,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // Option to switch on/off checking of volumes overlaps
     G4RotationMatrix *fGeoRotation;
     const G4bool fCheckOverlaps;
-    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicGas, *fLogicChamber;
-    G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysMagField, *fPhysGas, *fPhysChamber;
+    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicGas, *fLogicChamber, *fLogicPipe;
+    G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysMagField, *fPhysGas, *fPhysChamber, *fPhysPipe;
 
     std::vector<G4VisAttributes*> fVisAttributes;
     // variables containing gas information

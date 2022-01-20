@@ -130,14 +130,6 @@ void GasChamberHit::Print()
     G4cout << "--------------------------------------------------------------------------------------------------------------------------------" << G4endl;
 }
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberHit::AddEdepSum(G4double de)
-{
-    fEdepSum += de;
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void GasChamberHit::AppendEdep(G4double de)
@@ -150,6 +142,13 @@ void GasChamberHit::AppendEdep(G4double de)
 void GasChamberHit::AppendTime(G4double t)
 {
     fTime.push_back(t);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AppendCharge(G4double q)
+{
+    fCharge.push_back(q);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -172,6 +171,21 @@ void GasChamberHit::AppendMomentum(const G4ThreeVector &mom)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void GasChamberHit::AppendStepLen(G4double stepLen)
+{
+    fStepLen.push_back(stepLen);
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberHit::AddEdepSum(G4double de)
+{
+    fEdepSum += de;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void GasChamberHit::AddTrackLength(G4double leng)
 {
     fTrackLen += leng;
@@ -179,16 +193,16 @@ void GasChamberHit::AddTrackLength(G4double leng)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetTrackId(G4double id)
+void GasChamberHit::SetTrackId(G4double trkId)
 {
-    fTrackId = id;
+    fTrackId = trkId;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetEventId(G4double id)
+void GasChamberHit::SetEventId(G4double evtId)
 {
-    fEventId = id;
+    fEventId = evtId;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -196,13 +210,6 @@ void GasChamberHit::SetEventId(G4double id)
 void GasChamberHit::SetAtomicNumber(G4double z)
 {
     fZ = z;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberHit::AppendCharge(G4double q)
-{
-    fCharge.push_back(q);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

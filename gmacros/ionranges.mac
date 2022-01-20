@@ -18,8 +18,4 @@
 /attpc/output/activate true
 /attpc/output/setFileName ionranges.root
 
-<<<<<<< HEAD
-/run/beamOn 1
-=======
 /run/beamOn 10000
->>>>>>> feature/rgmacros

@@ -28,7 +28,7 @@
 /// \brief Implementation of the DetectorConstruction class
 
 #include "detector_construction/DetectorConstruction.hh"
-#include "GasChamberSD.hh"
+#include "gas_chamber/GasChamberSD.hh"
 
 #include "G4Exception.hh"
 

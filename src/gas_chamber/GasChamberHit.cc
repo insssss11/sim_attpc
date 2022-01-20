@@ -1,7 +1,7 @@
 /// \file GasChamberHit.cc
 /// \brief Implementation of the GasChamberHit class
 
-#include "GasChamberHit.hh"
+#include "gas_chamber/GasChamberHit.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
@@ -219,7 +219,11 @@ void GasChamberHit::SetPartName(const G4String &name)
     fPartName = name;
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void GasChamberHit::SetNbOfStepPoints(G4int nStep)
 {
     fNbOfStepPoints = nStep;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

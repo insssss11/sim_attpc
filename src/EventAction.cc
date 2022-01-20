@@ -2,7 +2,7 @@
 /// \brief Implementation of the EventAction class
 
 #include "EventAction.hh"
-#include "GasChamberHit.hh"
+#include "gas_chamber/GasChamberHit.hh"
 #include "AnalysisManager.hh"
 
 #include "G4UnitsTable.hh"

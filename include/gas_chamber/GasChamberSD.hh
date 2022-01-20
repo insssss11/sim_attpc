@@ -6,7 +6,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "GasChamberHit.hh"
+#include "gas_chamber/GasChamberHit.hh"
 #include "G4GenericMessenger.hh"
 class G4Step;
 class G4HCofThisEvent;

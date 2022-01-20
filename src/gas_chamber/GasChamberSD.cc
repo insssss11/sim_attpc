@@ -1,8 +1,8 @@
 /// \file GasChamberSD.cc
 /// \brief Implementation of the GasChamberSD class
 
-#include "GasChamberSD.hh"
-#include "GasChamberHit.hh"
+#include "gas_chamber/GasChamberSD.hh"
+#include "gas_chamber/GasChamberHit.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"

@@ -47,13 +47,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/*.cc
+  ${PROJECT_SOURCE_DIR}/src/gas_chamber/*.cc
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
   ${PROJECT_SOURCE_DIR}/src/analysis/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
   ${PROJECT_SOURCE_DIR}/include/custom_processes/*.hh
-  ${PROJECT_SOURCE_DIR}/src/detector_construction/*.hh
+  ${PROJECT_SOURCE_DIR}/include/gas_chamber/*.hh
+  ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
   ${PROJECT_SOURCE_DIR}/include/analysis/*.hh
   )
 

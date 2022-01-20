@@ -44,7 +44,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event)
 void PrimaryGeneratorAction::DefindCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/gun/", "custom gun control");
-    auto fPosXcmd = fMessenger->DeclarePropertyWithUnit("setPosX", "mm", fPosX, "Set x position");
-    auto fPosYcmd = fMessenger->DeclarePropertyWithUnit("setPosY", "mm", fPosY, "Set y position");
-    auto fPosZcmd = fMessenger->DeclarePropertyWithUnit("setPosZ", "mm", fPosZ, "Set z position");
+    fMessenger->DeclarePropertyWithUnit("setPosX", "mm", fPosX, "Set x position");
+    fMessenger->DeclarePropertyWithUnit("setPosY", "mm", fPosY, "Set y position");
+    fMessenger->DeclarePropertyWithUnit("setPosZ", "mm", fPosZ, "Set z position");
 }

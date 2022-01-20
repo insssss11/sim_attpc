@@ -80,8 +80,9 @@ void RunAction::CreateTuplesGasChamber()
     fAnalysisManager->CreateNtupleDColumn("py", *fEventAction->GetVectorPtrD("tree_gc2", "py"));
     fAnalysisManager->CreateNtupleDColumn("pz", *fEventAction->GetVectorPtrD("tree_gc2", "pz"));
     fAnalysisManager->CreateNtupleDColumn("eDep", *fEventAction->GetVectorPtrD("tree_gc2", "eDep"));
-    fAnalysisManager->CreateNtupleDColumn("t", *fEventAction->GetVectorPtrD("tree_gc2", "t"));
-    fAnalysisManager->CreateNtupleDColumn("q", *fEventAction->GetVectorPtrD("tree_gc2", "q"));
+    // fAnalysisManager->CreateNtupleDColumn("t", *fEventAction->GetVectorPtrD("tree_gc2", "t"));
+    // fAnalysisManager->CreateNtupleDColumn("q", *fEventAction->GetVectorPtrD("tree_gc2", "q"));
+    fAnalysisManager->CreateNtupleDColumn("stepLen", *fEventAction->GetVectorPtrD("tree_gc2", "stepLen"));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

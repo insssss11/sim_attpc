@@ -170,9 +170,9 @@ void EventAction::FillNtupleGasChamber()
         *GetVectorPtrD("tree_gc2", "px") = hit->GetMomX();
         *GetVectorPtrD("tree_gc2", "py") = hit->GetMomY();
         *GetVectorPtrD("tree_gc2", "pz") = hit->GetMomZ();
-        *GetVectorPtrD("tree_gc2", "eDep") = hit->GetTime();
-        *GetVectorPtrD("tree_gc2", "t") = hit->GetPosY();
-        *GetVectorPtrD("tree_gc2", "q") = hit->GetPosZ();
+        *GetVectorPtrD("tree_gc2", "eDep") = hit->GetEdep();
+        *GetVectorPtrD("tree_gc2", "t") = hit->GetTime();
+        *GetVectorPtrD("tree_gc2", "q") = hit->GetCharge();
         analysisManager->AddNtupleRow(1);
         fVectorContainerD->ClearAll("tree_gc2");
     }

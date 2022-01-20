@@ -74,6 +74,7 @@ set(SCRIPTS
   init.mac
   vis.mac
   ${gps_macros}
+  gmacros/ionranges.mac
   )
 
   foreach(_script ${SCRIPTS})

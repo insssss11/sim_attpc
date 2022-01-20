@@ -1,0 +1,21 @@
+# demonstration of ionranges (dE/dx, projected ranges etc...)
+
+# primary partice setting
+/gun/particle ion
+/gun/ion 6 12 4
+/gun/energy 10 MeV
+/gun/position 0. 0. -100. mm
+
+# inactivate all process except ionization
+/process/inactivate CoulombScat
+/process/inactivate msc
+/process/inactivate nuclearStopping
+/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+
+/attpc/field/value 0.
+
+/attpc/gas/setGas He 90 iC4H10 10 0.1
+/attpc/output/activate true
+/attpc/output/setFileName ionranges.root
+
+/run/beamOn 1

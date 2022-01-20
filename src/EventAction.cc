@@ -135,7 +135,7 @@ void EventAction::InitNtuplesVectorGasChamber()
 {
     fVectorContainerD->AddTuple("tree_gc2");
     fVectorContainerD->AddVectors("tree_gc2",
-        {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q"});
+        {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen"});
     fVectorContainerD->ReserveAll("tree_gc2", 5000);
 }
 
@@ -171,8 +171,9 @@ void EventAction::FillNtupleGasChamber()
         *GetVectorPtrD("tree_gc2", "py") = hit->GetMomY();
         *GetVectorPtrD("tree_gc2", "pz") = hit->GetMomZ();
         *GetVectorPtrD("tree_gc2", "eDep") = hit->GetEdep();
-        *GetVectorPtrD("tree_gc2", "t") = hit->GetTime();
-        *GetVectorPtrD("tree_gc2", "q") = hit->GetCharge();
+        // *GetVectorPtrD("tree_gc2", "t") = hit->GetTime();
+        // *GetVectorPtrD("tree_gc2", "q") = hit->GetCharge();
+        *GetVectorPtrD("tree_gc2", "stepLen") = hit->GetStepLen();
         analysisManager->AddNtupleRow(1);
         fVectorContainerD->ClearAll("tree_gc2");
     }

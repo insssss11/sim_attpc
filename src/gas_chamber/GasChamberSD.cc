@@ -81,6 +81,7 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
     hit->AppendEdep(step->GetTotalEnergyDeposit());
     hit->AppendCharge(pDynamic->GetCharge());
     hit->AppendTime(track->GetGlobalTime());
+    hit->AppendStepLen(step->GetStepLength());
     hit->AddEdepSum(step->GetTotalEnergyDeposit());
     hit->AddTrackLength(step->GetStepLength());
 

@@ -283,6 +283,7 @@ void DetectorConstruction::BuildChamber()
     const G4double xChamber = 150*mm/2, yChamber = 150*mm/2, zChamber = 150*mm/2; 
     auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
+    fLogicChamber->SetUserLimits(fUserLimits);
     fPhysChamber = new G4PVPlacement(
         fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysMagField", fLogicMagField,
         false, 0, fCheckOverlaps);
@@ -340,7 +341,7 @@ void DetectorConstruction::ConstructSDandField()
     G4String SDname;
     auto gasChamberSD = new GasChamberSD(SDname = "/gasChamber");
     sdManager->AddNewDetector(gasChamberSD);
-    fLogicGas->SetSensitiveDetector(gasChamberSD);
+    fLogicChamber->SetSensitiveDetector(gasChamberSD);
 
     fMagneticField = new MagneticField();
     fFieldManager = new G4FieldManager();

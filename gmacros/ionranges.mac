@@ -3,8 +3,11 @@
 # primary partice setting
 /gun/particle ion
 /gun/ion 6 12 4
-/gun/energy 10 MeV
-/gun/position 0. 0. -100. mm
+/gun/energy 4 MeV
+
+/attpc/gun/setPosX 0. mm
+/attpc/gun/setPosY 0. mm
+/attpc/gun/setPosZ -70. mm
 
 # inactivate all process except ionization
 /process/inactivate CoulombScat
@@ -14,8 +17,10 @@
 
 /attpc/field/value 0.
 
-/attpc/gas/setGas He 90 iC4H10 10 0.1
+/attpc/gas/setGas He 90 iC4H10 10 1
+/attpc/gas/setStepLimit 0.5 mm
+
 /attpc/output/activate true
 /attpc/output/setFileName ionranges.root
 
-/run/beamOn 10000
+/run/beamOn 1

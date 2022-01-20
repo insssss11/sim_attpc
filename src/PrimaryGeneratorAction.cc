@@ -8,7 +8,7 @@
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fMessenger(nullptr),
-    fGunInitialized(false), fPosX(0.*mm), fPosY(0.*mm), fPosZ(-300*mm)
+    fGunInitialized(false), fPosX(0.*mm), fPosY(-70.*mm), fPosZ(-300*mm)
 {
     fParticleGun = new G4ParticleGun();
     DefindCommands();

@@ -23,7 +23,6 @@ private:
 private:
     G4ParticleGun* fParticleGun;
     G4GenericMessenger *fMessenger;
-    G4bool fGunInitialized;
     G4double fPosX, fPosY, fPosZ;
 };
 

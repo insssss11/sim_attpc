@@ -74,7 +74,8 @@ set(SCRIPTS
   init.mac
   vis.mac
   ${gps_macros}
-  gmacros/ionranges.mac
+  gmacros/braggs_curve.mac
+  rmacros/DrawBraggsCurve.cc
   )
 
   foreach(_script ${SCRIPTS})

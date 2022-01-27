@@ -29,6 +29,7 @@
 
 #include "detector_construction/DetectorConstruction.hh"
 #include "gas_chamber/GasChamberSD.hh"
+#include "config/ParamContainerTable.hh"
 
 #include "G4Exception.hh"
 
@@ -280,10 +281,22 @@ void DetectorConstruction::BuildGas()
 
 void DetectorConstruction::BuildChamber()
 {
-    const G4double xChamber = 150*mm/2, yChamber = 150*mm/2, zChamber = 150*mm/2; 
+    const auto params = ParamContainerTable::GetContainer("gas_chamber");
+    const G4double
+        xChamber = params->GetParamD("lengX")/2,
+        yChamber = params->GetParamD("lengY")/2,
+        zChamber = params->GetParamD("lengY")/2;
+    
+    G4ThreeVector position(
+        params->GetParamD("posX"),
+        params->GetParamD("posY"),
+        params->GetParamD("posZ"));
+
     auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
+    
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);
+    
     fPhysChamber = new G4PVPlacement(
         fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysMagField", fLogicMagField,
         false, 0, fCheckOverlaps);

@@ -4,6 +4,7 @@
 #include "detector_construction/DetectorConstruction.hh"
 #include "ActionInitialization.hh"
 #include "PhysicsList.hh"
+#include "config/ParamContainerTable.hh"
 
 #include "G4RunManagerFactory.hh"
 
@@ -15,6 +16,8 @@
 #include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void LoadParameter();
 
 int main(int argc, char **argv)
 {
@@ -35,6 +38,10 @@ int main(int argc, char **argv)
             return -1;
         }
     }
+
+    // Load parameter files
+    LoadParameter();
+
     // Construct the default run manager (sequential or multi-thread mode)
     // running with a single thread has no meaning
     G4RunManagerType runType;
@@ -87,3 +94,9 @@ int main(int argc, char **argv)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void LoadParameter()
+{
+    ParamContainerTable::GetBuilder()->AddParamContainer("txt", "gas_chamber", "parameters/gas_chamber.txt")->Build();
+    ParamContainerTable::DumpTable();
+}

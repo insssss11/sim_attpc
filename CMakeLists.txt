@@ -50,6 +50,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/gas_chamber/*.cc
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
   ${PROJECT_SOURCE_DIR}/src/analysis/*.cc
+  ${PROJECT_SOURCE_DIR}/src/config/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
@@ -57,6 +58,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/gas_chamber/*.hh
   ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
   ${PROJECT_SOURCE_DIR}/include/analysis/*.hh
+  ${PROJECT_SOURCE_DIR}/include/config/*.hh
   )
 
 #----------------------------------------------------------------------------
@@ -76,6 +78,7 @@ set(SCRIPTS
   ${gps_macros}
   gmacros/braggs_curve.mac
   rmacros/DrawBraggsCurve.cc
+  parameters/gas_chamber.txt
   )
 
   foreach(_script ${SCRIPTS})

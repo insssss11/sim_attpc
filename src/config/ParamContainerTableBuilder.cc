@@ -31,7 +31,8 @@ ParamContainerTableBuilder *ParamContainerTableBuilder::AddParamContainer(
 
 ParamContainerTable *ParamContainerTableBuilder::Build()
 {
-    auto table = new ParamContainerTable();
+    auto table = ParamContainerTable::Instance();
+    table->ClearContainers();
     for(auto p : namesAndReaders)
     {
         auto container = new ParamContainer(p.first);

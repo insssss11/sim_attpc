@@ -5,25 +5,46 @@
 
 #include "G4Exception.hh"
 
-ParamContainerTable *ParamContainerTable::fInstance = nullptr;
-std::unordered_map<std::string, ParamContainer*> *ParamContainerTable::fContainerMap;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ParamContainerTable *ParamContainerTable::Instance()
+{
+    static ParamContainerTable *table = new ParamContainerTable();
+    return table;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+const ParamContainer *ParamContainerTable::GetContainer(const G4String &name)
+{
+    auto containerMap = Instance()->fContainerMap;
+    if(containerMap->find(name) == containerMap->end())
+    {
+        std::ostringstream message;
+        message << "Container name with " << name << " does not exist!";
+        G4Exception("ParamContainerTable::GetContainer(const G4String &name)", "ParamTable0001",
+            FatalException, message);   
+        return nullptr;
+    }
+    else
+        return containerMap->at(name);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ParamContainerTable::ParamContainerTable()
 {
-    if(fInstance != nullptr)
-        delete fInstance;
     fContainerMap = new std::unordered_map<std::string, ParamContainer*>{};
-    fInstance = this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ParamContainerTable::~ParamContainerTable()
 {
-    for(auto p : *fContainerMap)
+    auto containerMap = Instance()->fContainerMap;
+    for(auto p : *containerMap)
         delete p.second;
-    delete fContainerMap;
-    fInstance = nullptr;
+    delete containerMap;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,13 +58,24 @@ std::unique_ptr<ParamContainerTableBuilder> ParamContainerTable::GetBuilder()
 
 void ParamContainerTable::DumpTable()
 {
-    if(!fContainerMap->empty())
+    auto containerMap = Instance()->fContainerMap;
+    if(!containerMap->empty())
     {
         G4cout << "-------------------------------------------------------------" << G4endl;
-        G4cout << "# of Parameter Containers : " << fContainerMap->size() << G4endl;
-        for(auto container : *fContainerMap)
+        G4cout << "# of Parameter Containers : " << containerMap->size() << G4endl;
+        for(auto container : *containerMap)
             container.second->ListParams();
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ParamContainerTable::ClearContainers()
+{
+    auto containerMap = Instance()->fContainerMap;
+    for(auto p : *containerMap)
+        delete p.second;
+    containerMap->clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,7 +87,7 @@ void ParamContainerTable::AddContainer(std::string name, ParamContainer *contain
         std::ostringstream message;
         message << "Container name with " << name << " is duplicated";
         G4Exception("ParamContainerTable::AddContainer(std::string, ParamContainer *)", "ParamTable0000",
-            JustWarning, message);        
+            JustWarning, message);   
     }
     else
         fContainerMap->insert(std::make_pair(name, container));

@@ -23,7 +23,7 @@ class ParamContainerTableBuilder
         const G4String &containerReaderType, const G4String &containerName,
         const G4String &fileName);
     
-    // Delete a table if exists and build new one.
+    // Clear a table if exists and build new one.
     ParamContainerTable *Build();
 
     private:

@@ -51,6 +51,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
   ${PROJECT_SOURCE_DIR}/src/analysis/*.cc
   ${PROJECT_SOURCE_DIR}/src/config/*.cc
+  ${PROJECT_SOURCE_DIR}/src/readout/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
@@ -59,6 +60,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
   ${PROJECT_SOURCE_DIR}/include/analysis/*.hh
   ${PROJECT_SOURCE_DIR}/include/config/*.hh
+  ${PROJECT_SOURCE_DIR}/include/readout/*.hh
   )
 
 #----------------------------------------------------------------------------

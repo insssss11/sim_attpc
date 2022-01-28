@@ -1,0 +1,33 @@
+# This macro must be executed in vis UI session.
+
+# primary partice setting
+/gun/particle ion
+/gun/ion 6 12 4
+/gun/energy 10 MeV
+
+/attpc/gun/setPosX 0 mm
+/attpc/gun/setPosY -50. mm
+/attpc/gun/setPosZ -300. mm
+
+/attpc/field/value 2.
+
+/attpc/gas/setGas He 90 iC4H10 10 0.1
+/vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 0.5
+
+/vis/filtering/trajectories/create/particleFilter
+/vis/filtering/trajectories/particleFilter-0/add gamma
+/vis/filtering/trajectories/particleFilter-0/invert true
+/vis/scene/endOfRunAction accumulate
+
+/attpc/process/CarbonAlpha/forceByTrackLen 250 mm
+/run/beamOn 100
+/attpc/process/CarbonAlpha/forceByTrackLen 280 mm
+/run/beamOn 100
+/attpc/process/CarbonAlpha/forceByTrackLen 310 mm
+/run/beamOn 100
+/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/run/beamOn 20
+/vis/scene/endOfRunAction refresh
+
+# copy and paste line below to execute this macro.
+# /control/execute gmacros/trajectories_overlap.mac

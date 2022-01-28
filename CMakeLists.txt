@@ -77,6 +77,7 @@ set(SCRIPTS
   vis.mac
   ${gps_macros}
   gmacros/braggs_curve.mac
+  gmacros/trajectories_overlap.mac
   rmacros/DrawBraggsCurve.cc
   parameters/gas_chamber.txt
   )

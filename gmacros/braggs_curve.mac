@@ -18,7 +18,7 @@
 /attpc/field/value 0.
 
 /attpc/gas/setGas He 90 iC4H10 10 1
-/attpc/gas/setStepLimit 0.5 mm
+/attpc/gas/setStepLimit 1.5 mm
 
 /attpc/output/activate true
 /attpc/output/setFileName ionranges.root

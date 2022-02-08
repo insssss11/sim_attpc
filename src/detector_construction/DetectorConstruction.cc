@@ -283,9 +283,9 @@ void DetectorConstruction::BuildChamber()
 {
     const auto params = ParamContainerTable::GetContainer("gas_chamber");
     const G4double
-        xChamber = params->GetParamD("lengX")/2,
-        yChamber = params->GetParamD("lengY")/2,
-        zChamber = params->GetParamD("lengY")/2;
+        xChamber = params->GetParamD("chamberX")/2,
+        yChamber = params->GetParamD("chamberY")/2,
+        zChamber = params->GetParamD("chamberZ")/2;
     
     G4ThreeVector position(
         params->GetParamD("posX"),

@@ -2,6 +2,6 @@
 posX        double      0
 posY        double      0
 posZ        double      0
-lengX       double      150
-lengY       double      150
-lengZ       double      150
+chamberX       double      150
+chamberY       double      150
+chamberZ       double      80

@@ -72,6 +72,7 @@ void GasChamberDigi::Clear()
 
 void GasChamberDigi::Draw()
 {
+    
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

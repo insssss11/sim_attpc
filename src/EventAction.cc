@@ -2,7 +2,9 @@
 /// \brief Implementation of the EventAction class
 
 #include "EventAction.hh"
+#include "config/ParamContainerTable.hh"
 #include "gas_chamber/GasChamberHit.hh"
+#include "gas_chamber/GasChamberDigitizer.hh"
 #include "AnalysisManager.hh"
 
 #include "G4UnitsTable.hh"
@@ -11,6 +13,7 @@
 #include "G4HCofThisEvent.hh"
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
+#include "G4DigiManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
 
@@ -50,6 +53,18 @@ EventAction::EventAction()
 
     // initialize vector container for each tuple
     InitNtuplesVectorGasChamber();
+
+    auto container = ParamContainerTable::GetContainer("gas_chamber");
+    auto dmManager = G4DigiManager::GetDMpointer();
+    // Digitizer
+    GasChamberDigitizer *gasChamberDigitizer = new GasChamberDigitizer(
+        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),
+        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
+        43.3*eV,
+        G4ThreeVector(container->GetParamD("posX"), container->GetParamD("posY"), container->GetParamD("posZ")));
+    gasChamberDigitizer->SetPadMargin(container->GetParamD("margin"));
+    gasChamberDigitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
+    dmManager->AddNewModule(gasChamberDigitizer);
 
     // set printing per each event
     G4RunManager::GetRunManager()->SetPrintProgress(1);
@@ -137,13 +152,16 @@ void EventAction::InitNtuplesVectorGasChamber()
     fVectorContainerD->AddVectors("tree_gc2",
         {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen"});
     fVectorContainerD->ReserveAll("tree_gc2", 5000);
+
+    fVectorContainerD->AddTuple("tree_gc3");
+    fVectorContainerD->AddVectors("tree_gc3", {"qdc"});
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::FillNtupleGasChamber()
 {
-    auto hitCol = GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId);
+    auto hitCol = static_cast<const GasChamberHitsCollection *>(GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId));
     auto analysisManager = G4AnalysisManager::Instance();
 
     // tuple saved by event
@@ -177,6 +195,15 @@ void EventAction::FillNtupleGasChamber()
         analysisManager->AddNtupleRow(1);
         fVectorContainerD->ClearAll("tree_gc2");
     }
+    auto dmManager = G4DigiManager::GetDMpointer();
+    GasChamberDigitizer *gasChamberDigitizer = 
+        static_cast<GasChamberDigitizer*>(dmManager->FindDigitizerModule("GasChamberDigitizer"));
+    // digitization
+    gasChamberDigitizer->FillPadsInfo(hitCol);
+    auto vec = *GetVectorPtrD("tree_gc3", "qdc") = gasChamberDigitizer->GetChargeOnPads();
+    analysisManager->AddNtupleRow(2);
+    fVectorContainerD->ClearAll("tree_gc3");
+    gasChamberDigitizer->ClearPads();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

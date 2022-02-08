@@ -14,7 +14,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 GasChamberDigitizer::GasChamberDigitizer(G4String name,
-    G4double _padPlaneX, G4double _padPlaneY, G4double _nPadX, G4double _nPadY,
+    G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
     G4double eIonPair, const G4ThreeVector &_centerPos)
     : G4VDigitizerModule(name),
     padPlaneX(_padPlaneX), padPlaneY(_padPlaneY), nPadX(_nPadX), nPadY(_nPadY),
@@ -34,8 +34,29 @@ GasChamberDigitizer::~GasChamberDigitizer()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+const std::vector<G4double> GasChamberDigitizer::GetChargeOnPads() const
+{
+    std::vector<G4double> charge;
+    charge.reserve(nPadX*nPadY);
+    for(const auto &yPads : *readoutPads)
+        for(const auto &pad : yPads)
+            charge.push_back(pad.GetCharge());
+    return charge;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void GasChamberDigitizer::Digitize()
 {
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberDigitizer::ClearPads()
+{
+    for(auto &yPads : *readoutPads)
+        for(auto &pad : yPads)
+            pad.Clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -68,8 +89,8 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
     // coordinate in the frame of gas chamber
     const G4double ePosX = ePos.getZ(), ePosY = ePos.getY(), ePosZ = -ePos.getZ();
     const G4double
-        minPadPlaneX = centerPos.getX() - padPlaneX,
-        minPadPlaneY = centerPos.getY() - padPlaneY,
+        minPadPlaneX = centerPos.getX() - padPlaneX/2,
+        minPadPlaneY = centerPos.getY() - padPlaneY/2,
         padX = padPlaneX/nPadX,
         padY = padPlaneY/nPadY;
     if(ePosX < minPadPlaneX || ePosX > minPadPlaneX + padPlaneX ||
@@ -78,12 +99,12 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
     int padNumX = 0, padNumY = 0;
     for(padNumX = 0;padNumX < nPadX;++padNumX)
     {
-        if(ePosX < (padNumX + 1)*padX)
+        if(ePosX < minPadPlaneX + (padNumX + 1)*padX)
             break;
     }
     for(padNumY = 0;padNumY < nPadY;++padNumY)
     {
-        if(ePosY < (padNumY + 1)*padY)
+        if(ePosY < minPadPlaneY + (padNumY + 1)*padY)
             break;
     }
     // charge in fC
@@ -93,7 +114,7 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigitizer::SetChargeGain(G4double gain)
+void GasChamberDigitizer::SetChargeMultiplication(G4double gain)
 {
     chargeGain = gain;
 }

@@ -19,7 +19,7 @@ class GasChamberDigitizer : public G4VDigitizerModule
 {
     public:
     GasChamberDigitizer(G4String name,
-        G4double _padPlaneX, G4double _padPlaneY, G4double _nPadX, G4double _nPadY,
+        G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
         G4double eIonPair,
         const G4ThreeVector &_centerPos = G4ThreeVector(0., 0., 0.));
     private:
@@ -28,15 +28,17 @@ class GasChamberDigitizer : public G4VDigitizerModule
     public:
     ~GasChamberDigitizer();
 
+    const std::vector<G4double> GetChargeOnPads() const;
     void Digitize();
-    
+    void ClearPads();
+
     void FillPadsInfo(const GasChamberHitsCollection* hitscollection);
     private:
     void FillPadsTrack(const GasChamberHit *hit);
     void FillPadsStep(const G4ThreeVector &ePos, G4double eDep);
 
     public:
-    void SetChargeGain(G4double gain);
+    void SetChargeMultiplication(G4double gain);
     void SetEnergyPerElectronPair(G4double eIonPiar);
     void SetThreshold(G4double threshold);
     void SetPadPlaneCenter(const G4ThreeVector &pos);

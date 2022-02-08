@@ -5,8 +5,11 @@
 #define EventAction_h 1
 
 #include "analysis/TupleVectorContainer.hh"
+
 #include "G4UserEventAction.hh"
 #include "G4GenericMessenger.hh"
+#include "G4DigiManager.hh"
+
 #include "globals.hh"
 
 /// Event action

@@ -91,23 +91,35 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
     const G4double
         minPadPlaneX = centerPos.getX() - padPlaneX/2,
         minPadPlaneY = centerPos.getY() - padPlaneY/2,
+        maxPadPlaneX = centerPos.getX() + padPlaneX/2,
+        maxPadPlaneY = centerPos.getY() + padPlaneY/2,
         padX = padPlaneX/nPadX,
         padY = padPlaneY/nPadY;
-    if(ePosX < minPadPlaneX || ePosX > minPadPlaneX + padPlaneX ||
-        ePosY < minPadPlaneY || ePosY > minPadPlaneY + padPlaneY)
+    
+    if(ePosX < minPadPlaneX + padMargin || ePosX > maxPadPlaneX - padMargin ||
+        ePosY < minPadPlaneY + padMargin || ePosY > maxPadPlaneY - padMargin)
         return;
+    
     int padNumX = 0, padNumY = 0;
     for(padNumX = 0;padNumX < nPadX;++padNumX)
     {
-        if(ePosX < minPadPlaneX + (padNumX + 1)*padX)
+        if(ePosX < minPadPlaneX + (padNumX + 1)*padX - padMargin)
             break;
+        else if(ePosX < minPadPlaneX + (padNumX + 1)*padX + padMargin)
+            return;
     }
     for(padNumY = 0;padNumY < nPadY;++padNumY)
     {
-        if(ePosY < minPadPlaneY + (padNumY + 1)*padY)
+        if(ePosY < minPadPlaneY + (padNumY + 1)*padY - padMargin)
             break;
+        else if(ePosY < minPadPlaneY + (padNumY + 1)*padY + padMargin)
+            return;
     }
     // charge in fC
+    if(padNumX >= nPadX || padNumY >= nPadY)
+    {
+        return;
+    }
     G4double charge = 1e12*e_SI*chargeGain*eDep/energyPerElectronPair;
     readoutPads->at(padNumY).at(padNumX).AddCharge(charge);
 }

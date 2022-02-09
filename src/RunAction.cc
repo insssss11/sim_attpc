@@ -83,6 +83,10 @@ void RunAction::CreateTuplesGasChamber()
     // fAnalysisManager->CreateNtupleDColumn("t", *fEventAction->GetVectorPtrD("tree_gc2", "t"));
     // fAnalysisManager->CreateNtupleDColumn("q", *fEventAction->GetVectorPtrD("tree_gc2", "q"));
     fAnalysisManager->CreateNtupleDColumn("stepLen", *fEventAction->GetVectorPtrD("tree_gc2", "stepLen"));
+
+    // tuples for digitizer
+    fAnalysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
+    fAnalysisManager->CreateNtupleDColumn("qdc", *fEventAction->GetVectorPtrD("tree_gc3", "qdc"));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

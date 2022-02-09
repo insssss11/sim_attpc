@@ -2,6 +2,11 @@
 posX        double      0
 posY        double      0
 posZ        double      0
-chamberX       double      150
-chamberY       double      150
+chamberX       double      100
+chamberY       double      100
 chamberZ       double      80
+
+nPadX           int         10
+nPadY           int         10
+margin          double      1
+multiplication  double      1e6

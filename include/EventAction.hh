@@ -22,8 +22,8 @@ class EventAction : public G4UserEventAction
     virtual void BeginOfEventAction(const G4Event*);
     virtual void EndOfEventAction(const G4Event*);
 
-    vector<G4double> *GetVectorPtrD(const std::string &tName, const std::string &vecName) const;
-    vector<G4int> *GetVectorPtrI(const std::string &tName, const std::string &vecName) const;
+    std::vector<G4double> *GetVectorPtrD(const std::string &tName, const std::string &vecName) const;
+    std::vector<G4int> *GetVectorPtrI(const std::string &tName, const std::string &vecName) const;
 
     protected:
     G4int verboseLevel;

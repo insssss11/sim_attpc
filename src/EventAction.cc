@@ -151,7 +151,6 @@ void EventAction::InitNtuplesVectorGasChamber()
     fVectorContainerD->AddTuple("tree_gc2");
     fVectorContainerD->AddVectors("tree_gc2",
         {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen"});
-    fVectorContainerD->ReserveAll("tree_gc2", 5000);
 
     fVectorContainerD->AddTuple("tree_gc3");
     fVectorContainerD->AddVectors("tree_gc3", {"qdc"});

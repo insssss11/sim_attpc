@@ -6,7 +6,7 @@ chamberX       double      100
 chamberY       double      100
 chamberZ       double      80
 
-nPadX           int         10
-nPadY           int         10
+nPadX           int         20
+nPadY           int         20
 margin          double      1
 multiplication  double      1e6

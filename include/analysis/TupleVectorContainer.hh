@@ -18,8 +18,10 @@ class TupleVectorContainer
     TupleVectorContainer();
     virtual ~TupleVectorContainer();
 
+    std::unordered_map<std::string, std::vector<T> > &operator[](const std::string &tName) const;
     std::vector<T> *GetVectorPtr(const std::string &tName, const std::string &vecName) const;
 
+    public:
     void AddTuple(const std::string &tName);
     void AddVector(const std::string &tName, const std::string &vecName);
 
@@ -66,19 +68,25 @@ TupleVectorContainer<T>::~TupleVectorContainer()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 template<typename T>
+std::unordered_map<std::string, std::vector<T> > &TupleVectorContainer<T>::operator[](const std::string &tName) const
+{
+    const std::string where = "operator[](const std::string &)";
+    if(!TupleExists(tName))
+        throw exceptionThrower->TupleNotFoundException(where, tName);
+    else
+        return fTupleVectorMap->at(tName);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+template<typename T>
 std::vector<T> *TupleVectorContainer<T>::GetVectorPtr(const std::string &tName, const std::string &vecName) const
 {
     const std::string where = "GetVectorPtr(const string &, const string &)";
     if(!TupleExists(tName))
-    {
         throw exceptionThrower->TupleNotFoundException(where, tName);
-        return nullptr;
-    }
     else if(!VectorExists(tName, vecName))
-    {
         throw exceptionThrower->VectorNotFoundException(where, tName, vecName);
-        return nullptr;
-    }
     else
         return &fTupleVectorMap->at(tName).at(vecName);
 }
@@ -130,7 +138,6 @@ void TupleVectorContainer<T>::Clear(const std::string &tName, const std::string 
         throw exceptionThrower->TupleNotFoundException(where, tName);
     else if(!VectorExists(tName, vecName))
         throw exceptionThrower->VectorNotFoundException(where, tName, vecName);
-    
     fTupleVectorMap->at(tName).at(vecName).clear();
 }
 
@@ -171,10 +178,8 @@ G4int TupleVectorContainer<T>::GetNbOfVector(const std::string &tName) const
 {
     const std::string where = "GetNbOfVector(const string &)";
     if(!TupleExists(tName))
-    {
         throw exceptionThrower->TupleNotFoundException(where, tName);
-        return -1;
-    }
+
     else
         return fTupleVectorMap->at(tName).size();
 }

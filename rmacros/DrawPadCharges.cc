@@ -42,8 +42,8 @@ int DrawPadCharges(const char *fileName, int nPadX, int nPadY, double padPlaneX,
 
     auto c1 = new TCanvas("c1", "c1", 900, 900);
     c1->SetLeftMargin(0.125);
-    hist->GetXaxis()->SetRangeUser(0., padX);
-    hist->GetYaxis()->SetRangeUser(0., padY);
+    hist->GetXaxis()->SetRangeUser(0., padPlaneX);
+    hist->GetYaxis()->SetRangeUser(0., padPlaneY);
     hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);/#it{charge} (fC)");
     hist->Draw("LEGO");
 

@@ -81,6 +81,7 @@ set(SCRIPTS
   gmacros/braggs_curve.mac
   gmacros/trajectories_overlap.mac
   rmacros/DrawBraggsCurve.cc
+  rmacros/DrawPadCharges.cc
   parameters/gas_chamber.txt
   )
 

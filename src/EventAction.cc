@@ -27,7 +27,7 @@ G4VHitsCollection *GetHC(const G4Event *event, G4int collId)
         G4ExceptionDescription msg;
         msg << "No hits collection of this event found." << G4endl;
         G4Exception("EventAction::EndOfEventAction()",
-                    "Code001", JustWarning, msg);
+            "Code001", JustWarning, msg);
         return nullptr;
     }
 
@@ -37,7 +37,7 @@ G4VHitsCollection *GetHC(const G4Event *event, G4int collId)
         G4ExceptionDescription msg;
         msg << "Hits collection " << collId << " of this event not found." << G4endl;
         G4Exception("EventAction::EndOfEventAction()",
-                    "Code001", JustWarning, msg);
+            "Code001", JustWarning, msg);
     }
     return hc;
 }
@@ -48,12 +48,8 @@ EventAction::EventAction()
     : G4UserEventAction(),
     verboseLevel(0), fHcIdsInitialized(false), fGasChamberHcId(-1)
 {
-    fVectorContainerD = new TupleVectorContainerD;
-    fVectorContainerI = new TupleVectorContainerI;
-
     // initialize vector container for each tuple
     InitNtuplesVectorGasChamber();
-
     auto container = ParamContainerTable::GetContainer("gas_chamber");
     auto dmManager = G4DigiManager::GetDMpointer();
     // Digitizer
@@ -65,6 +61,7 @@ EventAction::EventAction()
     gasChamberDigitizer->SetPadMargin(container->GetParamD("margin"));
     gasChamberDigitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
     dmManager->AddNewModule(gasChamberDigitizer);
+    G4cout << "Fuck" << G4endl;
 
     // set printing per each event
     G4RunManager::GetRunManager()->SetPrintProgress(1);
@@ -75,8 +72,6 @@ EventAction::EventAction()
 
 EventAction::~EventAction()
 {
-    delete fVectorContainerD;
-    delete fVectorContainerI;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -97,20 +92,6 @@ void EventAction::EndOfEventAction(const G4Event *)
 {
     FillNtupleGasChamber();
     PrintGasChamberHits();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-vector<G4double> *EventAction::GetVectorPtrD(const std::string &tName, const std::string &vecName) const
-{
-    return fVectorContainerD->GetVectorPtr(tName, vecName);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-vector<G4int> *EventAction::GetVectorPtrI(const std::string &tName, const std::string &vecName) const
-{
-    return fVectorContainerI->GetVectorPtr(tName, vecName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -146,14 +127,15 @@ void EventAction::PrintBeginOfEvent()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "tuple_vector/TupleVectorManager.hh"
+
 void EventAction::InitNtuplesVectorGasChamber()
 {
-    fVectorContainerD->AddTuple("tree_gc2");
-    fVectorContainerD->AddVectors("tree_gc2",
-        {"x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen"});
-
-    fVectorContainerD->AddTuple("tree_gc3");
-    fVectorContainerD->AddVectors("tree_gc3", {"qdc"});
+    auto tupleVectorManager = TupleVectorManager::Instance();
+    tupleVectorManager->AddTupleVectorContainer("tree_gc2")
+        ->AddVectorsD("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
+    tupleVectorManager->AddTupleVectorContainer("tree_gc3")
+        ->AddVectorsD("qdc");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -162,12 +144,14 @@ void EventAction::FillNtupleGasChamber()
 {
     auto hitCol = static_cast<const GasChamberHitsCollection *>(GetHC(G4RunManager::GetRunManager()->GetCurrentEvent(), fGasChamberHcId));
     auto analysisManager = G4AnalysisManager::Instance();
+    auto tupleVectorManager = TupleVectorManager::Instance();
 
     // tuple saved by event
     analysisManager->FillNtupleIColumn(0, 0, hitCol->GetSize());
     analysisManager->AddNtupleRow(0);
 
     // tuple saved by track
+    auto tupleVector2 = tupleVectorManager->GetTupleVectorContainer("tree_gc2");
     for(size_t i = 0;i < hitCol->GetSize();++i)
     {
         auto hit = static_cast<GasChamberHit *>(hitCol->GetHit(i));
@@ -181,27 +165,28 @@ void EventAction::FillNtupleGasChamber()
         // analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
 
         // vector part
-        *GetVectorPtrD("tree_gc2", "x") = hit->GetPosX();
-        *GetVectorPtrD("tree_gc2", "y") = hit->GetPosY();
-        *GetVectorPtrD("tree_gc2", "z") = hit->GetPosZ();
-        *GetVectorPtrD("tree_gc2", "px") = hit->GetMomX();
-        *GetVectorPtrD("tree_gc2", "py") = hit->GetMomY();
-        *GetVectorPtrD("tree_gc2", "pz") = hit->GetMomZ();
-        *GetVectorPtrD("tree_gc2", "eDep") = hit->GetEdep();
-        // *GetVectorPtrD("tree_gc2", "t") = hit->GetTime();
-        // *GetVectorPtrD("tree_gc2", "q") = hit->GetCharge();
-        *GetVectorPtrD("tree_gc2", "stepLen") = hit->GetStepLen();
+        tupleVector2->FillVectorD("x", hit->GetPosX());
+        tupleVector2->FillVectorD("y", hit->GetPosY());
+        tupleVector2->FillVectorD("z", hit->GetPosZ());
+        tupleVector2->FillVectorD("px", hit->GetMomX());
+        tupleVector2->FillVectorD("py", hit->GetMomY());
+        tupleVector2->FillVectorD("pz", hit->GetMomZ());
+        tupleVector2->FillVectorD("eDep", hit->GetEdep());
+        // tupleVector2->FillVectorD("t", hit->GetTime());
+        // tupleVector2->FillVectorD("q", hit->GetCharge());
+        tupleVector2->FillVectorD("stepLen", hit->GetStepLen());
         analysisManager->AddNtupleRow(1);
-        fVectorContainerD->ClearAll("tree_gc2");
+        tupleVector2->ClearVectors();
     }
     auto dmManager = G4DigiManager::GetDMpointer();
-    GasChamberDigitizer *gasChamberDigitizer = 
+    GasChamberDigitizer *gasChamberDigitizer =
         static_cast<GasChamberDigitizer*>(dmManager->FindDigitizerModule("GasChamberDigitizer"));
     // digitization
+    auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
     gasChamberDigitizer->FillPadsInfo(hitCol);
-    auto vec = *GetVectorPtrD("tree_gc3", "qdc") = gasChamberDigitizer->GetChargeOnPads();
+    tupleVector3->FillVectorD("qdc", gasChamberDigitizer->GetChargeOnPads());
     analysisManager->AddNtupleRow(2);
-    fVectorContainerD->ClearAll("tree_gc3");
+    tupleVector3->ClearVectors();
     gasChamberDigitizer->ClearPads();
 }
 

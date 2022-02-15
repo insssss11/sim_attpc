@@ -56,9 +56,10 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+#include "tuple_vector/TupleVectorManager.hh"
 void RunAction::CreateTuplesGasChamber()
 {
+    auto tupleVectorManager = TupleVectorManager::Instance();
     fAnalysisManager->CreateNtuple("tree_gc1", "gas chamber hit data saved by event");
     fAnalysisManager->CreateNtupleIColumn("Ntrk"); // 0 0
 
@@ -73,20 +74,22 @@ void RunAction::CreateTuplesGasChamber()
     // fAnalysisManager->CreateNtupleSColumn("part"); // 1 7
     
     // vector part
-    fAnalysisManager->CreateNtupleDColumn("x", *fEventAction->GetVectorPtrD("tree_gc2", "x"));
-    fAnalysisManager->CreateNtupleDColumn("y", *fEventAction->GetVectorPtrD("tree_gc2", "y"));
-    fAnalysisManager->CreateNtupleDColumn("z", *fEventAction->GetVectorPtrD("tree_gc2", "z"));
-    fAnalysisManager->CreateNtupleDColumn("px", *fEventAction->GetVectorPtrD("tree_gc2", "px"));
-    fAnalysisManager->CreateNtupleDColumn("py", *fEventAction->GetVectorPtrD("tree_gc2", "py"));
-    fAnalysisManager->CreateNtupleDColumn("pz", *fEventAction->GetVectorPtrD("tree_gc2", "pz"));
-    fAnalysisManager->CreateNtupleDColumn("eDep", *fEventAction->GetVectorPtrD("tree_gc2", "eDep"));
-    // fAnalysisManager->CreateNtupleDColumn("t", *fEventAction->GetVectorPtrD("tree_gc2", "t"));
-    // fAnalysisManager->CreateNtupleDColumn("q", *fEventAction->GetVectorPtrD("tree_gc2", "q"));
-    fAnalysisManager->CreateNtupleDColumn("stepLen", *fEventAction->GetVectorPtrD("tree_gc2", "stepLen"));
-
+    auto tupleVector2 = tupleVectorManager->GetTupleVectorContainer("tree_gc2");
+    fAnalysisManager->CreateNtupleDColumn("x", tupleVector2->GetVectorRefD("x"));
+    fAnalysisManager->CreateNtupleDColumn("y", tupleVector2->GetVectorRefD("y"));
+    fAnalysisManager->CreateNtupleDColumn("z", tupleVector2->GetVectorRefD("z"));
+    fAnalysisManager->CreateNtupleDColumn("px", tupleVector2->GetVectorRefD("px"));
+    fAnalysisManager->CreateNtupleDColumn("py", tupleVector2->GetVectorRefD("py"));
+    fAnalysisManager->CreateNtupleDColumn("pz", tupleVector2->GetVectorRefD("pz"));
+    fAnalysisManager->CreateNtupleDColumn("eDep", tupleVector2->GetVectorRefD("eDep"));
+    // fAnalysisManager->CreateNtupleDColumn("t", tupleVector2->GetVectorRefD("t"));
+    // fAnalysisManager->CreateNtupleDColumn("q", tupleVector2->GetVectorRefD("q"));
+    fAnalysisManager->CreateNtupleDColumn("stepLen", tupleVector2->GetVectorRefD("stepLen"));
+    
+    auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
     // tuples for digitizer
     fAnalysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
-    fAnalysisManager->CreateNtupleDColumn("qdc", *fEventAction->GetVectorPtrD("tree_gc3", "qdc"));
+    fAnalysisManager->CreateNtupleDColumn("qdc", tupleVector3->GetVectorRefD("qdc"));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

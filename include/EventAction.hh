@@ -4,7 +4,7 @@
 #ifndef EventAction_h
 #define EventAction_h 1
 
-#include "analysis/TupleVectorContainer.hh"
+#include "tuple_vector/TupleVectorContainer.hh"
 
 #include "G4UserEventAction.hh"
 #include "G4GenericMessenger.hh"
@@ -21,9 +21,6 @@ class EventAction : public G4UserEventAction
 
     virtual void BeginOfEventAction(const G4Event*);
     virtual void EndOfEventAction(const G4Event*);
-
-    std::vector<G4double> *GetVectorPtrD(const std::string &tName, const std::string &vecName) const;
-    std::vector<G4int> *GetVectorPtrI(const std::string &tName, const std::string &vecName) const;
 
     protected:
     G4int verboseLevel;
@@ -50,10 +47,6 @@ class EventAction : public G4UserEventAction
     // hit collections Ids
     G4int fGasChamberHcId;
     G4GenericMessenger *fMessenger;
-
-    // vector container
-    TupleVectorContainerD *fVectorContainerD;    
-    TupleVectorContainerI *fVectorContainerI;    
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

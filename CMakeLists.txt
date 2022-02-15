@@ -49,7 +49,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/custom_processes/*.cc
   ${PROJECT_SOURCE_DIR}/src/gas_chamber/*.cc
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
-  ${PROJECT_SOURCE_DIR}/src/analysis/*.cc
+  ${PROJECT_SOURCE_DIR}/src/tuple_vector/*.cc
   ${PROJECT_SOURCE_DIR}/src/config/*.cc
   ${PROJECT_SOURCE_DIR}/src/readout/*.cc
   )
@@ -58,7 +58,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/custom_processes/*.hh
   ${PROJECT_SOURCE_DIR}/include/gas_chamber/*.hh
   ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
-  ${PROJECT_SOURCE_DIR}/include/analysis/*.hh
+  ${PROJECT_SOURCE_DIR}/include/tuple_vector/*.hh
   ${PROJECT_SOURCE_DIR}/include/config/*.hh
   ${PROJECT_SOURCE_DIR}/include/readout/*.hh
   )

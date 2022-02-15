@@ -13,10 +13,9 @@
 class Exception : public std::exception
 {
     public:
-    Exception(const std::string &where, const std::string &code, G4ExceptionSeverity severity, const std::string &_message)
-    : std::exception(), message(_message)
+    Exception(const std::string &_where, const std::string &_code, G4ExceptionSeverity _severity, const std::string &_message)
+    : std::exception(), where(_where), code(_code), message(_message), severity(_severity)
     {
-        G4Exception(where.c_str(), code.c_str(), severity, _message.c_str());
     }
     virtual ~Exception() {}
 
@@ -24,9 +23,13 @@ class Exception : public std::exception
     {
         return message.c_str();
     }
-
+    void WarnGeantKernel() const
+    {
+        G4Exception(where.c_str(), code.c_str(), severity, message.c_str());
+    }
     private:
-    const std::string message;
+    const std::string where, code, message;
+    G4ExceptionSeverity severity;
 };
 
 #endif

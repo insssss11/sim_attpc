@@ -24,7 +24,6 @@ class RunAction : public G4UserRunAction
     virtual void   EndOfRunAction(const G4Run *);
 
     private:
-
     // for messenger and UI
     void DefineCommands();
     private:

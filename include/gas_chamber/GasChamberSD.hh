@@ -59,6 +59,9 @@ class GasChamberSD : public G4VSensitiveDetector
     G4int fEventId;
     G4int fTrackId;
     G4int fNbOfStepPoints;
+
+    G4bool hitTupleActivated;
+    G4bool digiTupleActivated;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

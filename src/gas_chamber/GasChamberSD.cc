@@ -23,7 +23,8 @@
 GasChamberSD::GasChamberSD(G4String name, G4int verbose)
     : G4VSensitiveDetector(name),
     fHitsCollection(nullptr), fMessenger(nullptr), fHCID(-1), fEventId(-1), fTrackId(-1),
-    fNbOfStepPoints(0)
+    fNbOfStepPoints(0),
+    hitTupleActivated(true), digiTupleActivated(true)
 {
     verboseLevel = verbose;
     collectionName.insert("GasChamberHColl");
@@ -63,8 +64,10 @@ void GasChamberSD::EndOfEvent(G4HCofThisEvent *)
     // fill the # of the step points of the last track if more than one.
     if(fHitsCollection->GetSize() > 0)
         (*fHitsCollection)[fHitsCollection->GetSize() - 1]->SetNbOfStepPoints(fNbOfStepPoints);
-    FillHitTuples();
-    FillDigiTuples();
+    if(hitTupleActivated)
+        FillHitTuples();
+    if(digiTupleActivated)
+        FillDigiTuples();
     if(verboseLevel > 0)
         PrintEndOfEvents();
 }
@@ -279,4 +282,14 @@ void GasChamberSD::DefineCommands()
     fMessenger = new G4GenericMessenger(this, "/attpc/gasChamber/", "Gas Chamger SD control");
     // auto fVerboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
     fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
+    auto commandHitTuple
+        = fMessenger->DeclareProperty("activateHitTuple", hitTupleActivated, "Activate hit tuple(s)");
+    commandHitTuple.SetParameterName("hitTupleActivated", true);
+    commandHitTuple.SetDefaultValue("true");
+    commandHitTuple.SetGuidance("Activate writing hit tuple(s)");
+    auto commandDigiTuple = 
+        fMessenger->DeclareProperty("activateDigiTuple", digiTupleActivated, "Activate digi tuple(s)");
+    commandDigiTuple.SetParameterName("digiTupleActivated", true);
+    commandDigiTuple.SetDefaultValue("true");
+    commandDigiTuple.SetGuidance("Activate writing digi tuple(s)");    
 }

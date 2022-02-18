@@ -281,7 +281,7 @@ void DetectorConstruction::BuildGas()
 
 void DetectorConstruction::BuildChamber()
 {
-    const auto params = ParamContainerTable::GetContainer("gas_chamber");
+    const auto params = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     const G4double
         xChamber = params->GetParamD("chamberX")/2,
         yChamber = params->GetParamD("chamberY")/2,

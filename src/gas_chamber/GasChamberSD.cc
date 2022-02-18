@@ -114,7 +114,7 @@ void GasChamberSD::InitManagers()
 
 void GasChamberSD::InitDigitizer()
 {
-    auto container = ParamContainerTable::GetContainer("gas_chamber");
+    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     // Digitizer
     digitizer = new GasChamberDigitizer(
         "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),

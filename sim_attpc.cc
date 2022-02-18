@@ -98,5 +98,5 @@ int main(int argc, char **argv)
 void LoadParameter()
 {
     ParamContainerTable::GetBuilder()->AddParamContainer("txt", "gas_chamber", "parameters/gas_chamber.txt")->Build();
-    ParamContainerTable::DumpTable();
+    ParamContainerTable::Instance()->DumpTable();
 }

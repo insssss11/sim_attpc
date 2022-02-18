@@ -21,11 +21,12 @@ class ParamContainerTable
     friend ParamContainerTableBuilder;
     
     public:
+    static ParamContainerTable *Instance();
     virtual ~ParamContainerTable();
 
-    static const ParamContainer *GetContainer(const G4String &name);
-    static void DumpTable();
-    static void ClearContainers();
+    const ParamContainer *GetContainer(const G4String &name);
+    void DumpTable() const;
+    void ClearContainers();
 
     static std::unique_ptr<ParamContainerTableBuilder> GetBuilder();
     
@@ -33,7 +34,6 @@ class ParamContainerTable
     ParamContainerTable();
 
     private:
-    static ParamContainerTable *Instance();
     void AddContainer(std::string name, ParamContainer *container);
     private:
     std::unordered_map<std::string, ParamContainer*> *fContainerMap;

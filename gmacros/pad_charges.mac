@@ -1,0 +1,16 @@
+# This macro must be executed in vis UI session.
+
+# primary partice setting
+/gun/particle ion
+/gun/ion 6 12 4
+/gun/energy 10 MeV
+
+/attpc/field/value 2.5
+
+/attpc/process/CarbonAlpha/forceByTrackLen 300 mm
+
+/attpc/output/activate true
+/attpc/gasChamber/activateHitTuple false
+/attpc/output/setFileName padCharges.root
+
+/run/beamOn 100

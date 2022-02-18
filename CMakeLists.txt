@@ -80,8 +80,10 @@ set(SCRIPTS
   ${gps_macros}
   gmacros/braggs_curve.mac
   gmacros/trajectories_overlap.mac
+  gmacros/pad_charges.mac  
   rmacros/DrawBraggsCurve.cc
   rmacros/DrawPadCharges.cc
+  rmacros/EventDrawingAction.hh
   parameters/gas_chamber.txt
   )
 

@@ -1,10 +1,11 @@
+#include "EventDrawingAction.hh"
+
 #include "TFile.h"
-#include "TTree.h"
 #include "TH2D.h"
 #include "TTreeReader.h"
 #include "TCanvas.h"
+#include "TApplication.h"
 #include "TStyle.h"
-#include "TSystem.h"
 // To draw Bragg's peak from output data of macro file ionranges.mac
 
 typedef struct {
@@ -14,83 +15,48 @@ typedef struct {
     double padPlaneY;
 } PadPlane;
 
-PadPlane padPlane;
-std::vector<double> qdc;
-TH2D *hist;
-TCanvas *c1;
-
-std::string GetInput()
-{
-    std::string input;
-    std::cout << "Enter(press .q to quit or any key to draw the next event) : ";
-    std::getline(std::cin, input);
-    return input;
-}
-
-bool CheckArgsValidity()
-{
-    if(qdc.size() != padPlane.nPadX*padPlane.nPadY)
-        return false;
-    else
-        return true;
-}
-
-bool DrawNextEvent(TTreeReader &reader, TTreeReaderValue <vector<double> > &qdcReader)
-{
-    static int evtNum = 0;
-    if(!reader.Next())
+class DrawPadChargesAction : public EventDrawingAction {
+    public:
+    DrawPadChargesAction(TTree *tree, const PadPlane &_padPlane)
+        : EventDrawingAction("DrawPadChargesAction", tree),
+        padPlane(_padPlane)
     {
-        std::cout << "Current event number reached the max entry number." << std::endl;
-        c1->Close();
-        return false;
+        data = new std::vector<double>(padPlane.nPadX*padPlane.nPadY);
+        tree->SetBranchAddress("qdc", &data);
+
+        hist = new TH2D("hist", "", padPlane.nPadX, 0., padPlane.padPlaneX, padPlane.nPadY, 0., padPlane.padPlaneY);
+        hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);/#it{charge} (fC)");
     }
-    else
+
+    virtual ~DrawPadChargesAction()
     {
-        qdc = *qdcReader;
-        if(!CheckArgsValidity())
-        {
-            std::cerr << "Error : the size of qdc is not consistent with pad plane dimension(nPadX X nPadY)." << std::endl;
-            c1->Close();
-            return false;
-        }
+        delete data;
+        delete hist;
     }
-    ++evtNum;
-    std::cout << "Drawing event : " << evtNum << "/" << reader.GetEntries() << std::endl;
-    double padX = padPlane.padPlaneX/padPlane.nPadX, padY = padPlane.padPlaneY/padPlane.nPadY;
-    for(int y = 0;y < padPlane.nPadY;++y)
-        for(int x = 0;x < padPlane.nPadX;++x)
-        {
-            hist->SetBinContent(x, y, qdc.at(x + y*padPlane.nPadX));
-        }
-    hist->GetXaxis()->SetRangeUser(0., padPlane.padPlaneX);
-    hist->GetYaxis()->SetRangeUser(0., padPlane.padPlaneY);
-    hist->Draw("LEGO");
-    c1->Modified();
-    c1->Update();
-    gSystem->ProcessEvents();
-    return true;
-}
+
+    virtual void DrawEvent() override
+    {
+        for(int y = 0;y < padPlane.nPadY;++y)
+            for(int x = 0;x < padPlane.nPadX;++x)
+                hist->SetBinContent(x, y, data->at(x + y*padPlane.nPadX));
+        hist->Draw("LEGO");
+    }
+    
+    private:
+    TH2D *hist;
+    const PadPlane padPlane;
+    std::vector<double> *data;
+};
 
 int DrawPadCharges(const char *fileName, int nPadX, int nPadY, double padPlaneX, double padPlaneY)
 {
-    auto fileRoot = new TFile(fileName, "READ");
-
-    padPlane = {nPadX, nPadY, padPlaneX, padPlaneY};
-
-    TTreeReader reader = TTreeReader("tree_gc3", fileRoot);
-    TTreeReaderValue <vector<double> > qdcReader = TTreeReaderValue <vector<double> >(reader, "qdc");
-
-    hist = new TH2D("hist", "", nPadX, 0., padPlaneX, nPadY, 0., padPlaneY);
-    hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);/#it{charge} (fC)");
-
-    c1 = new TCanvas("c1", "c1", 900, 900);
+    auto c1 = new TCanvas("c1", "c1", 900, 900);
     c1->SetLeftMargin(0.125);
-    std::string input;
-    do {
-        if(GetInput() == ".q")
-            break;
-    } while(DrawNextEvent(reader, qdcReader));
-    delete c1;
-    delete hist;
+    auto fileRoot = new TFile(fileName, "READ");
+    auto tree = (TTree*)fileRoot->Get("tree_gc3");
+
+    DrawPadChargesAction *action = new DrawPadChargesAction(tree, {nPadX, nPadY, padPlaneX, padPlaneY});
+    action->Connect(gApplication, "ReturnPressed(const char*)");
+    // action->DisconnectWhenClosed(c1);
     return 0;
 }

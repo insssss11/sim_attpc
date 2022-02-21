@@ -9,27 +9,42 @@
 #include <string>
 #include <exception>
 
-/// This exception class is derived from standard exception class and also call G4Exception when created.
+/// This exception class is wrapper of G4Exception, derived from standard exception class and .
 class Exception : public std::exception
 {
     public:
-    Exception(const std::string &_where, const std::string &_code, G4ExceptionSeverity _severity, const std::string &_message)
-    : std::exception(), where(_where), code(_code), message(_message), severity(_severity)
-    {
-    }
-    virtual ~Exception() {}
+    Exception(const std::string &originClass,
+        const std::string &errorPrefix,
+        const std::string &originMethod = "", unsigned int errorNum = 9999);
 
-    const char *what() const noexcept override
-    {
-        return message.c_str();
-    }
-    void WarnGeantKernel() const
-    {
-        G4Exception(where.c_str(), code.c_str(), severity, message.c_str());
-    }
+    virtual ~Exception();
+    
+    // this must return error message after classification of error code.
+    virtual const char *what() const noexcept override;
+    virtual void InitErrorMessage() = 0; // this pure abstract method must be called the contstructor of a derived class.
+    virtual G4ExceptionSeverity ClassifySeverity() const = 0;
+
+    // this send exception to Geant4 by calling G4Exception
+    void WarnGeantKernel() const;
+
+    const std::string Where() const;
+    const std::string GetOriginClass() const;
+    const std::string GetOriginMethod() const;
+
+    const std::string GetErrorCode() const;
+    const std::string GetErrorPrefix() const;
+    unsigned int GetErrorNum() const;
+
+    void SetOriginMethod(const std::string &method);
+    void SetErrorNum(unsigned int errorNumber);
+
+    protected:
+    std::string message;
+
     private:
-    const std::string where, code, message;
-    G4ExceptionSeverity severity;
+    const std::string originClass, errorPrefix;
+    std::string originMethod;
+    unsigned int errorNumber;
 };
 
 #endif

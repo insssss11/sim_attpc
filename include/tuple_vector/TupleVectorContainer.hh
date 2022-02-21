@@ -4,7 +4,7 @@
 #ifndef TupleVectorContainer_h
 #define TupleVectorContainer_h 1
 
-#include "Exception.hh"
+#include "tuple_vector/TupleVectorContainerException.hh"
 
 #include <unordered_map>
 #include <string>
@@ -60,8 +60,6 @@ class TupleVectorContainer
     G4bool VectorExists(const std::string &vecName) const;
 
     protected:
-    const std::string containerName;
-    std::string exceptionOriginClass;
 
     private:
     // for ends of recursive methods taking parameter packs
@@ -70,12 +68,10 @@ class TupleVectorContainer
     void AddVectorsD(){}
     void AddVectorsS(){}
 
-    Exception VectorNotFoundException(const std::string &originMethodName, const std::string &vecName) const;
-    Exception VectorDuplicatedException(const std::string &originMethodName, const std::string &vecName) const;
-
     void DeleteMaps();
     void InitMaps();
     private:
+    const std::string containerName;
     VectorNameMap *vectorNameMap;
     VectorMapI *vectorMapI;
     VectorMapF *vectorMapF;

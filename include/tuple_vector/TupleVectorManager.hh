@@ -23,12 +23,10 @@ class TupleVectorManager
     protected:
     TupleVectorManager();
     protected:
-    std::string exceptionOriginClass;
 
     private:
     G4bool ContainerExisits(const std::string &tupleName);
-    Exception ContainerDuplicatedWarning(const std::string &originMethodName, const std::string &tupleName);
-    Exception ContainerNotFoundWarning(const std::string &originMethodName, const std::string &tupleName);
+
     private:
     // thread-private map containing TupleVectorContainer
     G4MapCache<std::string, TupleVectorContainer> tupleVectorMap;

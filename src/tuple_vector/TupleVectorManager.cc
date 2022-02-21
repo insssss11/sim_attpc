@@ -2,7 +2,10 @@
 /// \brief Implementation of the TupleVectorManager class
 
 #include "tuple_vector/TupleVectorManager.hh"
+#include "tuple_vector/TupleVectorManagerException.hh"
 #include "AnalysisManager.hh"
+
+using namespace TupleVectorManagerErrorNum;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -23,11 +26,20 @@ TupleVectorManager::~TupleVectorManager()
 TupleVectorContainer *TupleVectorManager::AddTupleVectorContainer(const std::string &tupleName)
 {
     if(ContainerExisits(tupleName))
-        throw ContainerDuplicatedWarning("AddTupleVectorContainer(const std::string &)", tupleName);
+        throw TupleVectorManagerException("AddTupleVectorContainer(const std::string &)", TUPLE_DUPLICATED, tupleName);
     else
         tupleVectorMap.Insert(tupleName, TupleVectorContainer(tupleName));
-    G4cout << &tupleVectorMap.Get(tupleName) << G4endl;
     return &tupleVectorMap.Get(tupleName);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+TupleVectorContainer *TupleVectorManager::GetTupleVectorContainer(const std::string &tupleName)
+{
+    if(!ContainerExisits(tupleName))
+        throw TupleVectorManagerException("GetTupleVectorContainer(const std::string &)", TUPLE_DUPLICATED, tupleName);
+    else
+        return &tupleVectorMap[tupleName];
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,20 +49,10 @@ TupleVectorContainer *TupleVectorManager::operator[](const std::string &tupleNam
     return GetTupleVectorContainer(tupleName);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-TupleVectorContainer *TupleVectorManager::GetTupleVectorContainer(const std::string &tupleName)
-{
-    if(!ContainerExisits(tupleName))
-        throw ContainerNotFoundWarning("GetTupleVectorContainer(const std::string &)", tupleName);
-    else
-        return &tupleVectorMap[tupleName];
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TupleVectorManager::TupleVectorManager()
-    : exceptionOriginClass("TupleVectorManager::")
 {
 }
 
@@ -59,24 +61,6 @@ TupleVectorManager::TupleVectorManager()
 G4bool TupleVectorManager::ContainerExisits(const std::string &tupleName)
 {
     return tupleVectorMap.Find(tupleName) != tupleVectorMap.End();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-Exception TupleVectorManager::ContainerDuplicatedWarning(
-    const std::string &originMethodName, const std::string &tupleName)
-{
-    std::string message = "TupleVectorConainer with  " + tupleName + " already registered in the manager.";
-    return Exception(exceptionOriginClass + originMethodName, "TupleVectorManager0000", JustWarning, message);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-Exception TupleVectorManager::ContainerNotFoundWarning(
-    const std::string &originMethodName, const std::string &tupleName)
-{
-    std::string message = "TupleVectorConainer" + tupleName + " does not exists in the manager.";
-    return Exception(exceptionOriginClass + originMethodName, "TupleVectorManager0001", JustWarning, message);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

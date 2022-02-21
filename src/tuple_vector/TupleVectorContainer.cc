@@ -3,11 +3,12 @@
 
 #include "tuple_vector/TupleVectorContainer.hh"
 
+using namespace TupleVectorContainerErrorNum;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TupleVectorContainer::TupleVectorContainer(const std::string &_containerName)
-    : containerName(_containerName), exceptionOriginClass("TupleVectorContainer::")
+    : containerName(_containerName)
 {
     InitMaps();
 }
@@ -34,11 +35,11 @@ TupleVectorContainer::TupleVectorContainer(TupleVectorContainer &&right)
     vectorMapF = right.vectorMapF;
     vectorMapD = right.vectorMapD;
     vectorMapS = right.vectorMapS;
-    right.vectorNameMap = nullptr; 
-    right.vectorMapI = nullptr; 
-    right.vectorMapF = nullptr; 
-    right.vectorMapD = nullptr; 
-    right.vectorMapS = nullptr; 
+    right.vectorNameMap = nullptr;
+    right.vectorMapI = nullptr;
+    right.vectorMapF = nullptr;
+    right.vectorMapD = nullptr;
+    right.vectorMapS = nullptr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -53,7 +54,7 @@ TupleVectorContainer::~TupleVectorContainer()
 void TupleVectorContainer::AddVectorI(const std::string &vecName)
 {
     if(VectorExists(vecName))
-        throw VectorDuplicatedException("AddVectorI(const std::string &)", vecName);
+        throw TupleVectorContainerException("AddVectorI(const std::string &)", VECTOR_DUPLICATED, vecName);
     else
     {
         vectorNameMap->insert(std::make_pair(vecName, "I"));
@@ -66,7 +67,7 @@ void TupleVectorContainer::AddVectorI(const std::string &vecName)
 void TupleVectorContainer::AddVectorF(const std::string &vecName)
 {
     if(VectorExists(vecName))
-        throw VectorDuplicatedException("AddVectorF(const std::string &)", vecName);
+        throw TupleVectorContainerException("AddVectorF(const std::string &)", VECTOR_DUPLICATED, vecName);
     else
     {
         vectorNameMap->insert(std::make_pair(vecName, "F"));
@@ -79,7 +80,8 @@ void TupleVectorContainer::AddVectorF(const std::string &vecName)
 void TupleVectorContainer::AddVectorD(const std::string &vecName)
 {
     if(VectorExists(vecName))
-        throw VectorDuplicatedException("AddVectorD(const std::string &)", vecName);
+        throw TupleVectorContainerException("AddVectorD(const std::string &)", VECTOR_DUPLICATED, vecName);
+
     else
     {
         vectorNameMap->insert(std::make_pair(vecName, "D"));
@@ -92,7 +94,7 @@ void TupleVectorContainer::AddVectorD(const std::string &vecName)
 void TupleVectorContainer::AddVectorS(const std::string &vecName)
 {
     if(VectorExists(vecName))
-        throw VectorDuplicatedException("AddVectorS(const std::string &)", vecName);
+        throw TupleVectorContainerException("AddVectorS(const std::string &)", VECTOR_DUPLICATED, vecName);
     else
     {
         vectorNameMap->insert(std::make_pair(vecName, "S"));
@@ -105,7 +107,7 @@ void TupleVectorContainer::AddVectorS(const std::string &vecName)
 std::vector<G4int> &TupleVectorContainer::GetVectorRefI(const std::string &vecName)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException("GetVectorRefI(const std::string &)", vecName);
+        throw TupleVectorContainerException("GetVectorRefI(const std::string &)", VECTOR_NOT_FOUND, vecName);
     else
         return vectorMapI->at(vecName);
 }
@@ -115,7 +117,7 @@ std::vector<G4int> &TupleVectorContainer::GetVectorRefI(const std::string &vecNa
 std::vector<G4float> &TupleVectorContainer::GetVectorRefF(const std::string &vecName)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException("GetVectorRefF(const std::string &)", vecName);
+        throw TupleVectorContainerException("GetVectorRefF(const std::string &)", VECTOR_NOT_FOUND, vecName);
     else
         return vectorMapF->at(vecName);
 }
@@ -125,7 +127,7 @@ std::vector<G4float> &TupleVectorContainer::GetVectorRefF(const std::string &vec
 std::vector<G4double> &TupleVectorContainer::GetVectorRefD(const std::string &vecName)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException("GetVectorRefD(const std::string &)", vecName);
+        throw TupleVectorContainerException("GetVectorRefD(const std::string &)", VECTOR_NOT_FOUND, vecName);
     else
         return vectorMapD->at(vecName);
 }
@@ -135,7 +137,7 @@ std::vector<G4double> &TupleVectorContainer::GetVectorRefD(const std::string &ve
 std::vector<G4String> &TupleVectorContainer::GetVectorRefS(const std::string &vecName)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException("GetVectorRefS(const std::string &)", vecName);
+        throw TupleVectorContainerException("GetVectorRefS(const std::string &)", VECTOR_NOT_FOUND, vecName);
     else
         return vectorMapS->at(vecName);
 }
@@ -181,8 +183,7 @@ const std::string TupleVectorContainer::GetName() const
 void TupleVectorContainer::FillVectorI(const std::string &vecName, const std::vector<G4int> &vec)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException(
-        "FillVectorI(const std::string &, const std::vector<G4int> &", vecName);
+        throw TupleVectorContainerException("FillVectorI(const std::string &, const std::vector<G4int> &)", VECTOR_NOT_FOUND, vecName);
     else
         vectorMapI->at(vecName) = vec;
 }
@@ -192,8 +193,7 @@ void TupleVectorContainer::FillVectorI(const std::string &vecName, const std::ve
 void TupleVectorContainer::FillVectorF(const std::string &vecName, const std::vector<G4float> &vec)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException(
-        "FillVectorF(const std::string &, const std::vector<G4int> &", vecName);
+        throw TupleVectorContainerException("FillVectorF(const std::string &, const std::vector<G4float> &)", VECTOR_NOT_FOUND, vecName);
     else
         vectorMapF->at(vecName) = vec;
 }
@@ -203,8 +203,7 @@ void TupleVectorContainer::FillVectorF(const std::string &vecName, const std::ve
 void TupleVectorContainer::FillVectorD(const std::string &vecName, const std::vector<G4double> &vec)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException(
-        "FillVectorD(const std::string &, const std::vector<G4int> &", vecName);
+        throw TupleVectorContainerException("FillVectorD(const std::string &, const std::vector<G4double> &)", VECTOR_NOT_FOUND, vecName);
     else
         vectorMapD->at(vecName) = vec;
 }
@@ -214,8 +213,7 @@ void TupleVectorContainer::FillVectorD(const std::string &vecName, const std::ve
 void TupleVectorContainer::FillVectorS(const std::string &vecName, const std::vector<G4String> &vec)
 {
     if(!VectorExists(vecName))
-        throw VectorNotFoundException(
-        "FillVectorS(const std::string &, const std::vector<G4int> &", vecName);
+        throw TupleVectorContainerException("FillVectorS(const std::string &, const std::vector<G4String> &)", VECTOR_NOT_FOUND, vecName);
     else
         vectorMapS->at(vecName) = vec;
 }
@@ -224,24 +222,6 @@ void TupleVectorContainer::FillVectorS(const std::string &vecName, const std::ve
 G4bool TupleVectorContainer::VectorExists(const std::string &vecName) const
 {
     return vectorNameMap->find(vecName) != vectorNameMap->end();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-Exception TupleVectorContainer::VectorNotFoundException(
-    const std::string &originMethodName, const std::string &vecName) const
-{
-    std::string message = "There is no vector with name " + vecName + ".";
-    return Exception(exceptionOriginClass + originMethodName, "VectorContainer0000", FatalException, message);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-Exception TupleVectorContainer::VectorDuplicatedException(
-    const std::string &originMethodName, const std::string &vecName) const
-{
-    std::string message = "Vector " + vecName + " already exists in the container " + containerName + ".";
-    return Exception(exceptionOriginClass + originMethodName, "VectorContainer0001", JustWarning, message);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

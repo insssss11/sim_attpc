@@ -5,6 +5,8 @@
 #include "G4Exception.hh"
 #include <iomanip>
 
+using namespace ParamContainerErrorNum;
+
 ParamContainer::ParamContainer(const G4String &name)
     :fName(name)
 {
@@ -35,7 +37,8 @@ ParamContainer::~ParamContainer()
 G4double ParamContainer::GetParamD(const string &parName) const
 {
     if(!CheckParamExist(parName, "double"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "double");
+        throw ParamContainerException("ParamContainer::GetParamD(const string &)", PARAM_NOT_FOUND,
+        parName, "double");
     return fParamMapD->at(parName);
 }
 
@@ -44,7 +47,8 @@ G4double ParamContainer::GetParamD(const string &parName) const
 G4int ParamContainer::GetParamI(const string &parName) const
 {
     if(!CheckParamExist(parName, "int"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "int");
+        throw ParamContainerException("ParamContainer::GetParamI(const string &)", PARAM_NOT_FOUND,
+        parName, "int");
     return fParamMapI->at(parName);
 }
 
@@ -53,7 +57,8 @@ G4int ParamContainer::GetParamI(const string &parName) const
 G4bool ParamContainer::GetParamB(const string &parName) const
 {
     if(!CheckParamExist(parName, "bool"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "boolean");
+        throw ParamContainerException("ParamContainer::GetParamB(const string &)", PARAM_NOT_FOUND,
+        parName, "bool");
     return fParamMapB->at(parName);
 }
 
@@ -62,7 +67,8 @@ G4bool ParamContainer::GetParamB(const string &parName) const
 G4String ParamContainer::GetParamS(const string &parName) const
 {
     if(!CheckParamExist(parName, "string"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "string");
+        throw ParamContainerException("ParamContainer::GetParamS(const string &)", PARAM_NOT_FOUND,
+        parName, "string");
     return fParamMapS->at(parName);
 }
 
@@ -70,8 +76,9 @@ G4String ParamContainer::GetParamS(const string &parName) const
 
 const vector<G4double> ParamContainer::GetParamVecD(const string &parName) const
 {
-    if(!CheckParamExist(parName, "VectorD"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "vector<double>");
+    if(!CheckParamExist(parName, "vectorD"))
+        throw ParamContainerException("ParamContainer::GetParamVecD(const string &)", PARAM_NOT_FOUND,
+        parName, "vectorD");
     return fParamMapVecD->at(parName);
 }
 
@@ -79,8 +86,9 @@ const vector<G4double> ParamContainer::GetParamVecD(const string &parName) const
 
 const vector<G4int> ParamContainer::GetParamVecI(const string &parName) const
 {
-    if(!CheckParamExist(parName, "VectorI"))
-        ParamNotFoundError("ParamContainer::GetParamD(const string &)", parName, "vector<int>");
+    if(!CheckParamExist(parName, "vectorI"))
+        throw ParamContainerException("ParamContainer::GetParamVecI(const string &)", PARAM_NOT_FOUND,
+        parName, "vectorI");
     return fParamMapVecI->at(parName);
 }
 
@@ -94,7 +102,8 @@ void ParamContainer::AddParam(const string &parName, G4double value)
         fParamMapType->insert(std::make_pair(parName, "double"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, G4double)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, G4double)", PARAM_DUPLICATED,
+        parName, "double");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -107,7 +116,8 @@ void ParamContainer::AddParam(const string &parName, G4int value)
         fParamMapType->insert(std::make_pair(parName, "int"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, G4int)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, G4int)", PARAM_DUPLICATED,
+        parName, "int");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -120,7 +130,8 @@ void ParamContainer::AddParam(const string &parName, G4bool value)
         fParamMapType->insert(std::make_pair(parName, "bool"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, G4bool)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, G4double)", PARAM_DUPLICATED,
+        parName, "bool");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -133,7 +144,8 @@ void ParamContainer::AddParam(const string &parName, G4String value)
         fParamMapType->insert(std::make_pair(parName, "string"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, G4String)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, G4String)", PARAM_DUPLICATED,
+        parName, "string");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -143,10 +155,11 @@ void ParamContainer::AddParam(const string &parName, const vector<G4double> &val
     if(!CheckParamDulicated(parName))
     {
         fParamMapVecD->insert(std::make_pair(parName, value));
-        fParamMapType->insert(std::make_pair(parName, "VectorD"));
+        fParamMapType->insert(std::make_pair(parName, "vectorD"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, const vector<G4double> &)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, const vector<G4double> &)", PARAM_DUPLICATED,
+        parName, "vectorD");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -156,17 +169,18 @@ void ParamContainer::AddParam(const string &parName, const vector<G4int> &value)
     if(!CheckParamDulicated(parName))
     {
         fParamMapVecI->insert(std::make_pair(parName, value));
-        fParamMapType->insert(std::make_pair(parName, "VectorI"));
+        fParamMapType->insert(std::make_pair(parName, "vectorI"));
     }
     else
-        ParamDuplicatedWarning("ParamContainer::AddParam(const string &, const vector<G4int> &)", parName, fParamMapType->at(parName));
+        throw ParamContainerException("ParamContainer::AddParam(const string &, const vector<G4int> &)", PARAM_DUPLICATED,
+        parName, "vectorI");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ParamContainer::ListParams() const
 {
-    G4cout << "Parameter List of Container " << fName << G4endl;
+    G4cout << "Parameter List of Container : " << fName << G4endl;
     G4cout << "    parName" << std::setw(13) << "  parType" << std::setw(13)  << G4endl;
     for(auto p : *fParamMapD)
         G4cout << std::setw(13) << p.first << "  "
@@ -183,7 +197,7 @@ void ParamContainer::ListParams() const
     for(auto p : *fParamMapVecD)
     {
         G4cout << std::setw(13) << p.first << "  "
-            << std::setw(8) << "VectorD     ";
+            << std::setw(8) << "vectorD     ";
         auto prec = G4cout.precision(5);
         for(size_t i = 0;i < p.second.size();++i)
             if(i == 6)
@@ -199,7 +213,7 @@ void ParamContainer::ListParams() const
     for(auto p : *fParamMapVecI)
     {
         G4cout << std::setw(13) << p.first << "  "
-            << std::setw(8) << " VectorI     ";  
+            << std::setw(8) << " vectorI     ";  
         for(size_t i = 0;i < p.second.size();++i)
             if(i == 6)
             {
@@ -227,26 +241,6 @@ G4bool ParamContainer::CheckParamExist(const string &parName, const string &parT
     if(fParamMapType->find(parName) == fParamMapType->end())
         return false;
     return parType == fParamMapType->at(parName);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ParamContainer::ParamNotFoundError(const G4String &where,
-    const G4String &parName, const G4String &parType) const
-{
-    std::ostringstream message;
-    message << "A parameter " << parName << " with type " << parType << " does not exists.";
-    G4Exception(where.data(), "ParamContainer0000", FatalException, message);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ParamContainer::ParamDuplicatedWarning(const G4String &where,
-    const G4String &parName, const G4String &parType) const
-{
-    std::ostringstream message;
-    message << "A parameter " << parName << " with type " << parType << " already exists.";
-    G4Exception(where.data(), "ParamContainer0001", JustWarning, message);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -4,6 +4,8 @@
 #ifndef ParamContainer_h
 #define ParamContainer_h 1
 
+#include "config/ParamContainerException.hh"
+
 #include "G4String.hh"
 
 #include <unordered_map>
@@ -35,13 +37,8 @@ class ParamContainer
 
     void ListParams() const;
     private:
-    G4bool CheckParamDulicated(const string &parName) const;
-    void ParamNotFoundError(const G4String &where,
-        const G4String &parName, const G4String &parType) const;
-    
+    G4bool CheckParamDulicated(const string &parName) const;    
     G4bool CheckParamExist(const string &parName, const string &parType) const;
-    void ParamDuplicatedWarning(const G4String &where,
-        const G4String &parName, const G4String &parType) const;
 
     private:
     G4String fName;

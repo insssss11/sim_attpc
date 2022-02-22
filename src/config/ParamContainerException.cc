@@ -6,14 +6,15 @@
 using namespace ParamContainerErrorNum;
 
 ParamContainerException::ParamContainerException(
-    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &_paramName, const std::string &_paramType)
-    : Exception("ParamContainer", "ParamContainer", _originMethod, _errorNumber), paramName(_paramName), paramType(_paramType)
+    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &paramName, const std::string &paramType)
+    : Exception("ParamContainer", "ParamContainer", _originMethod, _errorNumber, paramName, paramType)
 {
     InitErrorMessage();
 }
 
 void ParamContainerException::InitErrorMessage()
 {
+    const std::string paramType = GetArgument(0), paramName = GetArgument(1);
     switch(GetErrorNum())
     {
         case PARAM_DUPLICATED:
@@ -41,14 +42,4 @@ G4ExceptionSeverity ParamContainerException::ClassifySeverity() const
         default:
             return JustWarning;
     }    
-}
-
-void ParamContainerException::SetParamName(const std::string &_paramName)
-{ 
-    paramName = _paramName;
-}
-
-std::string ParamContainerException::GetParamName() const
-{
-    return paramName;
 }

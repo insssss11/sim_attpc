@@ -8,7 +8,7 @@
 
 namespace ParamFileReaderFactoryErrorNum {
     enum ErrorNum : unsigned int {
-        INVALID_READER_TYPE = 0000,
+        INVALID_READER_TYPE,
         OK = 9999
     };
 }
@@ -22,12 +22,6 @@ class ParamFileReaderFactoryException : public Exception
 
     virtual void InitErrorMessage() override;
     virtual G4ExceptionSeverity ClassifySeverity() const override;
-
-    void SetReaderType(const std::string &readerType);
-    std::string GetReaderType() const;
-
-    private:
-    std::string readerType;
 };
 
 #endif

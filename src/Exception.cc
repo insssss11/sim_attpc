@@ -6,13 +6,6 @@
 #include <iomanip>
 #include <sstream>
 
-Exception::Exception(const std::string &_originClass,
-    const std::string &_errorPrefix,
-    const std::string &_originMethod, unsigned int _errorNumber)
-    : std::exception(), originClass(_originClass), errorPrefix(_errorPrefix), originMethod(_originMethod), errorNumber(_errorNumber)
-{
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 Exception::~Exception()
@@ -83,6 +76,13 @@ unsigned int Exception::GetErrorNum() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+const std::string Exception::GetArgument(int idx) const
+{
+    return arguments.at(idx);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void Exception::SetOriginMethod(const std::string &_originMethod)
 {
     originMethod = _originMethod;
@@ -96,3 +96,14 @@ void Exception::SetErrorNum(unsigned int _errorNumber)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void Exception::AddArgument(std::string argument)
+{
+    arguments.push_back(argument);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void Exception::AddArguments()
+{
+}

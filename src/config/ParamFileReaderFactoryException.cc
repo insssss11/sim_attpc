@@ -6,14 +6,15 @@
 using namespace ParamFileReaderFactoryErrorNum;
 
 ParamFileReaderFactoryException::ParamFileReaderFactoryException(
-    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &_readerType)
-    : Exception("ParamFileReaderFactory", "ParamFileReaderFactory", _originMethod, _errorNumber), readerType(_readerType)
+    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &readerType)
+    : Exception("ParamFileReaderFactory", "ParamFileReaderFactory", _originMethod, _errorNumber, readerType)
 {
     InitErrorMessage();
 }
 
 void ParamFileReaderFactoryException::InitErrorMessage()
 {
+    const std::string readerType = GetArgument(0);
     switch(GetErrorNum())
     {
         case INVALID_READER_TYPE:
@@ -36,14 +37,4 @@ G4ExceptionSeverity ParamFileReaderFactoryException::ClassifySeverity() const
         default:
             return JustWarning;
     }    
-}
-
-void ParamFileReaderFactoryException::SetReaderType(const std::string &_readerType)
-{
-    readerType = _readerType;
-}
-
-std::string ParamFileReaderFactoryException::GetReaderType() const
-{
-    return readerType;
 }

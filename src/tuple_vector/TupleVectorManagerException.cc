@@ -9,14 +9,15 @@
 using namespace TupleVectorManagerErrorNum;
 
 TupleVectorManagerException::TupleVectorManagerException(
-    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &_tupleName)
-    : Exception("TupleVectorManager", "TupleVectorMan", _originMethod, _errorNumber), tupleName(_tupleName)
+    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &tupleName)
+    : Exception("TupleVectorManager", "TupleVectorMan", _originMethod, _errorNumber, tupleName)
 {
     InitErrorMessage();
 }
 
 void TupleVectorManagerException::InitErrorMessage()
 {
+    const std::string tupleName = GetArgument(0);
     switch(GetErrorNum())
     {
         case TUPLE_DUPLICATED:

@@ -8,9 +8,10 @@
 
 namespace ParamContainerTableErrorNum {
     enum ErrorNum : unsigned int {
-        CONTAINER_DUPLICATED = 0000,
-        CONTAINER_NOT_FOUND = 0001,
-        NOT_INITIALIZED = 0004,
+        CONTAINER_DUPLICATED,
+        CONTAINER_NOT_FOUND,
+        CONFIG_FILE_OPEN_FAILURE,
+        PARAM_FILE_OPEN_FAILURE,
         OK = 9999
     };
 }
@@ -20,16 +21,10 @@ class ParamContainerTableException : public Exception
     public:
     ParamContainerTableException(const std::string &originMethod,
         ParamContainerTableErrorNum::ErrorNum errorNumber,
-        const std::string &containerName = "");
+        const std::string &argument1, const std::string &argument2 = "");
 
     virtual void InitErrorMessage() override;
     virtual G4ExceptionSeverity ClassifySeverity() const override;
-
-    void SetContainerName(const std::string &containerName);
-    std::string GetContainerName() const;
-
-    private:
-    std::string containerName;
 };
 
 #endif

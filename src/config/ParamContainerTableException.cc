@@ -6,24 +6,29 @@
 using namespace ParamContainerTableErrorNum;
 
 ParamContainerTableException::ParamContainerTableException(
-    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &_containerName)
-    : Exception("ParamContainerTable", "ParamContainerTable", _originMethod, _errorNumber), containerName(_containerName)
+    const std::string &_originMethod, ErrorNum _errorNumber,
+    const std::string &argument1, const std::string &argument2)
+    : Exception("ParamContainerTable", "ParamContainerTable", _originMethod, _errorNumber, argument1, argument2)
 {
     InitErrorMessage();
 }
 
 void ParamContainerTableException::InitErrorMessage()
 {
+    const std::string argument1 = GetArgument(0), argument2 = GetArgument(1);
     switch(GetErrorNum())
     {
         case CONTAINER_DUPLICATED:
-            message = "A parameter container with name \"" + containerName + "\" aleady exists.";
+            message = "A parameter container with name \"" + argument1 + "\" aleady exists.";
             break;
         case CONTAINER_NOT_FOUND:
-            message = "A parameter container \"" + containerName + "\" does not exists.";
+            message = "A parameter container \"" + argument1 + "\" does not exists.";
             break;
-        case NOT_INITIALIZED:
-            message = "The parameter container table is empty. Initialize loading configuration file.";
+        case CONFIG_FILE_OPEN_FAILURE:
+            message = "Failed to open the configuration file \"" + argument1 + "\".";
+            break;
+        case PARAM_FILE_OPEN_FAILURE:
+            message = "Failed to open the parameter file \"" + argument1 + "\" with the name \"" + argument2 + "\".";
             break;
         case OK:
             break;
@@ -41,19 +46,11 @@ G4ExceptionSeverity ParamContainerTableException::ClassifySeverity() const
             return JustWarning;
         case CONTAINER_NOT_FOUND:
             return FatalException;
-        case NOT_INITIALIZED:
+        case CONFIG_FILE_OPEN_FAILURE:
+            return FatalException;
+        case PARAM_FILE_OPEN_FAILURE:
             return FatalException;
         default:
             return JustWarning;
     }    
-}
-
-void ParamContainerTableException::SetContainerName(const std::string &_containerName)
-{ 
-    containerName = _containerName;
-}
-
-std::string ParamContainerTableException::GetContainerName() const
-{
-    return containerName;
 }

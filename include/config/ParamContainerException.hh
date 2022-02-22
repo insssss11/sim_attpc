@@ -8,8 +8,8 @@
 
 namespace ParamContainerErrorNum {
     enum ErrorNum : unsigned int {
-        PARAM_DUPLICATED = 0000,
-        PARAM_NOT_FOUND = 0001,
+        PARAM_DUPLICATED,
+        PARAM_NOT_FOUND,
         OK = 9999
     };
 }
@@ -23,13 +23,6 @@ class ParamContainerException : public Exception
 
     virtual void InitErrorMessage() override;
     virtual G4ExceptionSeverity ClassifySeverity() const override;
-
-    void SetParamName(const std::string &_vecName);
-
-    std::string GetParamName() const;
-
-    private:
-    std::string paramName, paramType;
 };
 
 #endif

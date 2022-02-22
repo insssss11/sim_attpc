@@ -19,7 +19,7 @@ ParamContainerTable *ParamContainerTable::Instance()
 const ParamContainer *ParamContainerTable::GetContainer(const G4String &name)
 {
     if(fContainerMap->find(name) == fContainerMap->end())
-        throw ParamContainerTableException("GetContainer(const G4String &)", CONTAINER_NOT_FOUND);
+        throw ParamContainerTableException("GetContainer(const G4String &)", CONTAINER_NOT_FOUND, name);
 
     else
         return fContainerMap->at(name);
@@ -77,7 +77,7 @@ void ParamContainerTable::ClearContainers()
 void ParamContainerTable::AddContainer(std::string name, ParamContainer *container)
 {
     if(fContainerMap->find(name) != fContainerMap->end())
-        throw ParamContainerTableException("AddContainer(const G4String &)", CONTAINER_DUPLICATED);
+        throw ParamContainerTableException("AddContainer(const G4String &)", CONTAINER_DUPLICATED, name);
     else
         fContainerMap->insert(std::make_pair(name, container));
 }

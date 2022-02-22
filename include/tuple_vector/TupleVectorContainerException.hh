@@ -8,8 +8,8 @@
 
 namespace TupleVectorContainerErrorNum {
     enum ErrorNum : unsigned int {
-        VECTOR_DUPLICATED = 0000,
-        VECTOR_NOT_FOUND = 0001,
+        VECTOR_DUPLICATED,
+        VECTOR_NOT_FOUND,
         OK = 9999
     };
 }
@@ -23,13 +23,6 @@ class TupleVectorContainerException : public Exception
 
     virtual void InitErrorMessage() override;
     virtual G4ExceptionSeverity ClassifySeverity() const override;
-
-    void SetVecName(const std::string &_vecName);
-
-    std::string GetVecName() const;
-
-    private:
-    std::string vecName;
 };
 
 #endif

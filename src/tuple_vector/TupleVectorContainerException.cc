@@ -9,14 +9,15 @@
 using namespace TupleVectorContainerErrorNum;
 
 TupleVectorContainerException::TupleVectorContainerException(
-    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &_vecName)
-    : Exception("TupleVectorContainer", "TupleVector", _originMethod, _errorNumber), vecName(_vecName)
+    const std::string &_originMethod, ErrorNum _errorNumber, const std::string &vecName)
+    : Exception("TupleVectorContainer", "TupleVector", _originMethod, _errorNumber, vecName)
 {
     InitErrorMessage();
 }
 
 void TupleVectorContainerException::InitErrorMessage()
 {
+    const std::string vecName = GetArgument(0);
     switch(GetErrorNum())
     {
         case VECTOR_DUPLICATED:
@@ -44,14 +45,4 @@ G4ExceptionSeverity TupleVectorContainerException::ClassifySeverity() const
         default:
             return JustWarning;
     }    
-}
-
-void TupleVectorContainerException::SetVecName(const std::string &_vecName)
-{
-    vecName = _vecName;
-}
-
-std::string TupleVectorContainerException::GetVecName() const
-{
-    return vecName;
 }

@@ -2,8 +2,9 @@
 /// \brief Implementation of the ParamContainerTable class
 
 #include "config/ParamContainerTable.hh"
+#include "config/ParamContainerTableException.hh"
 
-#include "G4Exception.hh"
+using namespace ParamContainerTableErrorNum;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -18,13 +19,8 @@ ParamContainerTable *ParamContainerTable::Instance()
 const ParamContainer *ParamContainerTable::GetContainer(const G4String &name)
 {
     if(fContainerMap->find(name) == fContainerMap->end())
-    {
-        std::ostringstream message;
-        message << "Container name with " << name << " does not exist!";
-        G4Exception("ParamContainerTable::GetContainer(const G4String &name)", "ParamTable0001",
-            FatalException, message);
-        return nullptr;
-    }
+        throw ParamContainerTableException("GetContainer(const G4String &)", CONTAINER_NOT_FOUND);
+
     else
         return fContainerMap->at(name);
 }
@@ -60,8 +56,10 @@ void ParamContainerTable::DumpTable() const
     {
         G4cout << "-------------------------------------------------------------" << G4endl;
         G4cout << "# of Parameter Containers : " << fContainerMap->size() << G4endl;
+        G4cout << "-------------------------------------------------------------" << G4endl;
         for(auto container : *fContainerMap)
             container.second->ListParams();
+        G4cout << "-------------------------------------------------------------" << G4endl;
     }
 }
 
@@ -79,12 +77,7 @@ void ParamContainerTable::ClearContainers()
 void ParamContainerTable::AddContainer(std::string name, ParamContainer *container)
 {
     if(fContainerMap->find(name) != fContainerMap->end())
-    {
-        std::ostringstream message;
-        message << "Container name with " << name << " is duplicated";
-        G4Exception("ParamContainerTable::AddContainer(std::string, ParamContainer *)", "ParamTable0000",
-            JustWarning, message);
-    }
+        throw ParamContainerTableException("AddContainer(const G4String &)", CONTAINER_DUPLICATED);
     else
         fContainerMap->insert(std::make_pair(name, container));
 }

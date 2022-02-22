@@ -4,11 +4,9 @@
 #ifndef ParamFileReaderFactory_h
 #define ParamFileReaderFactory_h 1
 
-#include <unordered_map>
-#include "G4String.hh"
-#include "G4Exception.hh"
 #include "ParamFileReader.hh"
 #include "ParamFileReaderTxt.hh"
+#include "config/ParamFileReaderFactoryException.hh"
 
 /// Factory class to create derived classes of ParamFileReader.
 class ParamFileReaderFactory
@@ -24,12 +22,8 @@ ParamFileReader *ParamFileReaderFactory::CreateReaderByType(const G4String &read
     if(readerType == "txt")
         return new ParamFileReaderTxt();
     else
-    {
-        std::ostringstream message;
-        message << "Invalide argument for CreateReaderByType(type), returning a null pointer.";
-        G4Exception("ParamFileReaderFactory::CreateReaderByType(const G4String &)", "ParamFileFactory0000", FatalException, message);
-        return nullptr;
-    }
+        throw ParamFileReaderFactoryException("CreateReaderByType(const G4String &)",
+            ParamFileReaderFactoryErrorNum::INVALID_READER_TYPE, readerType);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

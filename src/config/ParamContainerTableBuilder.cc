@@ -21,9 +21,15 @@ ParamContainerTableBuilder *ParamContainerTableBuilder::AddParamContainer(
     const G4String &containerReaderType, const G4String &containerName,
     const G4String &fileName)
 {
-    auto reader = ParamFileReaderFactory::CreateReaderByType(containerReaderType);
-    reader->OpenFile(fileName);
-    namesAndReaders.emplace_back(containerName, reader);
+    try {
+        auto reader = ParamFileReaderFactory::CreateReaderByType(containerReaderType);
+        reader->OpenFile(fileName);
+        namesAndReaders.emplace_back(containerName, reader);
+    }
+    catch(ParamFileReaderFactoryException const &e)
+    {
+        e.WarnGeantKernel();
+    }
     return this;
 }
 

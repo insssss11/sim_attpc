@@ -72,6 +72,8 @@ DetectorConstruction::DetectorConstruction()
     fNbOfGasMat(0),
     fGasMatMap(nullptr)
 {
+    paramContainer = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+
     fGasMatMap = new std::unordered_map<std::string, std::string>;
 
     fUserLimits = new G4UserLimits(1*mm);
@@ -86,7 +88,6 @@ DetectorConstruction::~DetectorConstruction()
     delete fMessenger;
     delete fUserLimits;
     delete fGeoRotation;
-    // delete fLogicChamber;
     for(auto visAttributes : fVisAttributes)
         delete visAttributes;
     // pointers to G4Material of the map are deleted at the end of the program.
@@ -260,9 +261,11 @@ void DetectorConstruction::BuildMagnet()
 
 void DetectorConstruction::BuildMagField()
 {
+    auto vacuum = G4Material::GetMaterial("Vacuum");
+
     const G4double rMagField = 150*mm, pDzMagField = 200*mm/2;
     auto solidMagField = new G4Tubs("solidMagField", 0., rMagField, pDzMagField, 0., 360. * deg);
-    fLogicMagField = new G4LogicalVolume(solidMagField, fGasMat, "LogicMagField");
+    fLogicMagField = new G4LogicalVolume(solidMagField, vacuum, "LogicMagField");
     fLogicMagField->SetUserLimits(fUserLimits);
     fPhysMagField = new G4PVPlacement(
         fGeoRotation, G4ThreeVector(), fLogicMagField, "PhysMagField", fLogicWorld,
@@ -273,24 +276,39 @@ void DetectorConstruction::BuildMagField()
 
 void DetectorConstruction::BuildGas()
 {
-    // For now, magnetic field volume and gas volume completly coincide.
-    fLogicGas = fLogicMagField;
+    const G4double
+        xGas = paramContainer->GetParamD("gasX")/2,
+        yGas = paramContainer->GetParamD("gasY")/2,
+        zGas = paramContainer->GetParamD("gasZ")/2;
+    
+    G4ThreeVector position(
+        paramContainer->GetParamD("gasPosX"),
+        paramContainer->GetParamD("gasPosY"),
+        paramContainer->GetParamD("gasPosZ"));
+
+    auto solidGas = new G4Box("SolidGas", xGas, yGas, zGas);
+    
+    fLogicGas = new G4LogicalVolume(solidGas, fGasMat, "LogicGas");
+    fLogicGas->SetUserLimits(fUserLimits);
+    
+    fPhysGas = new G4PVPlacement(
+        fGeoRotation, position, fLogicGas, "PhysGas", fLogicMagField,
+        false, 0, fCheckOverlaps);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::BuildChamber()
 {
-    const auto params = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     const G4double
-        xChamber = params->GetParamD("chamberX")/2,
-        yChamber = params->GetParamD("chamberY")/2,
-        zChamber = params->GetParamD("chamberZ")/2;
+        xChamber = paramContainer->GetParamD("chamberX")/2,
+        yChamber = paramContainer->GetParamD("chamberY")/2,
+        zChamber = paramContainer->GetParamD("chamberZ")/2;
     
     G4ThreeVector position(
-        params->GetParamD("posX"),
-        params->GetParamD("posY"),
-        params->GetParamD("posZ"));
+        paramContainer->GetParamD("chamberPosX"),
+        paramContainer->GetParamD("chamberPosY"),
+        paramContainer->GetParamD("chamberPosZ"));
 
     auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
     
@@ -298,7 +316,7 @@ void DetectorConstruction::BuildChamber()
     fLogicChamber->SetUserLimits(fUserLimits);
     
     fPhysChamber = new G4PVPlacement(
-        fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysMagField", fLogicMagField,
+        fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysChamber", fLogicGas,
         false, 0, fCheckOverlaps);
 }
 
@@ -335,6 +353,10 @@ void DetectorConstruction::SetVisAttributes()
 
     visAttributes = new G4VisAttributes(G4Colour(1, 0.5, 1, 0.2));
     fLogicMagField->SetVisAttributes(visAttributes);
+    fVisAttributes.push_back(visAttributes);
+
+    visAttributes = new G4VisAttributes(G4Colour(1, 1, 1, 0.1));
+    fLogicGas->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
     visAttributes = new G4VisAttributes(G4Colour(0.9, 0.5, 0.3, 0.2));

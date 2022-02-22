@@ -1,12 +1,23 @@
-# geometry
-posX        double      0
-posY        double      0
-posZ        double      0
-chamberX       double      100
-chamberY       double      100
-chamberZ       double      80
+# position and dimensions of gas chamber
+chamberPosX     double      0
+chamberPosY     double      0
+chamberPosZ     double      0
+chamberX        double      100
+chamberY        double      100
+chamberZ        double      80
 
-nPadX           int         20
-nPadY           int         20
-margin          double      1
+nPadX           int         40
+nPadY           int         40
+margin          double      0.2
 multiplication  double      1e6
+
+# position and dimensions of gas volume
+gasPosX         double      0
+gasPosY         double      0
+gasPosZ         double      0
+gasX            double      150
+gasY            double      150
+gasZ            double      150
+
+# average energy per ionized electron pair
+W               double      41

@@ -119,8 +119,8 @@ void GasChamberSD::InitDigitizer()
     digitizer = new GasChamberDigitizer(
         "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),
         container->GetParamI("nPadX"), container->GetParamI("nPadY"),
-        43.3*eV,
-        G4ThreeVector(container->GetParamD("posX"), container->GetParamD("posY"), container->GetParamD("posZ")));
+        container->GetParamD("W"),
+        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")));
     digitizer->SetPadMargin(container->GetParamD("margin"));
     digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
     digitizerManager->AddNewModule(digitizer);

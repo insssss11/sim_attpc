@@ -5,6 +5,7 @@
 #define DetectorConstruction_h 1
 
 #include "globals.hh"
+#include "config/ParamContainer.hh"
 #include "detector_construction/DetectorConstructionMessenger.hh"
 #include "MagneticField.hh"
 
@@ -60,6 +61,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     G4Material *FindGasMat(const G4String &key);
     G4String GetGasMixtureStat();
     private:
+    const ParamContainer *paramContainer;
     DetectorConstructionMessenger *fMessenger;
 
     G4UserLimits *fUserLimits;

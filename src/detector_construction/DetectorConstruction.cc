@@ -310,7 +310,7 @@ void DetectorConstruction::BuildChamber()
         paramContainer->GetParamD("chamberPosY"),
         paramContainer->GetParamD("chamberPosZ"));
 
-    auto solidChamber = new G4Box("SolidChamber", zChamber, yChamber, xChamber);
+    auto solidChamber = new G4Box("SolidChamber", xChamber, yChamber, zChamber);
     
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);

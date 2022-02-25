@@ -83,6 +83,8 @@ set(SCRIPTS
   gmacros/pad_charges.mac  
   rmacros/DrawBraggsCurve.cc
   rmacros/DrawPadCharges.cc
+  rmacros/AddTrees.cc
+  rmacros/BranchAdderBase/BranchAdderBase.hh
   rmacros/EventDrawingAction.hh
   parameters/gas_chamber.txt
   )

@@ -7,7 +7,7 @@
 
 /attpc/gun/setPosX 0. mm
 /attpc/gun/setPosY 0. mm
-/attpc/gun/setPosZ -70. mm
+/attpc/gun/setPosZ 0. mm
 
 # inactivate all process except ionization
 /process/inactivate CoulombScat

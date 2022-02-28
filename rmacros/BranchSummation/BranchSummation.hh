@@ -1,5 +1,8 @@
-#ifndef BranchAdderBase_h
-#define BranchAdderBase_h 1
+#ifndef BranchSummation_h
+#define BranchSummation_h 1
+
+#include "BranchAppender.hh"
+#include "EntrySummation.hh"
 
 #include "TFile.h"
 #include "TTreeReader.h"
@@ -18,13 +21,13 @@ using ReaderValuePtrs = std::vector<std::unique_ptr<TTreeReaderValue<dType> > >;
 
 template <typename dType>
 // Add up data of branches of multiple TTree instances and append to a given TTree.
-class BranchAdderBase
+class BranchSummation
 {
     public:
     // All branch names must be identical.
-    BranchAdderBase(const std::string &branchName);
+    BranchSummation(const std::string &branchName);
 
-    virtual ~BranchAdderBase();
+    virtual ~BranchSummation();
 
     void AppendColumn(TTree *treeToAppend);
     bool CheckConsistency();
@@ -38,15 +41,7 @@ class BranchAdderBase
     int GetNreaders() const;
 
     private:
-    
-    template <typename vdType>
-    void AppendBranch(std::vector<vdType> *data, TTree *treeToAppend);
-    void AppendBranch(dType *data, TTree *treeToAppend);
-
     void FillBranch(dType *data, TTree *treeToAppend);
-
-    template <typename vdType>
-    void FillSummedData(std::vector<vdType> *data);
     void FillSummedData(dType *data);
 
     void AddRootFile(TFile *rootFile);
@@ -67,7 +62,10 @@ class BranchAdderBase
     class Exception;
     const std::string branchName;
 
-    dType data;
+    std::unique_ptr<BranchAppender<dType> > branchAppender;
+    std::unique_ptr<EntrySummation<dType> > entrySummation;
+
+    dType *data;
     int nReaders;
     ReaderPtrs readerPtrs;
     ReaderValuePtrs<dType> readerValuePtrs;
@@ -80,116 +78,79 @@ class BranchAdderBase
 };
 
 template <typename dType>
-BranchAdderBase<dType>::BranchAdderBase(const std::string &_branchName)
-    : branchName(_branchName), nReaders(0), entries(0), curEntry(0)
+BranchSummation<dType>::BranchSummation(const std::string &_branchName)
+    : branchName(_branchName),
+    branchAppender(new BranchAppender<dType>(branchName)),
+    entrySummation(new EntrySummation<dType>()),
+    nReaders(0), entries(0), curEntry(0)
 {
+    data = new dType;
 }
 
 template <typename dType>
-BranchAdderBase<dType>::~BranchAdderBase()
+BranchSummation<dType>::~BranchSummation()
 {
+    delete data;
     CloseRootFiles();
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::CloseRootFiles()
+void BranchSummation<dType>::CloseRootFiles()
 {
     for(auto rootFile : openedRootFiles)
         rootFile->Close();
 }
 
-#include <typeinfo>
 template <typename dType>
-void BranchAdderBase<dType>::AppendColumn(TTree *treeToAppend)
+void BranchSummation<dType>::AppendColumn(TTree *treeToAppend)
 {
     if(nReaders == 0)
         throw Exception("No tree to be added up. The number of trees must not be zero.");
     try {
-        /*
-        std::cout << typeid(data).name() << std::endl;
-        std::cout << typeid(&data).name() << std::endl;
-        */
-        AppendBranch(static_cast<dType*>(&data), treeToAppend);
-        FillBranch(static_cast<dType*>(&data), treeToAppend);
+        branchAppender->AppendBranch(data, treeToAppend);
+        FillBranch(data, treeToAppend);
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in BranchAdderBase<dType>::AppendColumn(TTree*)" << std::endl;
+        std::cerr << "Error occured in BranchSummation<dType>::AppendColumn(TTree*)" << std::endl;
         std::cerr << e.what() << std::endl;
+        throw Exception("Failed to append a branch containing summed data to the tree \"" + treeToAppend->GetName() + "\".");
     }
 }
 
 template <typename dType>
-template <typename vdType>
-void BranchAdderBase<dType>::AppendBranch(std::vector<vdType> *vData, TTree *treeToAppend)
+void BranchSummation<dType>::FillBranch(dType *data, TTree *treeToAppend)
 {
-    std::cout << "For vector-type " << std::endl;
-    treeToAppend->Branch(branchName.c_str(), &vData);
-}
-
-template <typename dType>
-void BranchAdderBase<dType>::AppendBranch(dType *data, TTree *treeToAppend)
-{
-    std::cout << "For Normal type " << std::endl;
-    treeToAppend->Branch(branchName.c_str(), data);
-}
-
-
-template <typename dType>
-void BranchAdderBase<dType>::FillBranch(dType *vData, TTree *treeToAppend)
-{
-    std::cout << "For vector-type " << std::endl;
     ResetReaders();
     try {
         while(NextReaders())
         {
-            FillSummedData(vData);
+            FillSummedData(data);
             treeToAppend->Fill();
             ++curEntry;
         }
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in FillBranch(std::vector<vdType> *, TTree *)" << std::endl;
+        std::cerr << "Error occured in FillBranch(dType *, TTree *)" << std::endl;
         std::cerr << e.what() << std::endl;
         throw Exception("Failed sum over entries at the event number " + std::to_string(curEntry));
     }
 }
 
 template <typename dType>
-template <typename vdType>
-void BranchAdderBase<dType>::FillSummedData(std::vector<vdType> *vData)
+void BranchSummation<dType>::FillSummedData(dType *data)
 {
-    std::vector<vdType> _vData;
-    size_t vecSize = 0;
+    entrySummation->ResetData();
     for(auto &readerValuePtr : readerValuePtrs)
     {
-        _vData = **readerValuePtr;
-        if(vecSize == 0)
-        {
-            vecSize = _vData.size();
-            vData->assign(vecSize, 0);
-        }
-        else if(vecSize != _vData.size())
-            throw Exception("The size of vector at the entry number "  + std::to_string(curEntry) + "of the tree \"" +
-            readerValuePtr->GetTree()->GetName() + "\" is not consistent.");
-        for(size_t i = 0;i < vecSize;++i)
-            vData->at(i) += _vData.at(i);
+        entrySummation->AddData(**readerValuePtr);
     }
+    *data = entrySummation->GetData();
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::FillSummedData(dType *data)
-{
-    *data = 0;
-    for(auto &readerValuePtr : readerValuePtrs)
-    {
-        *data += **readerValuePtr;
-    }
-}
-
-template <typename dType>
-void BranchAdderBase<dType>::ResetReaders()
+void BranchSummation<dType>::ResetReaders()
 {
     curEntry = 0;
     for(auto &readerPtr : readerPtrs)
@@ -197,7 +158,7 @@ void BranchAdderBase<dType>::ResetReaders()
 }
 
 template <typename dType>
-bool BranchAdderBase<dType>::NextReaders()
+bool BranchSummation<dType>::NextReaders()
 {
     for(auto &readerPtr : readerPtrs)
         if(!readerPtr->Next())
@@ -206,7 +167,7 @@ bool BranchAdderBase<dType>::NextReaders()
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::AddTreeFromFile(const std::string &treeName, const std::string &fileName)
+void BranchSummation<dType>::AddTreeFromFile(const std::string &treeName, const std::string &fileName)
 {
     try {
         TFile *rootFile = TFile::Open(fileName.c_str(), "READ");
@@ -218,14 +179,14 @@ void BranchAdderBase<dType>::AddTreeFromFile(const std::string &treeName, const 
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in BranchAdderBase<dType>::AddTreeFromFile(const std::string &, const std::string &)" << std::endl;
+        std::cerr << "Error occured in BranchSummation<dType>::AddTreeFromFile(const std::string &, const std::string &)" << std::endl;
         std::cerr << e.what() << std::endl;
         throw Exception("Failed to add reader and readerValue from a tree in a given root file.");
     }
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::AddRootFile(TFile *rootFile)
+void BranchSummation<dType>::AddRootFile(TFile *rootFile)
 {
     if(!rootFile->IsOpen())
         throw Exception(std::string("Faied to open root file \"") + rootFile->GetName() + "\".");
@@ -233,7 +194,7 @@ void BranchAdderBase<dType>::AddRootFile(TFile *rootFile)
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::AddTree(TTree *tree)
+void BranchSummation<dType>::AddTree(TTree *tree)
 {
     try {
         if(nReaders == 0)
@@ -242,14 +203,14 @@ void BranchAdderBase<dType>::AddTree(TTree *tree)
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in BranchAdderBase<dType>::AddTree(TTree *tree)" << std::endl;
+        std::cerr << "Error occured in BranchSummation<dType>::AddTree(TTree *tree)" << std::endl;
         std::cerr << e.what() << std::endl;
         throw Exception("Failed to add reader and readerValue from a tree.");
     }
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::InitBranchAtts(TTree *tree)
+void BranchSummation<dType>::InitBranchAtts(TTree *tree)
 {
     try {
         dataType = GetDataType(tree);
@@ -257,13 +218,14 @@ void BranchAdderBase<dType>::InitBranchAtts(TTree *tree)
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in BranchAdderBase<dType>::InitBranchAtts(TTreeReader *, TTreeReaderValue<dType> *)" << std::endl;
+        std::cerr << "Error occured in BranchSummation<dType>::InitBranchAtts(TTreeReader *, TTreeReaderValue<dType> *)" << std::endl;
+        std::cerr << e.what() << std::endl;
         throw e;
     }
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::AddReaderAndValue(TTree *tree)
+void BranchSummation<dType>::AddReaderAndValue(TTree *tree)
 {
     std::unique_ptr<TTreeReader> readerPtr(new TTreeReader(tree));
     std::unique_ptr<TTreeReaderValue<dType> > readerValuePtr(new TTreeReaderValue<dType>(*readerPtr.get(), branchName.c_str()));
@@ -275,8 +237,9 @@ void BranchAdderBase<dType>::AddReaderAndValue(TTree *tree)
     }
     catch(std::exception const &e)
     {
-        std::cerr << "Error occured in BranchAdderBase<dType>::AddReaderAndValue(TTree *)" << std::endl;
+        std::cerr << "Error occured in BranchSummation<dType>::AddReaderAndValue(TTree *)" << std::endl;
         std::cerr << e.what() << std::endl;
+        throw e;
     }
     readerPtrs.push_back(std::move(readerPtr));
     readerValuePtrs.push_back(std::move(readerValuePtr));
@@ -284,13 +247,13 @@ void BranchAdderBase<dType>::AddReaderAndValue(TTree *tree)
 }
 
 template <typename dType>
-std::string BranchAdderBase<dType>::GetDataType(TTree *tree) const
+std::string BranchSummation<dType>::GetDataType(TTree *tree) const
 {
     return std::string(tree->GetBranch(branchName.c_str())->GetLeaf(branchName.c_str())->GetTypeName());
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::CheckBranch(TTree *tree) const
+void BranchSummation<dType>::CheckBranch(TTree *tree) const
 {
     if(entries != tree->GetEntries())
         throw Exception(std::string("The number of the tree \"") +
@@ -301,7 +264,7 @@ void BranchAdderBase<dType>::CheckBranch(TTree *tree) const
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::CheckReader(TTreeReader *readerPtr) const
+void BranchSummation<dType>::CheckReader(TTreeReader *readerPtr) const
 {
     if(readerPtr->GetEntryStatus() != TTreeReader::kEntryValid)
         throw Exception(std::string("Reader entry status for the tree \"") +
@@ -309,7 +272,7 @@ void BranchAdderBase<dType>::CheckReader(TTreeReader *readerPtr) const
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::CheckReaderValue(TTreeReaderValue<dType> *readerValuePtr) const
+void BranchSummation<dType>::CheckReaderValue(TTreeReaderValue<dType> *readerValuePtr) const
 {
     if(readerValuePtr->GetSetupStatus() < 0)
     {
@@ -319,7 +282,7 @@ void BranchAdderBase<dType>::CheckReaderValue(TTreeReaderValue<dType> *readerVal
 }
 
 template <typename dType>
-void BranchAdderBase<dType>::Reset()
+void BranchSummation<dType>::Reset()
 {
     CloseRootFiles();
     readerPtrs.clear();
@@ -331,25 +294,25 @@ void BranchAdderBase<dType>::Reset()
 }
 
 template <typename dType>
-Long64_t BranchAdderBase<dType>::GetEntries() const
+Long64_t BranchSummation<dType>::GetEntries() const
 {
     return entries;
 }
 
 template <typename dType>
-std::string BranchAdderBase<dType>::GetDataType() const
+std::string BranchSummation<dType>::GetDataType() const
 {
     return dataType;
 }
 
 template <typename dType>
-int BranchAdderBase<dType>::GetNreaders() const
+int BranchSummation<dType>::GetNreaders() const
 {
     return nReaders;
 }
 
 template <typename dType>
-class BranchAdderBase<dType>::Exception : public std::exception {
+class BranchSummation<dType>::Exception : public std::exception {
     public:
     Exception(const std::string &_message) : std::exception(), message("what() : " + _message) {}
     const char *what() const noexcept override

@@ -79,13 +79,19 @@ set(SCRIPTS
   vis.mac
   ${gps_macros}
   gmacros/braggs_curve.mac
-  gmacros/trajectories_overlap.mac
-  gmacros/pad_charges.mac  
   rmacros/DrawBraggsCurve.cc
+
+  gmacros/trajectories_overlap.mac
+  
+  gmacros/pad_charges.mac  
   rmacros/DrawPadCharges.cc
-  rmacros/AddTrees.cc
-  rmacros/BranchAdderBase/BranchAdderBase.hh
   rmacros/EventDrawingAction.hh
+  
+  rmacros/AddTrees.cc
+  rmacros/BranchSummation/BranchSummation.hh
+  rmacros/BranchSummation/EntrySummation.hh
+  rmacros/BranchSummation/BranchAppender.hh
+
   parameters/gas_chamber.txt
   )
 

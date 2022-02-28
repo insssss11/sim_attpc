@@ -1,12 +1,11 @@
 
-#include "BranchAdderBase/BranchAdderBase.hh"
+#include "BranchSummation/BranchSummation.hh"
 
 #include <stdarg.h>
 
 int AddTrees(const char *outFile, const char *treeName, const char *branchName, int nTrees, ...)
 {
-
-    BranchAdderBase<std::vector<double> > *adder = new BranchAdderBase<std::vector<double> >(branchName);
+    BranchSummation<int > *adder = new BranchSummation<int>(branchName);
     va_list ap;
     va_start(ap, nTrees);
     for(int i = 0; i < nTrees; i++)

@@ -4,7 +4,7 @@
 #ifndef TupleVectorManager_h
 #define TupleVectorManager_h 1
 
-#include "tuple_vector/TupleVectorContainer.hh"
+#include "tuple/TupleVectorContainer.hh"
 
 #include "G4Cache.hh"
 

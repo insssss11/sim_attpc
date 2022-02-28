@@ -1,8 +1,8 @@
 /// \file TupleVectorManager.cc
 /// \brief Implementation of the TupleVectorManager class
 
-#include "tuple_vector/TupleVectorManager.hh"
-#include "tuple_vector/TupleVectorManagerException.hh"
+#include "tuple/TupleVectorManager.hh"
+#include "tuple/TupleVectorManagerException.hh"
 #include "AnalysisManager.hh"
 
 using namespace TupleVectorManagerErrorNum;

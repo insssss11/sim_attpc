@@ -1,7 +1,7 @@
 /// \file TupleVectorManagerException.cc
 /// \brief Implementation of the TupleVectorManagerException class
 
-#include "tuple_vector/TupleVectorManagerException.hh"
+#include "tuple/TupleVectorManagerException.hh"
 
 #include <stdio.h>
 #include <sstream>

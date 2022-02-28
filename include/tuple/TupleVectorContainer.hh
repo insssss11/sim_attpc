@@ -4,7 +4,7 @@
 #ifndef TupleVectorContainer_h
 #define TupleVectorContainer_h 1
 
-#include "tuple_vector/TupleVectorContainerException.hh"
+#include "tuple/TupleVectorContainerException.hh"
 
 #include <unordered_map>
 #include <string>

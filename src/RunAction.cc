@@ -20,8 +20,6 @@ RunAction::RunAction(EventAction *eventAction)
     fAnalysisManager->SetVerboseLevel(1);
     // If running in MT, merge all tuples after the end of run.
     fAnalysisManager->SetNtupleMerging(true);
-    G4cout << "Fuck1" << G4endl;
-    G4cout << "Fuck2" << G4endl;
     DefineCommands();
 }
 
@@ -39,27 +37,13 @@ void RunAction::BeginOfRunAction(const G4Run * /*run*/)
     fAnalysisManager->SetFileName(fFileName);
     fAnalysisManager->FinishNtuple();
     fAnalysisManager->SetActivation(fAnaActivated);
-    G4cout << "Fuck3" << G4endl;
     fAnalysisManager->OpenFile(fFileName);
-    G4cout << "Fuck4" << G4endl;
-    if(IsMaster())
-        G4cout << "Master : ";
-    else
-        G4cout << "Worker : ";
-    G4cout << fFileName << " " << fAnalysisManager->GetFileName() << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::EndOfRunAction(const G4Run * /*run*/)
 {
-    if(IsMaster())
-        G4cout << "Master : ";
-    else
-        G4cout << "Worker : ";
-    G4cout << fFileName << " " << fAnalysisManager->GetFileName() << G4endl;;
-    // save histograms & ntuple
-    //
     if(fAnalysisManager->GetActivation())
         fAnalysisManager->Write();
     fAnalysisManager->CloseFile();

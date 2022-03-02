@@ -30,7 +30,6 @@ GasChamberSD::GasChamberSD(G4String name, G4int verbose)
     collectionName.insert("GasChamberHColl");
     InitManagers();
     InitDigitizer();
-    InitTuples();
     DefineCommands();
 }
 
@@ -124,74 +123,6 @@ void GasChamberSD::InitDigitizer()
     digitizer->SetPadMargin(container->GetParamD("margin"));
     digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
     digitizerManager->AddNewModule(digitizer);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitTuples()
-{
-    InitHitTupleVectors();
-    InitHitTuples();
-
-    InitDigiTupleVectors();
-    InitDigiTuples();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitHitTupleVectors()
-{
-    tupleVectorManager->AddTupleVectorContainer("tree_gc2")
-        ->AddVectorsD("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitHitTuples()
-{
-    analysisManager->CreateNtuple("tree_gc1", "gas chamber hit data saved by event");
-    analysisManager->CreateNtupleIColumn("Ntrk"); // 0 0
-
-    analysisManager->CreateNtuple("tree_gc2", "gas chamber hit data saved by trk");
-    analysisManager->CreateNtupleIColumn("evtId"); // 1 0
-    analysisManager->CreateNtupleIColumn("trkId"); // 1 1
-    analysisManager->CreateNtupleIColumn("Nstep"); // 1 2
-    analysisManager->CreateNtupleIColumn("atomNum"); // 1 3
-    analysisManager->CreateNtupleDColumn("mass"); // 1 4
-    analysisManager->CreateNtupleDColumn("trkLen"); // 1 5
-    analysisManager->CreateNtupleDColumn("eDepSum"); // 1 6
-    // analysisManager->CreateNtupleSColumn("part"); // 1 7
-
-    // vector part
-    auto tupleVector2 = tupleVectorManager->GetTupleVectorContainer("tree_gc2");
-    analysisManager->CreateNtupleDColumn("x", tupleVector2->GetVectorRefD("x"));
-    analysisManager->CreateNtupleDColumn("y", tupleVector2->GetVectorRefD("y"));
-    analysisManager->CreateNtupleDColumn("z", tupleVector2->GetVectorRefD("z"));
-    analysisManager->CreateNtupleDColumn("px", tupleVector2->GetVectorRefD("px"));
-    analysisManager->CreateNtupleDColumn("py", tupleVector2->GetVectorRefD("py"));
-    analysisManager->CreateNtupleDColumn("pz", tupleVector2->GetVectorRefD("pz"));
-    analysisManager->CreateNtupleDColumn("eDep", tupleVector2->GetVectorRefD("eDep"));
-    // analysisManager->CreateNtupleDColumn("t", tupleVector2->GetVectorRefD("t"));
-    // analysisManager->CreateNtupleDColumn("q", tupleVector2->GetVectorRefD("q"));
-    analysisManager->CreateNtupleDColumn("stepLen", tupleVector2->GetVectorRefD("stepLen"));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitDigiTupleVectors()
-{
-    tupleVectorManager->AddTupleVectorContainer("tree_gc3")
-        ->AddVectorsD("qdc");
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitDigiTuples()
-{
-    auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
-    // tuples for digitizer
-    analysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
-    analysisManager->CreateNtupleDColumn("qdc", tupleVector3->GetVectorRefD("qdc"));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

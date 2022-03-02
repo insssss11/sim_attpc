@@ -4,13 +4,17 @@
 #ifndef RunAction_h
 #define RunAction_h 1
 
+#include "tuple/TupleInitializer.hh"
+
 #include "AnalysisManager.hh"
 #include "G4UserRunAction.hh"
 #include "G4GenericMessenger.hh"
 #include "globals.hh"
 
-class EventAction;
+#include <memory>
 
+class TupleInitializer;
+class EventAction;
 class G4Run;
 
 /// Run action class
@@ -32,6 +36,8 @@ class RunAction : public G4UserRunAction
     EventAction *fEventAction;
     G4AnalysisManager *fAnalysisManager;
     G4GenericMessenger *fMessenger;
+
+    std::unique_ptr<TupleInitializer> tupleInitializer;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

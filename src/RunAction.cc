@@ -13,13 +13,14 @@
 RunAction::RunAction(EventAction *eventAction)
     : G4UserRunAction(),
     fAnaActivated(false), fFileName("sim_attpc.root"),
-    fEventAction(eventAction), fAnalysisManager(nullptr)
+    fEventAction(eventAction), fAnalysisManager(nullptr),
+    tupleInitializer(new TupleInitializer)
 {
-    // it is recommened that analysis manager instance be created in user run action constructor.
     fAnalysisManager = G4AnalysisManager::Instance();
     fAnalysisManager->SetVerboseLevel(1);
     // If running in MT, merge all tuples after the end of run.
-    fAnalysisManager->SetNtupleMerging(true);
+    if(G4RunManager::GetRunManager()->GetRunManagerType() != G4RunManager::RMType::sequentialRM)
+        fAnalysisManager->SetNtupleMerging(true);
     DefineCommands();
 }
 
@@ -35,18 +36,18 @@ RunAction::~RunAction()
 void RunAction::BeginOfRunAction(const G4Run * /*run*/)
 {
     fAnalysisManager->SetFileName(fFileName);
-    fAnalysisManager->FinishNtuple();
-    fAnalysisManager->SetActivation(fAnaActivated);
-    fAnalysisManager->OpenFile(fFileName);
+    fAnalysisManager->OpenFile();
+    tupleInitializer->Init();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::EndOfRunAction(const G4Run * /*run*/)
 {
-    if(fAnalysisManager->GetActivation())
+    if(fAnaActivated)
         fAnalysisManager->Write();
     fAnalysisManager->CloseFile();
+    fAnalysisManager->Clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

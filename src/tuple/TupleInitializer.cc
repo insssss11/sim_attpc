@@ -2,23 +2,33 @@
 /// \brief Implementation of the TupleInitializer class
 
 #include "tuple/TupleInitializer.hh"
+#include "tuple/TupleInitializerGasChamber.hh"
 
-TupleInitializer::TupleInitializer()
-{}
+TupleInitializer::TupleInitializer() : TupleInitializerBase(),
+    nInitializers(static_cast<int>(nDetectors))
+{
+    for(int i = 0;i < nInitializers;++i)
+        initializers.at(i) = TupleInitializerFactory::Create(i);
+}
 
 TupleInitializer::~TupleInitializer()
 {
 }
 
 std::unique_ptr<TupleInitializerBase> TupleInitializer::TupleInitializerFactory::
-    Create(const std::string &detName)
+    Create(int detectorIdx)
 {
-    if(detName == "gas_chamber")
-        return nullptr;
+    switch(detectorIdx)
+    {
+        case gas_chamber:
+            return std::make_unique<TupleInitializerGasChamber>(TupleInitializerGasChamber{});
+        default:
+            return nullptr;
+    }
 }
 
 void TupleInitializer::Init()
 {
-    for(auto detTuple : detTuples)
-        TupleInitializerFactory::Create(detTuple.data())->Init();
+    for(auto &initializer : initializers)
+        initializer->Init();
 }

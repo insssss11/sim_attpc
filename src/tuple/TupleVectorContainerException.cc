@@ -1,7 +1,7 @@
 /// \file TupleVectorContainerException.cc
 /// \brief Implementation of the TupleVectorContainerException class
 
-#include "tuple_vector/TupleVectorContainerException.hh"
+#include "tuple/TupleVectorContainerException.hh"
 
 #include <stdio.h>
 #include <sstream>

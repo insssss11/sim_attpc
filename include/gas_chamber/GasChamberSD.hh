@@ -7,7 +7,7 @@
 #include "gas_chamber/GasChamberHit.hh"
 #include "gas_chamber/GasChamberDigitizer.hh"
 
-#include "tuple_vector/TupleVectorManager.hh"
+#include "tuple/TupleVectorManager.hh"
 
 #include "AnalysisManager.hh"
 
@@ -30,15 +30,8 @@ class GasChamberSD : public G4VSensitiveDetector
 
     private:
     void InitManagers();
-
     void InitDigitizer();
-
-    void InitTuples();
-    void InitHitTupleVectors();
-    void InitHitTuples();
-    void InitDigiTupleVectors();
-    void InitDigiTuples();
-
+    
     void FillHitTuples();
     void FillDigiTuples();
 

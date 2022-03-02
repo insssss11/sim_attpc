@@ -22,19 +22,19 @@ class TupleInitializer : public TupleInitializerBase
     public:
     virtual ~TupleInitializer();
 
-    protected:
+    private:
+    enum EnumDetectors {gas_chamber, nDetectors};
     TupleInitializer();
+    
+    virtual void Init() override;
 
     private:
     class TupleInitializerFactory{
         public:
-        static std::unique_ptr<TupleInitializerBase> Create(
-            const std::string &detName);
+        static std::unique_ptr<TupleInitializerBase> Create(int detectorIdx);
     };
-    virtual void Init() override;
-
-    private:
-    static constexpr std::string_view detTuples[] = {"gas_chamber"};
+    const int nInitializers;
+    std::array<std::unique_ptr<TupleInitializerBase>, nDetectors> initializers;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

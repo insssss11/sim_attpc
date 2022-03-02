@@ -34,6 +34,7 @@ private:
     G4UIcmdWithADoubleAndUnit *fSetMaxTrack;
     G4UIcmdWithADoubleAndUnit *fSetMaxTime;
     G4UIcmdWithADoubleAndUnit *fSetMinKinE;
+    G4UIcmdWithADoubleAndUnit *fSetBeamPipePosY;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

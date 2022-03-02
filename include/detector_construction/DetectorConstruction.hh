@@ -43,6 +43,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void SetLimitTrack(G4double utrakMax);
     void SetLimitTime(G4double utimeMax);
     void SetMinKinE(G4double uekinMax);
+    void SetBeamPipePosY(G4double posY);
 
     private:
     void ConstructMaterials();

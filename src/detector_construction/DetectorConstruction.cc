@@ -475,6 +475,16 @@ void DetectorConstruction::SetMinKinE(G4double uekinMax)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DetectorConstruction::SetBeamPipePosY(G4double posY)
+{
+    G4ThreeVector pos = fPhysPipe->GetTranslation();
+    pos.setY(posY);
+    fPhysPipe->SetTranslation(pos);
+    G4RunManager::GetRunManager()->GeometryHasBeenModified();    
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void DetectorConstruction::RegisterGasMat(const G4String &key, const G4String &val)
 {
     fGasMatMap->insert(std::make_pair(key.data(), val.data()));

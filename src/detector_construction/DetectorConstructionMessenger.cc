@@ -59,6 +59,11 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     fSetMinKinE->SetParameterName("ukineMin", false);
     fSetMinKinE->SetDefaultUnit("MeV");
     fSetMinKinE->SetRange("ukineMin > 0");
+
+    fSetBeamPipePosY = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setBeamPipePosY", this);
+    fSetBeamPipePosY->SetGuidance("Set y-position of beam pipe.");
+    fSetBeamPipePosY->SetParameterName("posY", false);
+    fSetBeamPipePosY->SetDefaultUnit("mm");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,6 +76,7 @@ DetectorConstructionMessenger::~DetectorConstructionMessenger()
     delete fSetMaxTrack;
     delete fSetMaxTime;
     delete fSetMinKinE;
+    delete fSetBeamPipePosY;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -87,6 +93,8 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String n
         fDetector->SetLimitTime(fSetMaxTime->GetNewDoubleValue(newValues));
     else if(command == fSetMinKinE)
         fDetector->SetMinKinE(fSetMinKinE->GetNewDoubleValue(newValues));
+    else if(command == fSetBeamPipePosY)
+        fDetector->SetBeamPipePosY(fSetBeamPipePosY->GetNewDoubleValue(newValues));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

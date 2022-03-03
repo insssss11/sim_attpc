@@ -78,8 +78,8 @@ set(SCRIPTS
   init.mac
   vis.mac
   ${gps_macros}
-  gmacros/braggs_curve.mac
-  rmacros/DrawBraggsCurve.cc
+  gmacros/bragg_peak.mac
+  rmacros/DrawBraggPeak.cc
 
   gmacros/trajectories_overlap_vis.mac
   

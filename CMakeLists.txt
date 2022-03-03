@@ -81,8 +81,9 @@ set(SCRIPTS
   gmacros/braggs_curve.mac
   rmacros/DrawBraggsCurve.cc
 
-  gmacros/trajectories_overlap.mac
+  gmacros/trajectories_overlap_vis.mac
   
+  gmacros/pad_charges_vis.mac
   gmacros/pad_charges.mac  
   rmacros/DrawPadCharges.cc
   rmacros/EventDrawingAction.hh

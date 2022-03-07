@@ -25,7 +25,10 @@ class DrawPadChargesAction : public EventDrawingAction {
         tree->SetBranchAddress("qdc", &data);
 
         hist = new TH2D("hist", "", padPlane.nPadX, 0., padPlane.padPlaneX, padPlane.nPadY, 0., padPlane.padPlaneY);
-        hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);/#it{charge} (fC)");
+        hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);#it{charge} (fC)");
+        hist->GetXaxis()->SetTitleOffset(2.0);
+        hist->GetYaxis()->SetTitleOffset(2.0);
+        hist->GetZaxis()->SetTitleOffset(2.5);
     }
 
     virtual ~DrawPadChargesAction()
@@ -39,7 +42,7 @@ class DrawPadChargesAction : public EventDrawingAction {
         for(int y = 0;y < padPlane.nPadY;++y)
             for(int x = 0;x < padPlane.nPadX;++x)
                 hist->SetBinContent(x, y, data->at(x + y*padPlane.nPadX));
-        hist->Draw("LEGO");
+        hist->Draw(drawOption.c_str());
     }
     
     private:
@@ -48,14 +51,15 @@ class DrawPadChargesAction : public EventDrawingAction {
     std::vector<double> *data;
 };
 
-int DrawPadCharges(const char *fileName, int nPadX, int nPadY, double padPlaneX, double padPlaneY)
+int DrawPadCharges(const char *fileName, int nPadX, int nPadY, double padPlaneX, double padPlaneY, const char *opt = "LEGO")
 {
     auto c1 = new TCanvas("c1", "c1", 900, 900);
-    c1->SetLeftMargin(0.125);
+    c1->SetLeftMargin(0.2);
     auto fileRoot = new TFile(fileName, "READ");
     auto tree = (TTree*)fileRoot->Get("tree_gc3");
 
     DrawPadChargesAction *action = new DrawPadChargesAction(tree, {nPadX, nPadY, padPlaneX, padPlaneY});
+    action->SetDrawOption(opt);
     action->Connect(gApplication, "ReturnPressed(const char*)");
     // action->DisconnectWhenClosed(c1);
     return 0;

@@ -2,15 +2,24 @@
 
 # primary partice setting
 /gun/particle ion
-/gun/ion 6 12 4
+/gun/ion 6 12 2
 /gun/energy 10 MeV
 
+/attpc/gun/setPosX 0 mm
+/attpc/gun/setPosY -50. mm
+/attpc/gun/setPosZ -300. mm
+
+/attpc/gas/setBeamPipePosY -50. mm
+
 /attpc/field/value 2.5
-
-/attpc/process/CarbonAlpha/forceByTrackLen 300 mm
-
-/attpc/output/activate true
 /attpc/gasChamber/activateHitTuple false
-/attpc/output/setFileName padCharges.root
+/attpc/output/activate true
 
+/attpc/process/CarbonAlpha/forceByTrackLen 280 mm
+/attpc/output/setFileName padCharges_evt.root
+/run/beamOn 100
+
+/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/attpc/output/setFileName padCharges_bg.root
+/gun/number 10
 /run/beamOn 100

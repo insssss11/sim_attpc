@@ -18,7 +18,7 @@ class EventDrawingAction : public TQObject
 {
     public:
     EventDrawingAction(const std::string &clsName, TTree *_tree)
-        : TQObject(), className(clsName),
+        : TQObject(), className(clsName), drawOption(""),
         tree(_tree),
         curEvtNum(0), totalEvtNum(_tree->GetEntries())
     {
@@ -38,6 +38,12 @@ class EventDrawingAction : public TQObject
         ReadNextEvent();
         DrawEvent();
         PrintStatus();
+    }
+
+
+    void SetDrawOption(const std::string &_drawOption)
+    {
+        drawOption = _drawOption;
     }
 
     void Connect(TQObject *qObject, const char *signal)
@@ -70,6 +76,8 @@ class EventDrawingAction : public TQObject
         std::cout << "Drawing event " << curEvtNum << "/" << totalEvtNum << std::endl;
     }
 
+    protected:
+    std::string drawOption;
 
     private:
     const std::string className;

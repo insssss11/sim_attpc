@@ -68,7 +68,7 @@ file(GLOB headers
 #
 add_executable(sim_attpc sim_attpc.cc ${sources} ${headers})
 target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
-
+target_compile_options(sim_attpc PRIVATE -Wno-shadow)
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build B5. This is so that we can run the executable directly because it

@@ -8,6 +8,7 @@
 #include "G4VDiscreteProcess.hh"
 #include "G4IonTable.hh"
 #include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 
 #include <vector>
 #include <array>
@@ -22,20 +23,16 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
     virtual ~CarbonAlphaProcess() override;
 
     // overriding pure virtual methods
-    virtual G4bool IsApplicable(const G4ParticleDefinition &Def) override;
-    
-    // virtual void PreparePhysicsTable(const G4ParticleDefinition &pDef) override;
-    
+    virtual G4bool IsApplicable(const G4ParticleDefinition &Def) override;    
     virtual G4VParticleChange *PostStepDoIt(const G4Track &aTrack, const G4Step &aStep) override;
-    
     virtual G4double PostStepGetPhysicalInteractionLength(
         const G4Track &track, G4double previousStepSize, G4ForceCondition *condition) override;
-    
-    virtual G4double GetMeanFreePath(const G4Track &track, G4double previousStepSize, G4ForceCondition *condition);
+    virtual G4double GetMeanFreePath(const G4Track &track, G4double previousStepSize, G4ForceCondition *condition) override;
 
     CarbonAlphaProcess& operator=(const CarbonAlphaProcess &right) = delete;
     CarbonAlphaProcess(const CarbonAlphaProcess&) = delete;
     
+    void SetRegion();
     void SetOxygenCharge(G4double charge){fOxygenCharge = charge;}
     protected:
         G4int verboseLevel;
@@ -43,6 +40,10 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
         // generate random momentom vector whose magnitude follows Maxwell-Moltzmann dist.
         // non relativistic
         G4ThreeVector GenerateMomInTempNR(const G4ParticleDefinition *pDef, G4double tepm = STP_Temperature);
+
+        void GeneratePhases(const G4Track &aTrack);
+        void InitDynamicDaughters();
+        void InitParticleChange(const G4Track &aTrack);
 
         // to be used for UI commands
         void ForceReactionByKinE(G4double kinE);
@@ -52,10 +53,14 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
         TGenPhaseSpace *fGenPhaseSpace;
         G4DynamicParticle *fDynamicOxygen, *fDynamicGamma;
         G4double fOxygenCharge;
+        G4double trackLen;        
         G4double fEnergyOfReaction, fTrackLenOfReaction;
         G4GenericMessenger *fMessenger;
         const G4ParticleDefinition *kDefAlpha, *kDefOxygen, *kDefGamma;
+        const G4double daughterMasses[2];
 
+        // The base unit of ROOT is GeV(GeV/c) and MeV(MeV/c) for Geant4;
+        static constexpr G4double energyUnitCnv = MeV/GeV;
         static constexpr G4int kIonAtomicMass = 12;
         static constexpr G4int kIonAtomicNum = 6;        
 };

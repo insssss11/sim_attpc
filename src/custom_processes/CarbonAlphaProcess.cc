@@ -5,7 +5,6 @@
 #include "G4IonTable.hh"
 #include "G4Gamma.hh"
 #include "G4Alpha.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4HadronicProcessStore.hh"
 
 CarbonAlphaProcess::CarbonAlphaProcess(G4String name)
@@ -13,12 +12,16 @@ CarbonAlphaProcess::CarbonAlphaProcess(G4String name)
     verboseLevel(0),
     fGenPhaseSpace(nullptr),
     fDynamicOxygen(nullptr), fDynamicGamma(nullptr),
-    fOxygenCharge(8.),
+    fOxygenCharge(8.), 
+    trackLen(0),
     fEnergyOfReaction(-1.), fTrackLenOfReaction(-1.),
     fMessenger(nullptr),
     kDefAlpha(G4Alpha::Definition()),
     kDefOxygen(G4IonTable::GetIonTable()->GetIon(8, 16)),
-    kDefGamma(G4Gamma::Definition())
+    kDefGamma(G4Gamma::Definition()),
+    daughterMasses{
+        kDefOxygen->GetPDGMass()*energyUnitCnv,
+        kDefGamma->GetPDGMass()*energyUnitCnv}
 {
     fGenPhaseSpace = new TGenPhaseSpace();
     SetProcessSubType(fCapture);
@@ -45,14 +48,16 @@ G4bool CarbonAlphaProcess::IsApplicable(const G4ParticleDefinition &Def)
 
 G4VParticleChange *CarbonAlphaProcess::PostStepDoIt(const G4Track &aTrack, const G4Step &)
 {
-    // initialize particle chagne (G4ParticleChange aParticleChange;G4VParticleChange *pParticleChange = &aParticleChange;)
-    aParticleChange.Initialize(aTrack);
-    aParticleChange.SetNumberOfSecondaries(2);
-    
-    // Generate phase space
-    // The base unit of ROOT is GeV(GeV/c) and MeV(MeV/c) for Geant4;
-    G4double energyUnitCnv = MeV/GeV;
+    GeneratePhases(aTrack);
+    InitDynamicDaughters();
+    InitParticleChange(aTrack);
+    return pParticleChange;
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CarbonAlphaProcess::GeneratePhases(const G4Track &aTrack)
+{
     // generate random value for alpha particle(Not implemented yet)
     G4ThreeVector pAlpha = GenerateMomInTempNR(kDefAlpha);
     G4double p1, p2, p3, p4;
@@ -61,30 +66,35 @@ G4VParticleChange *CarbonAlphaProcess::PostStepDoIt(const G4Track &aTrack, const
     p3 = aTrack.GetMomentum().getZ() + pAlpha.getZ();
     p4 = aTrack.GetTotalEnergy() + kDefAlpha->GetPDGMass();
     TLorentzVector lCarbonAlpha(p1*energyUnitCnv, p2*energyUnitCnv, p3*energyUnitCnv, p4*energyUnitCnv);
-    
     // init and generate
-    G4double massArr[2] = {kDefOxygen->GetPDGMass()*energyUnitCnv, kDefGamma->GetPDGMass()*energyUnitCnv};
-    fGenPhaseSpace->SetDecay(lCarbonAlpha, 2, massArr);
+    fGenPhaseSpace->SetDecay(lCarbonAlpha, 2, daughterMasses);
     fGenPhaseSpace->Generate();
+}
 
-    // Get states of daughter particles using TGenPhaseSpace
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CarbonAlphaProcess::InitDynamicDaughters()
+{
     TLorentzVector *lv;
-    // Oxygen state
     lv = fGenPhaseSpace->GetDecay(0);
     fDynamicOxygen = new G4DynamicParticle(kDefOxygen,
         G4ThreeVector(lv->Px()/energyUnitCnv, lv->Py()/energyUnitCnv, lv->Pz()/energyUnitCnv));
     fDynamicOxygen->SetCharge(fOxygenCharge);
-
-    // gamma state
     lv = fGenPhaseSpace->GetDecay(1);
     fDynamicGamma = new G4DynamicParticle(kDefGamma,
         G4ThreeVector(lv->Px()/energyUnitCnv, lv->Py()/energyUnitCnv, lv->Pz()/energyUnitCnv));
-    
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CarbonAlphaProcess::InitParticleChange(const G4Track &aTrack)
+{
+    aParticleChange.Initialize(aTrack);
+    aParticleChange.SetNumberOfSecondaries(2);
     aParticleChange.AddSecondary(fDynamicOxygen);
     aParticleChange.AddSecondary(fDynamicGamma);
     aParticleChange.ProposeLocalEnergyDeposit(0.);
     aParticleChange.ProposeTrackStatus(fStopAndKill);
-    return pParticleChange;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

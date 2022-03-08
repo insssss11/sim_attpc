@@ -1,6 +1,7 @@
 #include "PhysicsList.hh"
 #include "custom_processes/CarbonAlphaProcess.hh"
 
+#include "G4RegionStore.hh"
 #include "G4ProcessManager.hh"
 
 // step and track limiter process
@@ -137,7 +138,9 @@ void PhysicsList::AddCarbonAlphaProcess()
         G4String pName = pDefinition->GetParticleName();
         if(pName == "GenericIon")
         {
+            auto reactionRegion = G4RegionStore::GetInstance()->GetRegion("gas_chamber");
             CarbonAlphaProcess *cap = new CarbonAlphaProcess();
+            cap->SetReactionRegion(reactionRegion);
             ph->RegisterProcess(cap, pDefinition);
         }
     }

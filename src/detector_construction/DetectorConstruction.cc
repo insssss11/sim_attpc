@@ -314,7 +314,10 @@ void DetectorConstruction::BuildChamber()
     
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);
-    
+    G4Region *region = new G4Region("gas_chamber");
+    fLogicChamber->SetRegion(region);
+    region->AddRootLogicalVolume(fLogicChamber);
+
     fPhysChamber = new G4PVPlacement(
         fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysChamber", fLogicGas,
         false, 0, fCheckOverlaps);

@@ -7,9 +7,10 @@
 #include "G4Alpha.hh"
 #include "G4HadronicProcessStore.hh"
 
-CarbonAlphaProcess::CarbonAlphaProcess(G4String name)
+CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
     : G4VDiscreteProcess(name, fHadronic),
     verboseLevel(0),
+    reactionRegion(region),
     fGenPhaseSpace(nullptr),
     fDynamicOxygen(nullptr), fDynamicGamma(nullptr),
     fOxygenCharge(8.), 
@@ -103,9 +104,17 @@ G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
     const G4Track &track, G4double previousStepSize, G4ForceCondition *condition)
 {
     if((previousStepSize <= 0.0) || (theNumberOfInteractionLengthLeft <= 0.0))
+    {
+        trackLen = 0;
         ResetNumberOfInteractionLengthLeft();
+    }
     else
     {
+        if(*reactionRegion == *GetRegionOfTrack(track))
+        {
+            G4cout << trackLen << G4endl;
+            trackLen += previousStepSize;
+        }
         SubtractNumberOfInteractionLengthLeft(previousStepSize);
         if(theNumberOfInteractionLengthLeft < perMillion)
             theNumberOfInteractionLengthLeft = 0;
@@ -113,6 +122,13 @@ G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
     currentInteractionLength = GetMeanFreePath(track, previousStepSize, condition);
     G4double value = theNumberOfInteractionLengthLeft*currentInteractionLength;
     return value;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+const G4Region *CarbonAlphaProcess::GetRegionOfTrack(const G4Track &aTrack)
+{
+    return aTrack.GetVolume()->GetLogicalVolume()->GetRegion();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -134,7 +150,7 @@ G4double CarbonAlphaProcess::GetMeanFreePath(const G4Track &track, G4double, G4F
         }
     // if set to force reaction by track length
     if(fTrackLenOfReaction > 0)
-        if(track.GetTrackLength() > fTrackLenOfReaction)
+        if(trackLen > fTrackLenOfReaction)
         {
             *condition = Forced;
             return 0;

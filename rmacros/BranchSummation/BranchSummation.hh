@@ -114,7 +114,7 @@ void BranchSummation<dType>::AppendColumn(TTree *treeToAppend)
     {
         std::cerr << "Error occured in BranchSummation<dType>::AppendColumn(TTree*)" << std::endl;
         std::cerr << e.what() << std::endl;
-        throw Exception("Failed to append a branch containing summed data to the tree \"" + treeToAppend->GetName() + "\".");
+        throw Exception(std::string("Failed to append a branch containing summed data to the tree \"") + treeToAppend->GetName() + "\".");
     }
 }
 

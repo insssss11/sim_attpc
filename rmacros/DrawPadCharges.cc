@@ -41,7 +41,7 @@ class DrawPadChargesAction : public EventDrawingAction {
     {
         for(int y = 0;y < padPlane.nPadY;++y)
             for(int x = 0;x < padPlane.nPadX;++x)
-                hist->SetBinContent(x, y, data->at(x + y*padPlane.nPadX));
+                hist->SetBinContent(x + 1, y + 1, data->at(x + y*padPlane.nPadX));
         hist->Draw(drawOption.c_str());
     }
     

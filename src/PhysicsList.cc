@@ -1,5 +1,5 @@
 #include "PhysicsList.hh"
-#include "custom_processes/CarbonAlphaProcess.hh"
+#include "custom_processes/carbon_alpha/CarbonAlphaProcess.hh"
 
 #include "G4RegionStore.hh"
 #include "G4ProcessManager.hh"

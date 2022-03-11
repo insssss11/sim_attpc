@@ -15,11 +15,11 @@
 /attpc/gasChamber/activateHitTuple false
 /attpc/output/activate true
 
-/attpc/process/CarbonAlpha/forceByTrackLen 280 mm
+/attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 100
 /attpc/output/setFileName padCharges_evt.root
 /run/beamOn 100
 
-/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName padCharges_bg.root
 /gun/number 10
 /run/beamOn 100

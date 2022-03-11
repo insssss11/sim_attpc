@@ -21,9 +21,11 @@
 /vis/filtering/trajectories/particleFilter-0/invert true
 /vis/scene/endOfRunAction accumulate
 
-/attpc/process/CarbonAlpha/forceByTrackLen 280 mm
+/attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 100
 /run/beamOn 1
 
-/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/attpc/process/CarbonAlpha/activate false
 /gun/number 10
 /run/beamOn 1
+
+/vis/viewer/flush

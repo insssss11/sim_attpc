@@ -1,22 +1,26 @@
 /// \file CarbonAlphaProcess.cc
 /// \brief Implementation of the CarbonAlphaProcess class
 
-#include "custom_processes/CarbonAlphaProcess.hh"
+#include "custom_processes/carbon_alpha/CarbonAlphaProcess.hh"
+
+#include "custom_processes/mean_free_path/MeanFreePathByKinE.hh"
+#include "custom_processes/mean_free_path/MeanFreePathByKinEuniform.hh"
+#include "custom_processes/mean_free_path/MeanFreePathByTrkLen.hh"
+#include "custom_processes/mean_free_path/MeanFreePathByTrkLenUniform.hh"
+
 #include "G4IonTable.hh"
 #include "G4Gamma.hh"
 #include "G4Alpha.hh"
 #include "G4HadronicProcessStore.hh"
+#include "G4RegionStore.hh"
 
 CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
     : G4VDiscreteProcess(name, fHadronic),
-    verboseLevel(0),
+    activated(true),
     reactionRegion(region),
     fGenPhaseSpace(nullptr),
     fDynamicOxygen(nullptr), fDynamicGamma(nullptr),
-    fOxygenCharge(8.), 
-    trackLen(0),
-    fEnergyOfReaction(-1.), fTrackLenOfReaction(-1.),
-    fMessenger(nullptr),
+    fOxygenCharge(8.),
     kDefAlpha(G4Alpha::Definition()),
     kDefOxygen(G4IonTable::GetIonTable()->GetIon(8, 16)),
     kDefGamma(G4Gamma::Definition()),
@@ -24,10 +28,13 @@ CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
         kDefOxygen->GetPDGMass()*energyUnitCnv,
         kDefGamma->GetPDGMass()*energyUnitCnv}
 {
+    if(reactionRegion == nullptr)
+        reactionRegion = G4RegionStore::GetInstance()->GetRegion("DefaultRegionForTheWorld");
+    SetVerboseLevel(0);
+    messenger = std::make_unique<CarbonAlphaProcessMessenger>(this);    
     fGenPhaseSpace = new TGenPhaseSpace();
     SetProcessSubType(fCapture);
-    DefineCommands();
-    ForceReactionByKinE(8.0*MeV);
+    ForceAtKinE(8.0*MeV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,14 +42,20 @@ CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
 CarbonAlphaProcess::~CarbonAlphaProcess()
 {
     delete fGenPhaseSpace;
-    delete fMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool CarbonAlphaProcess::IsApplicable(const G4ParticleDefinition &Def)
+void CarbonAlphaProcess::Activate(G4bool enable)
 {
-    return Def.GetParticleName() == "GenericIon";
+    activated = enable;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool CarbonAlphaProcess::IsApplicable(const G4ParticleDefinition &def)
+{
+    return def.GetParticleName() == "GenericIon";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -103,18 +116,15 @@ void CarbonAlphaProcess::InitParticleChange(const G4Track &aTrack)
 G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
     const G4Track &track, G4double previousStepSize, G4ForceCondition *condition)
 {
-    if((previousStepSize <= 0.0) || (theNumberOfInteractionLengthLeft <= 0.0))
+    if(!activated || track.GetParticleDefinition()->GetParticleName() != "C12")
     {
-        trackLen = 0;
-        ResetNumberOfInteractionLengthLeft();
+        *condition = InActivated;
+        return DBL_MAX;
     }
+    if((previousStepSize <= 0.0) || (theNumberOfInteractionLengthLeft <= 0.0))
+        ResetNumberOfInteractionLengthLeft();
     else
     {
-        if(*reactionRegion == *GetRegionOfTrack(track))
-        {
-            G4cout << trackLen << G4endl;
-            trackLen += previousStepSize;
-        }
         SubtractNumberOfInteractionLengthLeft(previousStepSize);
         if(theNumberOfInteractionLengthLeft < perMillion)
             theNumberOfInteractionLengthLeft = 0;
@@ -126,38 +136,9 @@ G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const G4Region *CarbonAlphaProcess::GetRegionOfTrack(const G4Track &aTrack)
+G4double CarbonAlphaProcess::GetMeanFreePath(const G4Track &aTrack, G4double previousStepSize, G4ForceCondition *condition)
 {
-    return aTrack.GetVolume()->GetLogicalVolume()->GetRegion();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4double CarbonAlphaProcess::GetMeanFreePath(const G4Track &track, G4double, G4ForceCondition *condition)
-{
-    // check ions is C12
-    if(track.GetDynamicParticle()->GetDefinition()->GetParticleName() != "C12")
-    {
-        *condition = InActivated;
-        return DBL_MAX;
-    }
-    // if set to force reaction by kinetic energy
-    if(fEnergyOfReaction > 0)
-        if(track.GetKineticEnergy() < fEnergyOfReaction)
-        {
-            *condition = Forced;
-            return 0;
-        }
-    // if set to force reaction by track length
-    if(fTrackLenOfReaction > 0)
-        if(trackLen > fTrackLenOfReaction)
-        {
-            *condition = Forced;
-            return 0;
-        }
-    // to do : addition of new estimation of mean free path using cross section data.
-    *condition = NotForced;
-    return DBL_MAX;
+    return meanFreePathEval->Eval(&aTrack, previousStepSize, condition);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -170,34 +151,53 @@ G4ThreeVector CarbonAlphaProcess::GenerateMomInTempNR(const G4ParticleDefinition
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CarbonAlphaProcess::ForceReactionByKinE(G4double kinE)
+void CarbonAlphaProcess::StartTracking(G4Track *)
 {
-    fEnergyOfReaction = kinE;
-    fTrackLenOfReaction = -1;
+    meanFreePathEval->StartOfTrack();
+    theNumberOfInteractionLengthLeft = -1.0;
+    currentInteractionLength = -1.0;
+    theInitialNumberOfInteractionLength = -1.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CarbonAlphaProcess::ForceReactionByTrackLen(G4double length)
+void CarbonAlphaProcess::EndTracking()
 {
-    fEnergyOfReaction = -1;
-    fTrackLenOfReaction = length;
+    meanFreePathEval->EndOfTrack();
+    theNumberOfInteractionLengthLeft = -1.0;
+    currentInteractionLength = -1.0;
+    theInitialNumberOfInteractionLength = -1.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CarbonAlphaProcess::DefineCommands()
+void CarbonAlphaProcess::ForceAtKinE(G4double kinE)
 {
-    fMessenger = new G4GenericMessenger(this, "/attpc/process/CarbonAlpha/", "Carbon alpha process control");
-    auto verboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Verbosity control of the process");
-    verboseCmd.SetParameterName("verbose", false);
-    verboseCmd.SetRange("verbose >= 0");
-    auto forceByKinEcmd = fMessenger->DeclareMethodWithUnit("forceByKinEnergy", "MeV",
-        &CarbonAlphaProcess::ForceReactionByKinE, "The reaction will occur at a given kinetic energy.");
-    forceByKinEcmd.SetParameterName("kinE", false);
-    forceByKinEcmd.SetRange("kinE > 0");
-    auto forceByLengCmd = fMessenger->DeclareMethodWithUnit("forceByTrackLen", "mm",
-        &CarbonAlphaProcess::ForceReactionByTrackLen, "The reaction will occur at a given track length.");
-    forceByLengCmd.SetParameterName("tracklen", false);
-    forceByLengCmd.SetRange("tracklen > 0");
+    auto mfpe = new MeanFreePathByKinE();
+    mfpe->SetKinE(kinE);
+    meanFreePathEval.reset();
+    meanFreePathEval = std::unique_ptr<MeanFreePathByKinE>(mfpe);
+    meanFreePathEval->SetReactionRegion(reactionRegion);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CarbonAlphaProcess::ForceAtTrkLen(G4double len)
+{
+    auto mfpe = new MeanFreePathByTrkLen();
+    mfpe->SetTrkLen(len);
+    meanFreePathEval.reset();
+    meanFreePathEval = std::unique_ptr<MeanFreePathByTrkLen>(mfpe);
+    meanFreePathEval->SetReactionRegion(reactionRegion);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CarbonAlphaProcess::ForceAtRndmTrkLenUniform(G4double lenMin, G4double lenMax)
+{
+    auto mfpe = new MeanFreePathByTrkLenUniform();
+    mfpe->SetRange(lenMin, lenMax);
+    meanFreePathEval.reset();
+    meanFreePathEval = std::unique_ptr<MeanFreePathByTrkLenUniform>(mfpe);
+    meanFreePathEval->SetReactionRegion(reactionRegion);
 }

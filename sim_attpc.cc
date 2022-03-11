@@ -15,6 +15,7 @@
 #include "G4UIExecutive.hh"
 #include "G4ios.hh"
 
+#include "Randomize.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void LoadParameter();
@@ -38,6 +39,7 @@ int main(int argc, char **argv)
             return -1;
         }
     }
+    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
 
     // Load parameter files
     LoadParameter();

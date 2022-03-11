@@ -13,7 +13,7 @@
 /process/inactivate CoulombScat
 /process/inactivate msc
 /process/inactivate nuclearStopping
-/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/attpc/process/CarbonAlpha/activate false
 
 /attpc/field/value 0.
 

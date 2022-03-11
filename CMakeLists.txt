@@ -47,6 +47,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/*.cc
+  ${PROJECT_SOURCE_DIR}/src/custom_processes/carbon_alpha/*.cc
+  ${PROJECT_SOURCE_DIR}/src/custom_processes/mean_free_path/*.cc
   ${PROJECT_SOURCE_DIR}/src/gas_chamber/*.cc
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
   ${PROJECT_SOURCE_DIR}/src/tuple/*.cc
@@ -56,6 +58,8 @@ file(GLOB sources
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
   ${PROJECT_SOURCE_DIR}/include/custom_processes/*.hh
+  ${PROJECT_SOURCE_DIR}/include/custom_processes/carbon_alpha/*.hh
+  ${PROJECT_SOURCE_DIR}/include/custom_processes/mean_free_path/*.hh
   ${PROJECT_SOURCE_DIR}/include/gas_chamber/*.hh
   ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
   ${PROJECT_SOURCE_DIR}/include/tuple/*.hh

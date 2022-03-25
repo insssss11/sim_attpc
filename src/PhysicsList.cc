@@ -8,12 +8,6 @@
 #include "G4StepLimiter.hh"
 #include "G4UserSpecialCuts.hh"
 
-// particle constructors
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4IonConstructor.hh"
-
 // ionization process and model of generic ions 
 #include "G4ionIonisation.hh"
 #include "G4BraggIonGasModel.hh"
@@ -52,18 +46,21 @@ PhysicsList::~PhysicsList()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// particle constructors
+#include "G4Gamma.hh"
+#include "G4Electron.hh"
+#include "G4Positron.hh"
+#include "G4Alpha.hh"
+#include "G4Proton.hh"
+#include "G4IonConstructor.hh"
 
 void PhysicsList::ConstructParticle()
 {
-    G4BosonConstructor bosonConstructor;
-    bosonConstructor.ConstructParticle();
-
-    G4LeptonConstructor leptonConstructor;
-    leptonConstructor.ConstructParticle();
-
-    G4BaryonConstructor baryonConstructor;
-    baryonConstructor.ConstructParticle();
-
+    G4Gamma::Definition();
+    G4Electron::Definition();
+    G4Positron::Definition();
+    G4Proton::Definition();
+    G4Alpha::Definition();
     G4IonConstructor ionConstructor;
     ionConstructor.ConstructParticle();
 }

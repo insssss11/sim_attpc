@@ -15,9 +15,10 @@
 /process/inactivate nuclearStopping
 /attpc/process/CarbonAlpha/activate false
 
-/attpc/field/value 0.
+/attpc/field/bField 0. 0. 0. tesla
 
-/attpc/gas/setGas He 90 iC4H10 10 1
+/attpc/gas/setMixture He 90 iC4H10 10
+/attpc/gas/setPressure 1.0 atm
 /attpc/gas/setStepLimit 1 mm
 
 /attpc/output/activate true

@@ -30,6 +30,11 @@ if(${ROOT_VERSION} VERSION_LESS 6.24/00)
   message(FATAL_ERROR "ROOT version must be higher than 6.24/00")
 endif()
 
+# Garfield++
+if(NOT TARGET Garfield::Garfield)
+  find_package(Garfield REQUIRED)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 
 #----------------------------------------------------------------------------
@@ -41,15 +46,16 @@ include(${Geant4_USE_FILE} ${ROOT_USE_FILE})
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS})
+
 file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/carbon_alpha/*.cc
   ${PROJECT_SOURCE_DIR}/src/custom_processes/mean_free_path/*.cc
   ${PROJECT_SOURCE_DIR}/src/gas_chamber/*.cc
+  ${PROJECT_SOURCE_DIR}/src/gas/*.cc
   ${PROJECT_SOURCE_DIR}/src/detector_construction/*.cc
   ${PROJECT_SOURCE_DIR}/src/tuple/*.cc
   ${PROJECT_SOURCE_DIR}/src/config/*.cc
@@ -61,6 +67,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/custom_processes/carbon_alpha/*.hh
   ${PROJECT_SOURCE_DIR}/include/custom_processes/mean_free_path/*.hh
   ${PROJECT_SOURCE_DIR}/include/gas_chamber/*.hh
+  ${PROJECT_SOURCE_DIR}/include/gas/*.hh
   ${PROJECT_SOURCE_DIR}/include/detector_construction/*.hh
   ${PROJECT_SOURCE_DIR}/include/tuple/*.hh
   ${PROJECT_SOURCE_DIR}/include/config/*.hh
@@ -71,7 +78,7 @@ file(GLOB headers
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(sim_attpc sim_attpc.cc ${sources} ${headers})
-target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
 target_compile_options(sim_attpc PRIVATE -Wno-shadow)
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

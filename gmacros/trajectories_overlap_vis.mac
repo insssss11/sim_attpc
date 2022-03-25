@@ -2,17 +2,19 @@
 
 # primary partice setting
 /gun/particle ion
-/gun/ion 6 12 4
+/gun/ion 6 12 2
 /gun/energy 10 MeV
 
 /attpc/gun/setPosX 0 mm
 /attpc/gun/setPosY -50. mm
 /attpc/gun/setPosZ -300. mm
 
-/attpc/field/value 2.
+/attpc/field/bField 2.5 0 0 tesla
+/attpc/field/eField 150 0 0
 
-/attpc/gas/setBeamPipePosY -50. mm
-/attpc/gas/setGas He 90 iC4H10 10 0.1
+/attpc/geometry/setBeamPipePosY -50. mm
+/attpc/gas/setMixture He 90 iC4H10 10
+/attpc/gas/setPressure 0.1 atm
 /vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 0.5
 
 /vis/filtering/trajectories/create/particleFilter
@@ -20,13 +22,13 @@
 /vis/filtering/trajectories/particleFilter-0/invert true
 /vis/scene/endOfRunAction accumulate
 
-/attpc/process/CarbonAlpha/forceByTrackLen 250 mm
+/attpc/process/CarbonAlpha/forceAtTrkLen 20 mm
 /run/beamOn 100
-/attpc/process/CarbonAlpha/forceByTrackLen 280 mm
+/attpc/process/CarbonAlpha/forceAtTrkLen 50 mm
 /run/beamOn 100
-/attpc/process/CarbonAlpha/forceByTrackLen 310 mm
+/attpc/process/CarbonAlpha/forceAtTrkLen 80 mm
 /run/beamOn 100
-/attpc/process/CarbonAlpha/forceByTrackLen 10 km
+/attpc/process/CarbonAlpha/forceAtTrkLen 10 km
 /run/beamOn 20
 /vis/scene/endOfRunAction refresh
 

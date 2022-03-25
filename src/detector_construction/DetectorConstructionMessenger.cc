@@ -2,39 +2,71 @@
 /// \brief Definition of the DetectorConstructionMessenger class
 
 #include "detector_construction/DetectorConstructionMessenger.hh"
-#include "G4IonTable.hh"
 #include "G4Tokenizer.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
+#include "G4RunManager.hh"
+
+#include <string>
+#include <vector>
+
+#include "Exception.hh"
+using namespace std;
 
 DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstruction *detector)
-    :G4UImessenger(), fDetector(detector), fDetectorDirectory(nullptr),
+    :G4UImessenger(), fDetector(detector), gasDirectory(nullptr),
     fSetGasCmd(nullptr), fSetMaxStep(nullptr), fSetMaxTrack(nullptr), fSetMaxTime(nullptr), fSetMinKinE(nullptr)
 {
-    fDetectorDirectory = new G4UIdirectory("/attpc/gas/");
-    fDetectorDirectory->SetGuidance("Gas volume control");
+    InitGasCommands();
+    InitGeometryCommands();
+    InitFieldCommands();
+}
 
-    fSetGasCmd = new G4UIcommand("/attpc/gas/setGas", this);
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstructionMessenger::InitGasCommands()
+{
+    G4UIparameter *param;
+
+    gasDirectory = new G4UIdirectory("/attpc/gas/");
+    gasDirectory->SetGuidance("Gas volume control");
+
+    fSetGasCmd = new G4UIcommand("/attpc/gas/setMixture", this);
     fSetGasCmd->SetGuidance("Set properties of gas mixture.");
-    fSetGasCmd->SetGuidance("[usage] /attpc/gas gas1 frac1 gas2 frac2 pressure");
+    fSetGasCmd->SetGuidance("[usage] /attpc/gas gas1 frac1 [gas2 frac2...]");
     fSetGasCmd->SetGuidance(" gas1:(string) name of gas1");
     fSetGasCmd->SetGuidance(" frac1:(int) fraction of gas1 in percentage");
-    fSetGasCmd->SetGuidance(" gas2:(string) name of gas2");
-    fSetGasCmd->SetGuidance(" frac2:(int) fraction of gas2 in percentage");
-    fSetGasCmd->SetGuidance(" pressure:(double) gas pressure in atm");
+    fSetGasCmd->SetGuidance(" [gas2 frac2]... : additional gas components");
 
-    G4UIparameter *param;
     param = new G4UIparameter("gas1", 's', false);
     fSetGasCmd->SetParameter(param);
-    param = new G4UIparameter("frac1", 'i', false);
+
+    param = new G4UIparameter("frac1", 'i', true);
+    param->SetDefaultValue(100);
     fSetGasCmd->SetParameter(param);
-    param = new G4UIparameter("gas2", 's', false);
-    fSetGasCmd->SetParameter(param);
-    param = new G4UIparameter("frac2", 'i', false);
-    fSetGasCmd->SetParameter(param);
-    param = new G4UIparameter("pressure", 'd', true);
-    param->SetDefaultValue(1.);
-    fSetGasCmd->SetParameter(param);
-    fSetGasCmd->SetRange("frac1 > 0 && frac2 > 0 && pressure > 0 && frac1 < 100 && frac2 < 100");
+    G4String parName;
+    for(int i = 2;i < 7;++i)
+    {
+        parName = "gas" + std::to_string(i);
+        param = new G4UIparameter(parName.c_str(), 's', true);
+        param->SetDefaultValue("");
+        fSetGasCmd->SetParameter(param);
+        parName = "frac" + std::to_string(i);
+        param = new G4UIparameter(parName.c_str(), 'i', true);
+        param->SetDefaultValue(0);
+        fSetGasCmd->SetParameter(param);
+    }
+    fSetGasCmd->SetRange("frac1 > 0 && frac2 >= 0 && frac3 >= 0 && frac4 >= 0 && frac5 >= 0 && frac6 >= 0");
+
+    printGasStatsCmd = new G4UIcmdWithoutParameter("/attpc/gas/printGasStats", this);
+    printGasStatsCmd->SetGuidance("Print information of gas material");
+
+    new G4UnitDefinition("Torr", "Torr", "Pressure", atmosphere/760.);
+    setPressureCmd = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setPressure", this);
+    setPressureCmd->SetGuidance("Set pressure of gas in the chamber");
+    setPressureCmd->SetParameterName("pressure", false);
+    setPressureCmd->SetRange("pressure > 0");
+    setPressureCmd->SetDefaultUnit("Torr");
 
     fSetMaxStep = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setStepLimit", this);
     fSetMaxStep->SetGuidance("Set maximum of allowed step length.");
@@ -59,8 +91,14 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
     fSetMinKinE->SetParameterName("ukineMin", false);
     fSetMinKinE->SetDefaultUnit("MeV");
     fSetMinKinE->SetRange("ukineMin > 0");
+}
 
-    fSetBeamPipePosY = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setBeamPipePosY", this);
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstructionMessenger::InitGeometryCommands()
+{
+    geometryCmd = new G4UIdirectory("/attpc/geometry/");
+    fSetBeamPipePosY = new G4UIcmdWithADoubleAndUnit("/attpc/geometry/setBeamPipePosY", this);
     fSetBeamPipePosY->SetGuidance("Set y-position of beam pipe.");
     fSetBeamPipePosY->SetParameterName("posY", false);
     fSetBeamPipePosY->SetDefaultUnit("mm");
@@ -68,15 +106,43 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DetectorConstructionMessenger::InitFieldCommands()
+{
+    fieldDirectory = new G4UIdirectory("/attpc/field/");
+    fieldDirectory->SetGuidance("Field Control");
+
+    setMagneticFieldCmd = new G4UIcmdWith3VectorAndUnit("/attpc/field/bField", this);
+    setMagneticFieldCmd->SetParameterName("Bx", "By", "Bz", false);
+    setMagneticFieldCmd->SetRange("Bx >= 0 && By >= 0 && Bz >= 0");
+    setMagneticFieldCmd->SetDefaultUnit("tesla");
+
+    setElectricFieldCmd = new G4UIcmdWith3Vector("/attpc/field/eField", this);
+    setElectricFieldCmd->SetParameterName("Ex", "Ey", "Ez", false);
+    setElectricFieldCmd->SetRange("Ex >= 0 && Ey >= 0 && Ez >= 0");
+    setElectricFieldCmd->SetGuidance("Electric field control in the unit of V/cm.");
+    setElectricFieldCmd->SetGuidance("Warning! No effect on the motion of a charged particle.");
+    setElectricFieldCmd->SetGuidance("Only on the electron drift speed and diffusion.");
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 DetectorConstructionMessenger::~DetectorConstructionMessenger()
 {
-    delete fDetectorDirectory;
+    delete gasDirectory;
     delete fSetGasCmd;
+    delete printGasStatsCmd;
+    delete setPressureCmd;
     delete fSetMaxStep;
     delete fSetMaxTrack;
     delete fSetMaxTime;
     delete fSetMinKinE;
+
+    delete geometryCmd;
     delete fSetBeamPipePosY;
+
+    delete fieldDirectory;
+    delete setMagneticFieldCmd;
+    delete setElectricFieldCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -84,31 +150,58 @@ DetectorConstructionMessenger::~DetectorConstructionMessenger()
 void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String newValues)
 {
     if(command == fSetGasCmd)
-        PassArgsToSetGas(newValues);
+        PassArgsToSetGasComposition(newValues);
+    else if(command == printGasStatsCmd)
+        fDetector->PrintGasMaterialStats();
+    else if(command == setPressureCmd)
+        fDetector->SetPressure(setPressureCmd->GetNewDoubleValue(newValues));
     else if(command == fSetMaxStep)
-        fDetector->SetLimitStep(fSetMaxStep->GetNewDoubleValue(newValues));
+        fDetector->GetUserLimits()->SetMaxAllowedStep(fSetMaxStep->GetNewDoubleValue(newValues));
     else if(command == fSetMaxTrack)
-        fDetector->SetLimitTrack(fSetMaxTrack->GetNewDoubleValue(newValues));
+        fDetector->GetUserLimits()->SetUserMaxTrackLength(fSetMaxTrack->GetNewDoubleValue(newValues));
     else if(command == fSetMaxTime)
-        fDetector->SetLimitTime(fSetMaxTime->GetNewDoubleValue(newValues));
+        fDetector->GetUserLimits()->SetUserMaxTime(fSetMaxTime->GetNewDoubleValue(newValues));
     else if(command == fSetMinKinE)
-        fDetector->SetMinKinE(fSetMinKinE->GetNewDoubleValue(newValues));
+        fDetector->GetUserLimits()->SetUserMinEkine(fSetMinKinE->GetNewDoubleValue(newValues));
     else if(command == fSetBeamPipePosY)
         fDetector->SetBeamPipePosY(fSetBeamPipePosY->GetNewDoubleValue(newValues));
+    else if(command == setMagneticFieldCmd)
+        fDetector->SetMagneticField(setMagneticFieldCmd->GetNew3VectorValue(newValues));
+    else if(command == setElectricFieldCmd)
+        fDetector->SetElectricField(setElectricFieldCmd->GetNew3VectorValue(newValues));
+    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
+    G4RunManager::GetRunManager()->GeometryHasBeenModified();       
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstructionMessenger::PassArgsToSetGas(const G4String &newValues)
+void DetectorConstructionMessenger::PassArgsToSetGasComposition(const G4String &newValues)
 {
     G4Tokenizer token(newValues);
-    G4String gas1 = token();
-    G4double frac1 = StoD(token());
-    G4String gas2 = token();
-    G4double frac2 = StoD(token());
-    G4double pressure = 1.0;
-    G4String sPressure = token();
-    if(!sPressure.empty())
-        pressure = StoD(sPressure);
-    fDetector->SetGas(gas1, frac1, gas2, frac2, pressure*atmosphere);
+    vector<string> gas;
+    vector<double> f;
+    string s1, s2;
+    while(true)
+    {
+        s1 = token();
+        s2 = token();
+        if(s1 == "" || s2 == "0")
+            break;
+        else
+        {
+            gas.push_back(s1);
+            f.push_back(StoD(s2)/100.);
+        }
+    }
+    try{
+        fDetector->SetGasMixture(gas, f);
+    }
+    catch(Exception const &e)
+    {
+        e.WarnGeantKernel();
+    }
+    catch(exception const &e)
+    {
+        G4cerr << e.what() << G4endl;
+    }
 }

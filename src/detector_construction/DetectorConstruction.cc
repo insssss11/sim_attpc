@@ -28,6 +28,8 @@
 /// \brief Implementation of the DetectorConstruction class
 
 #include "detector_construction/DetectorConstruction.hh"
+#include "detector_construction/DetectorConstructionException.hh"
+#include "detector_construction/GasMaterialTable.hh"
 #include "gas_chamber/GasChamberSD.hh"
 #include "config/ParamContainerTable.hh"
 
@@ -55,10 +57,14 @@
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+
+using namespace std;
+using namespace DetectorConstructionErrorNum;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4ThreadLocal MagneticField *DetectorConstruction::fMagneticField = 0;
-G4ThreadLocal G4FieldManager *DetectorConstruction::fFieldManager = 0;
+G4ThreadLocal G4UniformMagField *DetectorConstruction::fMagneticField = nullptr;
+G4ThreadLocal G4FieldManager *DetectorConstruction::fFieldManager = nullptr;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -68,139 +74,82 @@ DetectorConstruction::DetectorConstruction()
     fCheckOverlaps(true),
     fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
-    fGasMat(nullptr), fGasName1("He"), fGasName2("iC4H10"), fFrac1(90.), fFrac2(10.), fPressure(0.1*atmosphere),
-    fNbOfGasMat(0),
-    fGasMatMap(nullptr)
+    fGasMat(nullptr), gasMixture(std::make_unique<GasMixtureProperties>())
 {
-    paramContainer = ParamContainerTable::Instance()->GetContainer("gas_chamber");
-
-    fGasMatMap = new std::unordered_map<std::string, std::string>;
-
-    fUserLimits = new G4UserLimits(1*mm);
-
-    fMessenger = new DetectorConstructionMessenger(this);
+    Initialize();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::Initialize()
+{
+    GasMaterialTable::Initialize();
+    InitializeGasMixture();
+
+    paramContainer = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    fUserLimits = new G4UserLimits(1*mm);
+    fMessenger = new DetectorConstructionMessenger(this);
+
+    fGeoRotation = new G4RotationMatrix();
+    fGeoRotation->rotateY(90. * deg);
+}
+
+void DetectorConstruction::InitializeGasMixture()
+{
+    gasMixture->SetGasMixture({"He", "iC4H10"}, {0.9, 0.1});
+    gasMixture->SetElectricField(150, 0., 0.);
+    gasMixture->SetMagneticField(2.5*tesla, 0., 0.);
+    gasMixture->SetPressure(0.1*atmosphere);
+    gasMixture->SetTemperature(273.15*kelvin);
+    UpdateGasMaterial();
+}
 
 DetectorConstruction::~DetectorConstruction()
 {
     delete fMessenger;
     delete fUserLimits;
     delete fGeoRotation;
+    delete fMagneticField;
     for(auto visAttributes : fVisAttributes)
         delete visAttributes;
-    // pointers to G4Material of the map are deleted at the end of the program.
-    delete fGasMatMap;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4VPhysicalVolume *DetectorConstruction::Construct()
 {
-    ConstructMaterials();
-    SetGas(fGasName1, fFrac1, fGasName2, fFrac2, fPressure);
-    ConstructGeometry();
-    return fPhysWorld;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::ConstructMaterials()
-{
-    auto nist = G4NistManager::Instance();
-
-    nist->FindOrBuildMaterial("G4_AIR");
-
-    // Vacuum "Hydrogen gas with very low density"
-    G4double atomicNumber = 1.;
-    G4double massOfMole = 1.008*g/mole;
-    G4double density = 1.e-25*g/cm3;
-    G4double temperature = 2.73*kelvin;
-    G4double pressure = 3.e-18*pascal;
-    new G4Material(
-        "Vacuum", atomicNumber, massOfMole,
-        density, kStateGas, temperature, pressure);
-
-    // ref [1] : Coupled cluster calculations of mean excitation energies of the noble gas atoms He, Ne and Ar and of the H2 molecule
-    // ref [2] : Techiniques for Nuclear and Particle Physics Experiments 
-    // ref [3] : Mean excitation energies and energy deposition characteristics of bio-organic molecules.
-    // ref [4] : Geant4 simulation of DRAGON's hybrid detector
-
-    G4Material *He = nist->FindOrBuildMaterial("G4_He");
-    He->GetIonisation()->SetMeanExcitationEnergy(41.8*eV); // ref [1]
-    He->GetIonisation()->SetMeanEnergyPerIonPair(41.*eV); // ref[2]
-    RegisterGasMat("He", He->GetName());
-
-    G4Material *Ne = nist->FindOrBuildMaterial("G4_Ne");
-    Ne->GetIonisation()->SetMeanExcitationEnergy(137.2*eV); // ref [1]
-    Ne->GetIonisation()->SetMeanEnergyPerIonPair(36*eV); // ref [2]
-    RegisterGasMat("Ne", Ne->GetName());
-
-    G4Material *Ar = nist->FindOrBuildMaterial("G4_Ar");
-    Ar->GetIonisation()->SetMeanExcitationEnergy(188.5*eV); // ref [1]
-    Ar->GetIonisation()->SetMeanEnergyPerIonPair(26*eV); // ref [2]
-    RegisterGasMat("Ar", Ar->GetName());
-
-    G4Material *CO2 = nist->FindOrBuildMaterial("G4_CARBON_DIOXIDE");
-    CO2->GetIonisation()->SetMeanExcitationEnergy(90.0*eV); // ref [3]
-    CO2->GetIonisation()->SetMeanEnergyPerIonPair(33*eV); // ref[2]
-    RegisterGasMat("CO2", CO2->GetName());
-
-    G4Material *CH4 = nist->FindOrBuildMaterial("G4_METHANE");
-    CH4->GetIonisation()->SetMeanExcitationEnergy(43.3*eV); // ref [3]
-    CH4->GetIonisation()->SetMeanEnergyPerIonPair(28*eV); // ref [2]
-    RegisterGasMat("CH4", CH4->GetName());
-
-    G4Material *iC4H10 = nist->FindOrBuildMaterial("G4_BUTANE");
-    iC4H10->GetIonisation()->SetMeanExcitationEnergy(48.3*eV); // ref [4]
-    iC4H10->GetIonisation()->SetMeanEnergyPerIonPair(23*eV); // ref [2]
-    RegisterGasMat("iC4H10", iC4H10->GetName());
-
-    G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
-    G4cout << *(G4Material::GetMaterialTable()) << G4endl;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::ConstructGeometry()
-{
-    auto vacuum = G4Material::GetMaterial("Vacuum");
-
-    // geometries --------------------------------------------------------------
+    auto vacuum = FindGasMaterial("Vacuum");
     auto solidWorld = new G4Box("SolidWorld", 1000 * mm, 1000 * mm, 1000 * mm);
     fLogicWorld = new G4LogicalVolume(solidWorld, vacuum, "LogicWorld");
     fPhysWorld = new G4PVPlacement(
         0, G4ThreeVector(), fLogicWorld, "PhysWorld", 0,
         false, 0, fCheckOverlaps);
+    ConstructGeometry();
+    return fPhysWorld;
+}
 
-    fGeoRotation = new G4RotationMatrix();
-    fGeoRotation->rotateY(90. * deg);
+void DetectorConstruction::ConstructGeometry()
+{
     BuildMagnet();
     BuildMagField();
     BuildGas();
     BuildChamber();
     BuildBeamPipe();
-
     SetVisAttributes();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::BuildMagnet()
 {
     const G4double dRim = 45*mm;
     const G4double dRimChamfer = 100*mm, dBodyChamfer = 80*mm, dMidChamferPosY = dBodyChamfer, dMidChamferNegY = 200*mm;
-    
+
     const G4double xBody = 750*mm/2, yPosBody = 625*mm, yNegBody = -370*mm;
     const G4double xMid = xBody, yPosMid = yPosBody, yNegMid = 160*mm;
-    
+
     const G4double zRim = 35*mm/2, zMid = 150*mm/2, zBody = (560*mm - 4*zMid - 4*zRim)/2;
-    
+
     const G4double rVoidTube = 150*mm;
 
     // defining vertice on the top surface of volume in clockwise.
-    std::vector<G4TwoVector> verticeMid;
+    vector<G4TwoVector> verticeMid;
     verticeMid.emplace_back(xMid - dMidChamferPosY, yPosMid);
     verticeMid.emplace_back(xMid, yPosMid - dMidChamferPosY);
     verticeMid.emplace_back(xMid, yNegMid + dMidChamferNegY);
@@ -211,7 +160,7 @@ void DetectorConstruction::BuildMagnet()
     verticeMid.emplace_back(-xMid + dMidChamferPosY, yPosMid);
     auto solidMid = new G4ExtrudedSolid("SolidMagnetMid", verticeMid, zMid + 2*zBody + 2*zRim, G4TwoVector(), 1., G4TwoVector(), 1.);
 
-    std::vector<G4TwoVector> verticeBody;
+    vector<G4TwoVector> verticeBody;
     verticeBody.emplace_back(xBody - dBodyChamfer, yPosBody);
     verticeBody.emplace_back(xBody, yPosBody - dBodyChamfer);
     verticeBody.emplace_back(xBody, yNegBody + dBodyChamfer);
@@ -222,7 +171,7 @@ void DetectorConstruction::BuildMagnet()
     verticeBody.emplace_back(-xBody + dBodyChamfer, yPosBody);
     auto solidBody = new G4ExtrudedSolid("SolidMagnetBody", verticeBody, zBody, G4TwoVector(), 1., G4TwoVector(), 1.);
 
-    std::vector<G4TwoVector> verticeRim;
+    vector<G4TwoVector> verticeRim;
     verticeRim.emplace_back(xBody + dRim - dRimChamfer, yPosBody+ dRim);
     verticeRim.emplace_back(xBody + dRim, yPosBody + dRim - dRimChamfer);
     verticeRim.emplace_back(xBody + dRim, yNegBody - dRim + dRimChamfer);
@@ -242,27 +191,25 @@ void DetectorConstruction::BuildMagnet()
     G4Transform3D transBodyDown(emptyRotation, G4ThreeVector(0., 0., -zMid - zBody));
     solidMagnetWithOutHole->AddNode(*solidBody, transBodyUp);
     solidMagnetWithOutHole->AddNode(*solidBody, transBodyDown);
-    
+
     G4Transform3D transRimUp(emptyRotation, G4ThreeVector(0., 0., zMid + 2*zBody + zRim));
     G4Transform3D transRimDown(emptyRotation, G4ThreeVector(0., 0., -zMid - 2*zBody - zRim));
     solidMagnetWithOutHole->AddNode(*solidRim, transRimUp);
     solidMagnetWithOutHole->AddNode(*solidRim, transRimDown);
-    
+
     solidMagnetWithOutHole->Voxelize();
 
-    auto solidVolidTube = new G4Tubs("SolidMagnetVolidTube", 0., rVoidTube, 1.1*(zMid + 2*zBody + 2*zRim), 0., twopi);    
+    auto solidVolidTube = new G4Tubs("SolidMagnetVolidTube", 0., rVoidTube, 1.1*(zMid + 2*zBody + 2*zRim), 0., twopi);
     auto solidMagnet = new G4SubtractionSolid("solidMagnet", solidMagnetWithOutHole, solidVolidTube);
 
-    fLogicMagnet = new G4LogicalVolume(solidMagnet, fGasMat, "LogicMagnet");
+    auto iron = G4NistManager::Instance()->FindOrBuildMaterial("G4_Fe");
+    fLogicMagnet = new G4LogicalVolume(solidMagnet, iron, "LogicMagnet");
     fPhysMagnet = new G4PVPlacement(fGeoRotation, G4ThreeVector(), fLogicMagnet, "PhysMagnet", fLogicWorld, false, 0, fCheckOverlaps);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void DetectorConstruction::BuildMagField()
 {
-    auto vacuum = G4Material::GetMaterial("Vacuum");
-
+    auto vacuum = FindGasMaterial("Vacuum");
     const G4double rMagField = 150*mm, pDzMagField = 200*mm/2;
     auto solidMagField = new G4Tubs("solidMagField", 0., rMagField, pDzMagField, 0., 360. * deg);
     fLogicMagField = new G4LogicalVolume(solidMagField, vacuum, "LogicMagField");
@@ -272,31 +219,27 @@ void DetectorConstruction::BuildMagField()
         false, 0, fCheckOverlaps);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void DetectorConstruction::BuildGas()
 {
     const G4double
         xGas = paramContainer->GetParamD("gasX")/2,
         yGas = paramContainer->GetParamD("gasY")/2,
         zGas = paramContainer->GetParamD("gasZ")/2;
-    
+
     G4ThreeVector position(
         paramContainer->GetParamD("gasPosX"),
         paramContainer->GetParamD("gasPosY"),
         paramContainer->GetParamD("gasPosZ"));
 
     auto solidGas = new G4Box("SolidGas", xGas, yGas, zGas);
-    
+
     fLogicGas = new G4LogicalVolume(solidGas, fGasMat, "LogicGas");
     fLogicGas->SetUserLimits(fUserLimits);
-    
+
     fPhysGas = new G4PVPlacement(
         fGeoRotation, position, fLogicGas, "PhysGas", fLogicMagField,
         false, 0, fCheckOverlaps);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::BuildChamber()
 {
@@ -304,14 +247,14 @@ void DetectorConstruction::BuildChamber()
         xChamber = paramContainer->GetParamD("chamberX")/2,
         yChamber = paramContainer->GetParamD("chamberY")/2,
         zChamber = paramContainer->GetParamD("chamberZ")/2;
-    
+
     G4ThreeVector position(
         paramContainer->GetParamD("chamberPosX"),
         paramContainer->GetParamD("chamberPosY"),
         paramContainer->GetParamD("chamberPosZ"));
 
     auto solidChamber = new G4Box("SolidChamber", xChamber, yChamber, zChamber);
-    
+
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);
     G4Region *region = new G4Region("gas_chamber");
@@ -322,8 +265,6 @@ void DetectorConstruction::BuildChamber()
         fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysChamber", fLogicGas,
         false, 0, fCheckOverlaps);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::BuildBeamPipe()
 {
@@ -340,8 +281,6 @@ void DetectorConstruction::BuildBeamPipe()
         fLogicWorld, false, 0, fCheckOverlaps
     );
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::SetVisAttributes()
 {
@@ -368,20 +307,17 @@ void DetectorConstruction::SetVisAttributes()
 
     visAttributes = new G4VisAttributes(G4Colour(0.9, 0.1, 0.1, 0.2));
     fLogicPipe->SetVisAttributes(visAttributes);
-    fVisAttributes.push_back(visAttributes);    
+    fVisAttributes.push_back(visAttributes);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::ConstructSDandField()
 {
     auto sdManager = G4SDManager::GetSDMpointer();
-    G4String SDname;
-    auto gasChamberSD = new GasChamberSD(SDname = "/gasChamber");
+    auto gasChamberSD = new GasChamberSD("/gasChamber");
     sdManager->AddNewDetector(gasChamberSD);
     fLogicChamber->SetSensitiveDetector(gasChamberSD);
 
-    fMagneticField = new MagneticField();
+    fMagneticField = new G4UniformMagField(G4ThreeVector(2.5*tesla, 0., 0.));
     fFieldManager = new G4FieldManager();
     fFieldManager->SetDetectorField(fMagneticField);
     fFieldManager->CreateChordFinder(fMagneticField);
@@ -389,136 +325,121 @@ void DetectorConstruction::ConstructSDandField()
     fLogicMagField->SetFieldManager(fFieldManager, forceToAllDaughters);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure)
+G4UserLimits *DetectorConstruction::GetUserLimits() const
 {
-    G4Material *gasMat1 = FindGasMat(gas1);
-    G4Material *gasMat2 = FindGasMat(gas2);
-    if(gasMat1 == nullptr || gasMat2 == nullptr)
-        return;
-    else if((frac1 + frac2 - 100)*(frac1 + frac2 - 100)/10000 > 1e-6)
-    {
-        std::ostringstream message;
-        message << "Sum of frac1 and frac2 is not close enough to 100%%.";
-        G4Exception("DetectorConstruction::SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure)",
-            "GeomGasMat0000", JustWarning, message);
-        return;
-    }
-    else
-    {
-        // update variables
-        fGasName1 = gas1;
-        fGasName2 = gas2;
-        fFrac1 = frac1;
-        fFrac2 = frac2;
-        fPressure = pressure;
-    }
-    G4double density1 = gasMat1->GetDensity()*fFrac1*perCent;
-    G4double density2 = gasMat2->GetDensity()*fFrac2*perCent;
-    // calculate density at given pressure
-    G4double density = (density1 + density2)*fPressure/atmosphere;
-    // calcalate mass fraction
-    G4double massFrac1 = density1/(density1 + density2);
-    G4double massFrac2 = density2/(density1 + density2);
-    ++fNbOfGasMat;
-
-    // warning message if too many instances
-    if(fNbOfGasMat > kNbOfGatMatWarning)
-    {
-        std::ostringstream message;
-        message << "Changing gas properties creates new G4Material instances. It may occupy large memory.";
-        G4Exception("DetectorConstruction::DetectorConstruction::UpdateGas()",
-            "GeomGasMat0001", JustWarning, message);
-        return;
-    }
-    fGasMat = new G4Material("Gas", density, 2);
-    fGasMat->AddMaterial(gasMat1, massFrac1);
-    fGasMat->AddMaterial(gasMat2, massFrac2);
-    // if SetGas is called after Construct (by UI command)
-    if(fLogicGas)
-    {
-        fLogicGas->SetMaterial(fGasMat);
-        G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-    }
-    G4cout << "Gas mixture : " << GetGasMixtureStat() << G4endl;
+    return fUserLimits;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetLimitStep(G4double ustepMax)
-{
-    fUserLimits->SetMaxAllowedStep(ustepMax);
-    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetLimitTrack(G4double utrakMax)
-{
-    fUserLimits->SetUserMaxTrackLength(utrakMax);
-    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetLimitTime(G4double utimeMax)
-{
-    fUserLimits->SetUserMaxTime(utimeMax);
-    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetMinKinE(G4double uekinMax)
-{
-    fUserLimits->SetUserMinEkine(uekinMax);
-    G4RunManager::GetRunManager()->PhysicsHasBeenModified();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorConstruction::SetBeamPipePosY(G4double posY)
 {
     G4ThreeVector pos = fPhysPipe->GetTranslation();
     pos.setY(posY);
     fPhysPipe->SetTranslation(pos);
-    G4RunManager::GetRunManager()->GeometryHasBeenModified();    
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::RegisterGasMat(const G4String &key, const G4String &val)
+void DetectorConstruction::SetMagneticField(const G4ThreeVector &bField)
 {
-    fGasMatMap->insert(std::make_pair(key.data(), val.data()));
+    gasMixture->SetMagneticField(bField);
+    fMagneticField->SetFieldValue(bField);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4Material *DetectorConstruction::FindGasMat(const G4String &key)
+void DetectorConstruction::SetElectricField(const G4ThreeVector &eField)
 {
-    if(fGasMatMap->find(key) == fGasMatMap->end())
-    {
-        std::ostringstream message;
-        message << "Cannot find gas material " << key << ".";
-        G4Exception("DetectorConstruction::FindGasMat(const G4String &key)",
-            "GeomGasMat0002", JustWarning, message);
-        return nullptr;
+    gasMixture->SetElectricField(eField);
+}
+
+
+void DetectorConstruction::SetGasMixture(const vector<string> &comps, const vector<double> &fracs)
+{
+    gasMixture->SetGasMixture(comps, fracs);
+    UpdateGasMaterial();
+}
+
+
+void DetectorConstruction::SetPressure(const G4double pressure)
+{
+    gasMixture->SetPressure(pressure);
+    UpdateGasMaterial();
+}
+
+
+void DetectorConstruction::UpdateGasMaterial()
+{
+    try {
+        const vector<string> comps = gasMixture->GetComponents();
+        const vector<double> fracs = gasMixture->GetFractions();
+        const size_t nComps = comps.size();
+        string mixtureName = gasMixture->GetGasMixtureName();
+        // if wanted gas material was already build
+        if(GasMaterialExists(mixtureName))
+            fGasMat = FindGasMaterial(mixtureName);
+        else
+        {
+            std::cout << mixtureName << std::endl;
+            fGasMat = new G4Material(
+                mixtureName, gasMixture->GetDensity(), nComps,
+                kStateGas, gasMixture->GetTemprature(), gasMixture->GetPressure());
+            G4double effMass = 0;
+            for(size_t i = 0;i < nComps;++i)
+            {
+                G4Material *compMat = FindGasMaterial(comps.at(i));
+                G4double moleMass = GasMaterialTable::MolecularWeight(comps.at(i));
+                effMass += fracs.at(i)*moleMass;
+                double massFrac = fracs.at(i)*moleMass/gasMixture->GetMeanAtomicWeight();
+                fGasMat->AddMaterial(compMat, massFrac);
+            }
+            fGasMat->GetIonisation()->SetMeanEnergyPerIonPair(gasMixture->GetMeanEnergyPerIonPair());
+            fGasMat->GetIonisation()->SetMeanExcitationEnergy(gasMixture->GetMeanExcitationEnergy());
+        }
+        if(fLogicGas != nullptr)
+            UpdateLogicVolumes();
+        PrintGasMaterialStats();
     }
-    else
-        return G4NistManager::Instance()->FindMaterial(fGasMatMap->at(key));
+    catch(Exception const &e)
+    {
+        e.WarnGeantKernel();
+    }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4String DetectorConstruction::GetGasMixtureStat()
+void DetectorConstruction::UpdateLogicVolumes()
 {
-    char strFrac1[32], strFrac2[32], strPressure[32];
-    sprintf(strFrac1, "(%2.0f%%)/", fFrac1);
-    sprintf(strFrac2, "(%2.0f%%) at ", fFrac2);
-    sprintf(strPressure, "%1.2f atm.", fPressure/atmosphere);
-    return fGasName1 + strFrac1
-        + fGasName2 +  strFrac2 + strPressure;
+    fLogicGas->SetMaterial(fGasMat);
+    fLogicChamber->SetMaterial(fGasMat);
+    // fLogicMagnet->SetMaterial(fGasMat);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#include <iomanip>
+void DetectorConstruction::PrintGasMaterialStats()
+{
+    auto prec = G4cout.precision(4);
+    string mixtureName = gasMixture->GetGasMixtureName();
+    G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
+    G4cout << "Gas Mixutre                    : " + mixtureName.substr(0, mixtureName.find_first_of('_')) << G4endl;
+    G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
+    G4cout << "Pressure                       : " << setw(7) << gasMixture->GetPressure()*760/atmosphere << " Torr" << G4endl;
+    G4cout << "Temperature                    : " << setw(7) << gasMixture->GetTemprature()/kelvin << " K" << G4endl;
+    G4cout << "Mass Density                   : " << setw(7) << gasMixture->GetDensity()*cm3/gram << " g/cm3" << G4endl;
+    G4cout << "Mean Excitation Energy(Weff)   : " << setw(7) << gasMixture->GetMeanExcitationEnergy()/eV << " eV" << G4endl;
+    G4cout << "Mean Energy Per Ion Pair(Ieff) : " << setw(7) << gasMixture->GetMeanEnergyPerIonPair()/eV << " eV" << G4endl;
+    G4cout << "Drift Velocity                 : " << setw(7) << gasMixture->GetDriftVelocity().x() << " cm/us" << G4endl;
+    G4cout << "Transverse Diffusion Coeff     : " << setw(7) << gasMixture->GetTransverseDiffusion() << " cm^(1/2)" << G4endl;
+    G4cout << "Longitudinal Diffusion Coeff   : " << setw(7) << gasMixture->GetLongitudinalDiffusion() << " cm^(1/2)" << G4endl;
+    G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
+    G4cout.precision(prec);
+}
+
+G4Material *DetectorConstruction::FindGasMaterial(const std::string &gasName) const
+{
+    if(!GasMaterialExists(gasName))
+        throw DetectorConstructionException("FindGasMaterial(const std::string &)", INVALID_GAS_MATERIAL_NAME, gasName);
+    return G4Material::GetMaterial(gasName, false);
+}
+
+G4bool DetectorConstruction::GasMaterialExists(const std::string &gasName) const
+{
+    return G4Material::GetMaterial(gasName, false) != nullptr;
+}

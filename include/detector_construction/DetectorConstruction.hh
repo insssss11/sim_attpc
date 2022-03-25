@@ -4,15 +4,14 @@
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "globals.hh"
 #include "config/ParamContainer.hh"
 #include "detector_construction/DetectorConstructionMessenger.hh"
-#include "MagneticField.hh"
+#include "gas/GasMixtureProperties.hh"
 
+#include "G4UniformMagField.hh"
 #include "G4VSolid.hh"
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolume.hh"
-
 #include "G4RotationMatrix.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "G4VisAttributes.hh"
@@ -23,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 class DetectorConstructionMessenger;
 
@@ -36,17 +36,26 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    // messenger commands for gas control
-    // Gas mixture density is estimated using the ideal gas law, so it may be unaccurate in a certain situation.    
-    void SetGas(const G4String &gas1, G4double frac1, const G4String &gas2, G4double frac2, G4double pressure);
-    void SetLimitStep(G4double ustepMax);
-    void SetLimitTrack(G4double utrakMax);
-    void SetLimitTime(G4double utimeMax);
-    void SetMinKinE(G4double uekinMax);
+    void SetGasMixture(const std::vector<std::string> &comps, const std::vector<double> &fracs);
+    void SetPressure(const G4double pressure);
+
+    void SetMagneticField(const G4ThreeVector &bField);
+    void SetElectricField(const G4ThreeVector &eFeidl);
     void SetBeamPipePosY(G4double posY);
 
+    GasMixtureProperties *GetGasMixtureProperties() const;
+    G4UserLimits *GetUserLimits() const;
+
+    void PrintGasMaterialStats();
+    G4bool IsInitialized();
     private:
-    void ConstructMaterials();
+    G4Material *FindGasMaterial(const std::string &gasName) const;
+    G4bool GasMaterialExists(const std::string &gasName) const;
+    void Initialize();
+    void InitializeGasMixture();
+
+    void UpdateGasMaterial();
+    void UpdateLogicVolumes();
     // overall geometry
     void ConstructGeometry();
     // individuals
@@ -55,40 +64,30 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void BuildGas();
     void BuildChamber();
     void BuildBeamPipe();
-    
+
     void SetVisAttributes();
 
-    void RegisterGasMat(const G4String &key, const G4String &val);
-    G4Material *FindGasMat(const G4String &key);
-    G4String GetGasMixtureStat();
     private:
     const ParamContainer *paramContainer;
     DetectorConstructionMessenger *fMessenger;
 
     G4UserLimits *fUserLimits;
 
-    static G4ThreadLocal MagneticField *fMagneticField;
+    static G4ThreadLocal G4UniformMagField *fMagneticField;
     static G4ThreadLocal G4FieldManager *fFieldManager;
-    
-    // Option to switch on/off checking of volumes overlaps
+
     G4RotationMatrix *fGeoRotation;
+
+    // Option to switch on/off checking of volumes overlaps    
     const G4bool fCheckOverlaps;
+
     G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicGas, *fLogicChamber, *fLogicPipe;
     G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysMagField, *fPhysGas, *fPhysChamber, *fPhysPipe;
 
     std::vector<G4VisAttributes*> fVisAttributes;
-    // variables containing gas information
-    G4Material *fGasMat;
-    G4String fGasName1, fGasName2;
-    G4double fFrac1, fFrac2;
-    G4double fPressure;
 
-    // The starting number of waring that too many G4Material instances
-    // by calling gas properties(density, mixture .....)
-    static constexpr int kNbOfGatMatWarning = 10;
-    int fNbOfGasMat;
-    // key : gas name, Value : pair of pointer to material and its density at 1 atm
-    std::unordered_map<std::string, std::string> *fGasMatMap;
+    G4Material *fGasMat;
+    std::unique_ptr<GasMixtureProperties> gasMixture;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

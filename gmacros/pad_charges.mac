@@ -9,19 +9,19 @@
 /attpc/gun/setPosY -50. mm
 /attpc/gun/setPosZ -300. mm
 
-/attpc/gas/setBeamPipePosY -50. mm
+/attpc/geometry/setBeamPipePosY -50. mm
 
-/attpc/field/value 2.5
+/attpc/field/bField 2.5 0 0 tesla
 /attpc/gasChamber/activateHitTuple false
 /attpc/output/activate true
 
 /attpc/gas/setStepLimit 0.1 mm
 
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 100
-/attpc/output/setFileName padCharges_evt.root
+/attpc/output/setFileName pad_charges_evt.root
 /run/beamOn 100
 
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName padCharges_bg.root
+/attpc/output/setFileName pad_charges_bg.root
 /gun/number 10
 /run/beamOn 100

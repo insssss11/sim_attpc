@@ -9,9 +9,11 @@
 /attpc/gun/setPosY -50. mm
 /attpc/gun/setPosZ -300. mm
 
-/attpc/gas/setBeamPipePosY -50. mm
+/attpc/geometry/setBeamPipePosY -50. mm
 
-/attpc/field/value 2.5
+/attpc/field/bField 2.5 0 0 tesla
+/attpc/gas/setMixture He 90 iC4H10 10
+/attpc/gas/setPressure 0.1 atm
 /attpc/gasChamber/activateHitTuple false
 /attpc/gasChamber/activateDigiTuple false
 /attpc/output/activate false

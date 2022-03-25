@@ -30,14 +30,3 @@ void DetectorConstructionException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity DetectorConstructionException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case INVALID_GAS_MATERIAL_NAME:
-            return JustWarning;
-        default:
-            return JustWarning;
-    }    
-}

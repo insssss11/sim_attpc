@@ -400,7 +400,7 @@ void DetectorConstruction::UpdateGasMaterial()
     }
     catch(Exception const &e)
     {
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(JustWarning);
     }
 }
 

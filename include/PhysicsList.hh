@@ -20,9 +20,6 @@ class PhysicsList : public G4VModularPhysicsList
     virtual void ConstructProcess();
 
     private:
-    // to be used as UI commands.
-    void EnableIonGasModels(G4bool enable = true);
-
     void AddIonGasProcess();
     void AddCarbonAlphaProcess();
     void AddLimiterProcess();

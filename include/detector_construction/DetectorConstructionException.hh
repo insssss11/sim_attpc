@@ -21,6 +21,5 @@ class DetectorConstructionException : public Exception
         const std::string &arg1 = "", const std::string &arg2 = "");
 
     virtual void InitErrorMessage() override;
-    virtual G4ExceptionSeverity ClassifySeverity() const override;
 };
 #endif

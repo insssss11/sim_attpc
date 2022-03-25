@@ -27,14 +27,3 @@ void ParamFileReaderFactoryException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity ParamFileReaderFactoryException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case INVALID_READER_TYPE:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

@@ -35,16 +35,3 @@ void GasMixturePropertiesException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity GasMixturePropertiesException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case INVALID_GAS_COMPONENT_NAME:
-            return JustWarning;
-        case NOT_INITIALIZED:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

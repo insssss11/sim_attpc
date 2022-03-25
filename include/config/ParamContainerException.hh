@@ -22,7 +22,6 @@ class ParamContainerException : public Exception
         const std::string &paramName, const std::string &_type);
 
     virtual void InitErrorMessage() override;
-    virtual G4ExceptionSeverity ClassifySeverity() const override;
 };
 
 #endif

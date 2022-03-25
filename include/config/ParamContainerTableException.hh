@@ -24,7 +24,6 @@ class ParamContainerTableException : public Exception
         const std::string &argument1, const std::string &argument2 = "");
 
     virtual void InitErrorMessage() override;
-    virtual G4ExceptionSeverity ClassifySeverity() const override;
 };
 
 #endif

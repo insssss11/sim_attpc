@@ -4,7 +4,7 @@ MeanFreePathByKinE::MeanFreePathByKinE() : MeanFreePathEval(), kinE(0.)
 {
 }
 
-G4double MeanFreePathByKinE::Eval(const G4Track *aTrack, G4double previousStepSize, G4ForceCondition *condition)
+G4double MeanFreePathByKinE::Eval(const G4Track *aTrack, G4double, G4ForceCondition *condition)
 {
     if(!CheckReactionRegion(aTrack))
         return NoReactionInThisStep(condition);

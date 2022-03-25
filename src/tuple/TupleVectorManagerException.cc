@@ -33,16 +33,3 @@ void TupleVectorManagerException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity TupleVectorManagerException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case TUPLE_DUPLICATED:
-            return JustWarning;
-        case TUPLE_NOT_FOUND:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

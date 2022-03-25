@@ -21,7 +21,6 @@ class ParamFileReaderFactoryException : public Exception
         const std::string &readerType);
 
     virtual void InitErrorMessage() override;
-    virtual G4ExceptionSeverity ClassifySeverity() const override;
 };
 
 #endif

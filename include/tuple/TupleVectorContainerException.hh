@@ -22,7 +22,6 @@ class TupleVectorContainerException : public Exception
         const std::string &vecName);
 
     virtual void InitErrorMessage() override;
-    virtual G4ExceptionSeverity ClassifySeverity() const override;
 };
 
 #endif

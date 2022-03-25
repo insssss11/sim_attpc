@@ -14,7 +14,7 @@ TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase(
     catch(Exception const &e)
     {
         G4cerr << "Faied to add a tuple vector container for TupleInitializerGasChamber class" << G4endl;
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(JustWarning);
     }
 }
 
@@ -62,7 +62,7 @@ void TupleInitializerGasChamber::InitHitTuples()
     catch(Exception const &e)
     {
         G4cerr << "Faied to create Ntuples to the analysis manager in TupleInitializerGasChamber::InitHitTuples()" << G4endl;
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(FatalException);
     }
 }
 
@@ -77,6 +77,6 @@ void TupleInitializerGasChamber::InitDigiTuples()
     catch(Exception const &e)
     {
         G4cerr << "Faied to create Ntuples to the analysis manager in TupleInitializerGasChamber::InitHitTuples()" << G4endl;
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(FatalException);
     }
 }

@@ -28,7 +28,7 @@ ParamContainerTableBuilder *ParamContainerTableBuilder::AddParamContainer(
     }
     catch(ParamFileReaderFactoryException const &e)
     {
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(JustWarning);
     }
     return this;
 }

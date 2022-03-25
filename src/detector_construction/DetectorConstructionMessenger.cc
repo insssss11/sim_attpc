@@ -198,7 +198,7 @@ void DetectorConstructionMessenger::PassArgsToSetGasComposition(const G4String &
     }
     catch(Exception const &e)
     {
-        e.WarnGeantKernel();
+        e.WarnGeantKernel(JustWarning);
     }
     catch(exception const &e)
     {

@@ -37,20 +37,3 @@ void ParamContainerTableException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity ParamContainerTableException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case CONTAINER_DUPLICATED:
-            return JustWarning;
-        case CONTAINER_NOT_FOUND:
-            return FatalException;
-        case CONFIG_FILE_OPEN_FAILURE:
-            return FatalException;
-        case PARAM_FILE_OPEN_FAILURE:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

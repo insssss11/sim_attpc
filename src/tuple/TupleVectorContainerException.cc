@@ -33,16 +33,3 @@ void TupleVectorContainerException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity TupleVectorContainerException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case VECTOR_DUPLICATED:
-            return JustWarning;
-        case VECTOR_NOT_FOUND:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

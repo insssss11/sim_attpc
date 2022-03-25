@@ -30,16 +30,3 @@ void ParamContainerException::InitErrorMessage()
             break;
     }
 }
-
-G4ExceptionSeverity ParamContainerException::ClassifySeverity() const
-{
-    switch(GetErrorNum())
-    {
-        case PARAM_DUPLICATED:
-            return JustWarning;
-        case PARAM_NOT_FOUND:
-            return FatalException;
-        default:
-            return JustWarning;
-    }    
-}

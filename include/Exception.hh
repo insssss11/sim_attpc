@@ -26,10 +26,9 @@ class Exception : public std::exception
     // this must return error message after classification of error code.
     virtual const char *what() const noexcept override;
     virtual void InitErrorMessage() = 0; // This pure abstract method must be called the contstructor of a derived class.
-    virtual G4ExceptionSeverity ClassifySeverity() const = 0;
 
     // this send exception to Geant4 by calling G4Exception
-    void WarnGeantKernel() const;
+    virtual void WarnGeantKernel(G4ExceptionSeverity serverity) const;
 
     const std::string Where() const;
     const std::string GetOriginClass() const;

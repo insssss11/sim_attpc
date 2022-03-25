@@ -78,13 +78,6 @@ void PhysicsList::ConstructProcess()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PhysicsList::EnableIonGasModels(G4bool enable)
-{
-
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PhysicsList::AddIonGasProcess()
 {
     auto ph = G4PhysicsListHelper::GetPhysicsListHelper();

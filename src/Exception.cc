@@ -21,12 +21,12 @@ const char *Exception::what() const noexcept
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void Exception::WarnGeantKernel() const
+void Exception::WarnGeantKernel(G4ExceptionSeverity serverity) const
 {
     G4Exception(
         Where().c_str(),
         GetErrorCode().c_str(),
-        ClassifySeverity(),
+        serverity,
         what());
 }
 

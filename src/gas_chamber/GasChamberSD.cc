@@ -147,22 +147,22 @@ void GasChamberSD::FillHitTuples()
         analysisManager->FillNtupleIColumn(1, 1, hit->GetTrackId());
         analysisManager->FillNtupleIColumn(1, 2, hit->GetNbOfStepPoints());
         analysisManager->FillNtupleIColumn(1, 3, hit->GetAtomicNumber());
-        analysisManager->FillNtupleDColumn(1, 4, hit->GetMass());
-        analysisManager->FillNtupleDColumn(1, 5, hit->GetTrackLength());
-        analysisManager->FillNtupleDColumn(1, 6, hit->GetEdepSum());
+        analysisManager->FillNtupleFColumn(1, 4, hit->GetMass());
+        analysisManager->FillNtupleFColumn(1, 5, hit->GetTrackLength());
+        analysisManager->FillNtupleFColumn(1, 6, hit->GetEdepSum());
         // analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
 
         // vector part
-        tupleVector2->FillVectorD("x", hit->GetPosX());
-        tupleVector2->FillVectorD("y", hit->GetPosY());
-        tupleVector2->FillVectorD("z", hit->GetPosZ());
-        tupleVector2->FillVectorD("px", hit->GetMomX());
-        tupleVector2->FillVectorD("py", hit->GetMomY());
-        tupleVector2->FillVectorD("pz", hit->GetMomZ());
-        tupleVector2->FillVectorD("eDep", hit->GetEdep());
-        // tupleVector2->FillVectorD("t", hit->GetTime());
-        // tupleVector2->FillVectorD("q", hit->GetCharge());
-        tupleVector2->FillVectorD("stepLen", hit->GetStepLen());
+        tupleVector2->FillVectorF("x", hit->GetPosX());
+        tupleVector2->FillVectorF("y", hit->GetPosY());
+        tupleVector2->FillVectorF("z", hit->GetPosZ());
+        tupleVector2->FillVectorF("px", hit->GetMomX());
+        tupleVector2->FillVectorF("py", hit->GetMomY());
+        tupleVector2->FillVectorF("pz", hit->GetMomZ());
+        tupleVector2->FillVectorF("eDep", hit->GetEdep());
+        // tupleVector2->FillVectorF("t", hit->GetTime());
+        // tupleVector2->FillVectorF("q", hit->GetCharge());
+        tupleVector2->FillVectorF("stepLen", hit->GetStepLen());
         analysisManager->AddNtupleRow(1);
         tupleVector2->ClearVectors();
     }

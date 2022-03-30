@@ -132,21 +132,21 @@ void GasChamberHit::Print()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AppendEdep(G4double de)
+void GasChamberHit::AppendEdep(G4float de)
 {
     fEdep.push_back(de);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AppendTime(G4double t)
+void GasChamberHit::AppendTime(G4float t)
 {
     fTime.push_back(t);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AppendCharge(G4double q)
+void GasChamberHit::AppendCharge(G4float q)
 {
     fCharge.push_back(q);
 }
@@ -171,7 +171,7 @@ void GasChamberHit::AppendMomentum(const G4ThreeVector &mom)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AppendStepLen(G4double stepLen)
+void GasChamberHit::AppendStepLen(G4float stepLen)
 {
     fStepLen.push_back(stepLen);
 }
@@ -179,42 +179,42 @@ void GasChamberHit::AppendStepLen(G4double stepLen)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AddEdepSum(G4double de)
+void GasChamberHit::AddEdepSum(G4float de)
 {
     fEdepSum += de;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::AddTrackLength(G4double leng)
+void GasChamberHit::AddTrackLength(G4float leng)
 {
     fTrackLen += leng;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetTrackId(G4double trkId)
+void GasChamberHit::SetTrackId(G4float trkId)
 {
     fTrackId = trkId;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetEventId(G4double evtId)
+void GasChamberHit::SetEventId(G4float evtId)
 {
     fEventId = evtId;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetAtomicNumber(G4double z)
+void GasChamberHit::SetAtomicNumber(G4float z)
 {
     fZ = z;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetMass(G4double mass)
+void GasChamberHit::SetMass(G4float mass)
 {
     fMass = mass;
 }

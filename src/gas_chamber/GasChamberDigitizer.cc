@@ -78,8 +78,8 @@ void GasChamberDigitizer::FillPadsInfo(const GasChamberHitsCollection* hitsColle
 
 void GasChamberDigitizer::FillPadsTrack(const GasChamberHit *hit)
 {
-    const std::vector<G4double> eDeps = hit->GetEdep();
-    const std::vector<G4double>
+    const std::vector<G4float> eDeps = hit->GetEdep();
+    const std::vector<G4float>
         xPos = hit->GetPosX(),
         yPos = hit->GetPosY(),
         zPos = hit->GetPosZ();

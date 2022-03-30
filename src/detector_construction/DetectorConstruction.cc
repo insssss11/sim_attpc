@@ -74,7 +74,7 @@ DetectorConstruction::DetectorConstruction()
     fCheckOverlaps(true),
     fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
-    fGasMat(nullptr), gasMixture(std::make_unique<GasMixtureProperties>())
+    fGasMat(nullptr), gasMixtureProperties(std::make_unique<GasMixtureProperties>())
 {
     Initialize();
 }
@@ -96,11 +96,11 @@ void DetectorConstruction::Initialize()
 
 void DetectorConstruction::InitializeGasMixture()
 {
-    gasMixture->SetGasMixture({"He", "iC4H10"}, {0.9, 0.1});
-    gasMixture->SetElectricField(150, 0., 0.);
-    gasMixture->SetMagneticField(2.5*tesla, 0., 0.);
-    gasMixture->SetPressure(0.1*atmosphere);
-    gasMixture->SetTemperature(273.15*kelvin);
+    gasMixtureProperties->SetGasMixture({"He", "iC4H10"}, {0.9, 0.1});
+    gasMixtureProperties->SetElectricField(150, 0., 0.);
+    gasMixtureProperties->SetMagneticField(2.5*tesla, 0., 0.);
+    gasMixtureProperties->SetPressure(0.1*atmosphere);
+    gasMixtureProperties->SetTemperature(273.15*kelvin);
     UpdateGasMaterial();
 }
 
@@ -313,7 +313,7 @@ void DetectorConstruction::SetVisAttributes()
 void DetectorConstruction::ConstructSDandField()
 {
     auto sdManager = G4SDManager::GetSDMpointer();
-    auto gasChamberSD = new GasChamberSD("/gasChamber");
+    auto gasChamberSD = new GasChamberSD("/gasChamber", gasMixtureProperties.get());
     sdManager->AddNewDetector(gasChamberSD);
     fLogicChamber->SetSensitiveDetector(gasChamberSD);
 
@@ -341,27 +341,27 @@ void DetectorConstruction::SetBeamPipePosY(G4double posY)
 
 void DetectorConstruction::SetMagneticField(const G4ThreeVector &bField)
 {
-    gasMixture->SetMagneticField(bField);
+    gasMixtureProperties->SetMagneticField(bField);
     fMagneticField->SetFieldValue(bField);
 }
 
 
 void DetectorConstruction::SetElectricField(const G4ThreeVector &eField)
 {
-    gasMixture->SetElectricField(eField);
+    gasMixtureProperties->SetElectricField(eField);
 }
 
 
 void DetectorConstruction::SetGasMixture(const vector<string> &comps, const vector<double> &fracs)
 {
-    gasMixture->SetGasMixture(comps, fracs);
+    gasMixtureProperties->SetGasMixture(comps, fracs);
     UpdateGasMaterial();
 }
 
 
 void DetectorConstruction::SetPressure(const G4double pressure)
 {
-    gasMixture->SetPressure(pressure);
+    gasMixtureProperties->SetPressure(pressure);
     UpdateGasMaterial();
 }
 
@@ -369,10 +369,10 @@ void DetectorConstruction::SetPressure(const G4double pressure)
 void DetectorConstruction::UpdateGasMaterial()
 {
     try {
-        const vector<string> comps = gasMixture->GetComponents();
-        const vector<double> fracs = gasMixture->GetFractions();
+        const vector<string> comps = gasMixtureProperties->GetComponents();
+        const vector<double> fracs = gasMixtureProperties->GetFractions();
         const size_t nComps = comps.size();
-        string mixtureName = gasMixture->GetGasMixtureName();
+        string mixtureName = gasMixtureProperties->GetGasMixtureName();
         // if wanted gas material was already build
         if(GasMaterialExists(mixtureName))
             fGasMat = FindGasMaterial(mixtureName);
@@ -380,19 +380,19 @@ void DetectorConstruction::UpdateGasMaterial()
         {
             std::cout << mixtureName << std::endl;
             fGasMat = new G4Material(
-                mixtureName, gasMixture->GetDensity(), nComps,
-                kStateGas, gasMixture->GetTemprature(), gasMixture->GetPressure());
+                mixtureName, gasMixtureProperties->GetDensity(), nComps,
+                kStateGas, gasMixtureProperties->GetTemprature(), gasMixtureProperties->GetPressure());
             G4double effMass = 0;
             for(size_t i = 0;i < nComps;++i)
             {
                 G4Material *compMat = FindGasMaterial(comps.at(i));
                 G4double moleMass = GasMaterialTable::MolecularWeight(comps.at(i));
                 effMass += fracs.at(i)*moleMass;
-                double massFrac = fracs.at(i)*moleMass/gasMixture->GetMeanAtomicWeight();
+                double massFrac = fracs.at(i)*moleMass/gasMixtureProperties->GetMeanAtomicWeight();
                 fGasMat->AddMaterial(compMat, massFrac);
             }
-            fGasMat->GetIonisation()->SetMeanEnergyPerIonPair(gasMixture->GetMeanEnergyPerIonPair());
-            fGasMat->GetIonisation()->SetMeanExcitationEnergy(gasMixture->GetMeanExcitationEnergy());
+            fGasMat->GetIonisation()->SetMeanEnergyPerIonPair(gasMixtureProperties->GetMeanEnergyPerIonPair());
+            fGasMat->GetIonisation()->SetMeanExcitationEnergy(gasMixtureProperties->GetMeanExcitationEnergy());
         }
         if(fLogicGas != nullptr)
             UpdateLogicVolumes();
@@ -416,18 +416,18 @@ void DetectorConstruction::UpdateLogicVolumes()
 void DetectorConstruction::PrintGasMaterialStats()
 {
     auto prec = G4cout.precision(4);
-    string mixtureName = gasMixture->GetGasMixtureName();
+    string mixtureName = gasMixtureProperties->GetGasMixtureName();
     G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
     G4cout << "Gas Mixutre                    : " + mixtureName.substr(0, mixtureName.find_first_of('_')) << G4endl;
     G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
-    G4cout << "Pressure                       : " << setw(7) << gasMixture->GetPressure()*760/atmosphere << " Torr" << G4endl;
-    G4cout << "Temperature                    : " << setw(7) << gasMixture->GetTemprature()/kelvin << " K" << G4endl;
-    G4cout << "Mass Density                   : " << setw(7) << gasMixture->GetDensity()*cm3/gram << " g/cm3" << G4endl;
-    G4cout << "Mean Excitation Energy(Weff)   : " << setw(7) << gasMixture->GetMeanExcitationEnergy()/eV << " eV" << G4endl;
-    G4cout << "Mean Energy Per Ion Pair(Ieff) : " << setw(7) << gasMixture->GetMeanEnergyPerIonPair()/eV << " eV" << G4endl;
-    G4cout << "Drift Velocity                 : " << setw(7) << gasMixture->GetDriftVelocity().x() << " cm/us" << G4endl;
-    G4cout << "Transverse Diffusion Coeff     : " << setw(7) << gasMixture->GetTransverseDiffusion() << " cm^(1/2)" << G4endl;
-    G4cout << "Longitudinal Diffusion Coeff   : " << setw(7) << gasMixture->GetLongitudinalDiffusion() << " cm^(1/2)" << G4endl;
+    G4cout << "Pressure                       : " << setw(7) << gasMixtureProperties->GetPressure()*760/atmosphere << " Torr" << G4endl;
+    G4cout << "Temperature                    : " << setw(7) << gasMixtureProperties->GetTemprature()/kelvin << " K" << G4endl;
+    G4cout << "Mass Density                   : " << setw(7) << gasMixtureProperties->GetDensity()*cm3/gram << " g/cm3" << G4endl;
+    G4cout << "Mean Excitation Energy(Weff)   : " << setw(7) << gasMixtureProperties->GetMeanExcitationEnergy()/eV << " eV" << G4endl;
+    G4cout << "Mean Energy Per Ion Pair(Ieff) : " << setw(7) << gasMixtureProperties->GetMeanEnergyPerIonPair()/eV << " eV" << G4endl;
+    G4cout << "Drift Velocity                 : " << setw(7) << gasMixtureProperties->GetDriftVelocity().x() << " cm/us" << G4endl;
+    G4cout << "Transverse Diffusion Coeff     : " << setw(7) << gasMixtureProperties->GetTransverseDiffusion() << " cm^(1/2)" << G4endl;
+    G4cout << "Longitudinal Diffusion Coeff   : " << setw(7) << gasMixtureProperties->GetLongitudinalDiffusion() << " cm^(1/2)" << G4endl;
     G4cout << "-------------------------------------------------------------------------------------------------" << G4endl;
     G4cout.precision(prec);
 }

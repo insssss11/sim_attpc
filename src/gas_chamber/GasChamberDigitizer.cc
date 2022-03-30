@@ -15,11 +15,11 @@
 
 GasChamberDigitizer::GasChamberDigitizer(G4String name,
     G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
-    G4double eIonPair, const G4ThreeVector &_centerPos)
+    const G4ThreeVector &_centerPos)
     : G4VDigitizerModule(name),
     padPlaneX(_padPlaneX), padPlaneY(_padPlaneY), nPadX(_nPadX), nPadY(_nPadY),
     padMargin(0.),
-    energyPerElectronPair(eIonPair), centerPos(_centerPos),
+    centerPos(_centerPos),
     readoutPads(nullptr)
 {
     InitPads();
@@ -95,11 +95,11 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
         maxPadPlaneY = centerPos.getY() + padPlaneY/2,
         padX = padPlaneX/nPadX,
         padY = padPlaneY/nPadY;
-    
+
     if(ePosX < minPadPlaneX + padMargin || ePosX > maxPadPlaneX - padMargin ||
         ePosY < minPadPlaneY + padMargin || ePosY > maxPadPlaneY - padMargin)
         return;
-    
+
     int padNumX = 0, padNumY = 0;
     for(padNumX = 0;padNumX < nPadX;++padNumX)
     {
@@ -115,13 +115,18 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
         else if(ePosY < minPadPlaneY + (padNumY + 1)*padY + padMargin)
             return;
     }
-    // charge in fC
     if(padNumX >= nPadX || padNumY >= nPadY)
-    {
         return;
-    }
-    G4double charge = 1e12*e_SI*chargeGain*eDep/energyPerElectronPair;
+    G4double energyPerElectronPair = gasMixtureProperties->GetMeanEnergyPerIonPair();
+    G4double charge = e_SI*chargeGain*eDep/energyPerElectronPair;
     readoutPads->at(padNumY).at(padNumX).AddCharge(charge);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberDigitizer::SetGasMixtureProperties(GasMixtureProperties *_gasMixtureProperties)
+{
+    gasMixtureProperties = _gasMixtureProperties;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -129,6 +134,11 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
 void GasChamberDigitizer::SetChargeMultiplication(G4double gain)
 {
     chargeGain = gain;
+}
+
+void GasChamberDigitizer::SetFullScaleRange(G4double _fsr)
+{
+    fsr = _fsr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

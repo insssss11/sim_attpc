@@ -87,7 +87,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     std::vector<G4VisAttributes*> fVisAttributes;
 
     G4Material *fGasMat;
-    std::unique_ptr<GasMixtureProperties> gasMixture;
+    std::unique_ptr<GasMixtureProperties> gasMixtureProperties;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

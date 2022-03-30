@@ -17,15 +17,20 @@
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
-
+#include <stdexcept>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-GasChamberSD::GasChamberSD(G4String name, G4int verbose)
-    : G4VSensitiveDetector(name),
+using namespace std;
+
+GasChamberSD::GasChamberSD(G4String name, GasMixtureProperties *_gasMixtureProperties, G4int verbose)
+    : G4VSensitiveDetector(name), gasMixtureProperties(_gasMixtureProperties),
     fHitsCollection(nullptr), fMessenger(nullptr), fHCID(-1), fEventId(-1), fTrackId(-1),
     fNbOfStepPoints(0),
     hitTupleActivated(true), digiTupleActivated(true)
 {
+    if(gasMixtureProperties == nullptr)
+        throw invalid_argument("In GasChamberSD::GasChamberSD(G4String, GasMixtureProperties *, G4int), a pointer to GasMixtureProperties is a null pointer.");
+    
     verboseLevel = verbose;
     collectionName.insert("GasChamberHColl");
     InitManagers();
@@ -54,6 +59,31 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
     fNbOfStepPoints = 0;
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberSD::InitManagers()
+{
+    tupleVectorManager = TupleVectorManager::Instance();
+    analysisManager = G4AnalysisManager::Instance();
+    digitizerManager = G4DigiManager::GetDMpointer();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberSD::InitDigitizer()
+{
+    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    // Digitizer
+    digitizer = new GasChamberDigitizer(
+        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),
+        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
+        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")));
+    digitizer->SetGasMixtureProperties(gasMixtureProperties);
+    digitizer->SetPadMargin(container->GetParamD("margin"));
+    digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
+    digitizerManager->AddNewModule(digitizer);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -98,31 +128,6 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
 
     ++fNbOfStepPoints;
     return true;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitManagers()
-{
-    tupleVectorManager = TupleVectorManager::Instance();
-    analysisManager = G4AnalysisManager::Instance();
-    digitizerManager = G4DigiManager::GetDMpointer();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitDigitizer()
-{
-    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
-    // Digitizer
-    digitizer = new GasChamberDigitizer(
-        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),
-        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
-        container->GetParamD("W"),
-        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")));
-    digitizer->SetPadMargin(container->GetParamD("margin"));
-    digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
-    digitizerManager->AddNewModule(digitizer);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

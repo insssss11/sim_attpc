@@ -4,6 +4,7 @@
 #ifndef GasChamberSD_h
 #define GasChamberSD_h 1
 
+#include "gas/GasMixtureProperties.hh"
 #include "gas_chamber/GasChamberHit.hh"
 #include "gas_chamber/GasChamberDigitizer.hh"
 
@@ -16,12 +17,10 @@
 #include "G4VSensitiveDetector.hh"
 #include "G4GenericMessenger.hh"
 
-/// EM calorimeter sensitive detector
-
 class GasChamberSD : public G4VSensitiveDetector
 {
     public:
-    GasChamberSD(G4String name, G4int verbose = 0);
+    GasChamberSD(G4String name, GasMixtureProperties *gasMixture, G4int verbose = 0);
     virtual ~GasChamberSD();
 
     virtual void Initialize(G4HCofThisEvent *HCE);
@@ -31,7 +30,7 @@ class GasChamberSD : public G4VSensitiveDetector
     private:
     void InitManagers();
     void InitDigitizer();
-    
+
     void FillHitTuples();
     void FillDigiTuples();
 
@@ -40,6 +39,7 @@ class GasChamberSD : public G4VSensitiveDetector
     void DefineCommands();
 
     private:
+    GasMixtureProperties *gasMixtureProperties;
     GasChamberHitsCollection *fHitsCollection;
     GasChamberDigitizer *digitizer;
     G4GenericMessenger *fMessenger;

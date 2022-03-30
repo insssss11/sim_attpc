@@ -25,7 +25,7 @@ class DrawPadChargesAction : public EventDrawingAction {
         tree->SetBranchAddress("qdc", &data);
 
         hist = new TH2D("hist", "", padPlane.nPadX, 0., padPlane.padPlaneX, padPlane.nPadY, 0., padPlane.padPlaneY);
-        hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);#it{charge} (fC)");
+        hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);#it{charge} (pC)");
         hist->GetXaxis()->SetTitleOffset(2.0);
         hist->GetYaxis()->SetTitleOffset(2.0);
         hist->GetZaxis()->SetTitleOffset(2.5);
@@ -41,7 +41,7 @@ class DrawPadChargesAction : public EventDrawingAction {
     {
         for(int y = 0;y < padPlane.nPadY;++y)
             for(int x = 0;x < padPlane.nPadX;++x)
-                hist->SetBinContent(x + 1, y + 1, data->at(x + y*padPlane.nPadX));
+                hist->SetBinContent(x + 1, y + 1, 1e12*data->at(x + y*padPlane.nPadX));
         hist->Draw(drawOption.c_str());
     }
     

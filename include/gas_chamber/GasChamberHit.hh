@@ -11,9 +11,6 @@
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
-///
-/// It records:
-/// - the energy deposit 
 
 class GasChamberHit : public G4VHit
 {

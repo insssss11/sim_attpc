@@ -7,9 +7,9 @@ TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase(
 {
     try {
         tupleVectorManager->AddTupleVectorContainer("tree_gc2")
-            ->AddVectorsD("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
+            ->AddVectorsF("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
         tupleVectorManager->AddTupleVectorContainer("tree_gc3")
-            ->AddVectorsD("qdc");
+            ->AddVectorsF("qdc");
     }
     catch(Exception const &e)
     {
@@ -40,23 +40,23 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleIColumn("trkId"); // 1 1
         analysisManager->CreateNtupleIColumn("Nstep"); // 1 2
         analysisManager->CreateNtupleIColumn("atomNum"); // 1 3
-        analysisManager->CreateNtupleDColumn("mass"); // 1 4
-        analysisManager->CreateNtupleDColumn("trkLen"); // 1 5
-        analysisManager->CreateNtupleDColumn("eDepSum"); // 1 6
+        analysisManager->CreateNtupleFColumn("mass"); // 1 4
+        analysisManager->CreateNtupleFColumn("trkLen"); // 1 5
+        analysisManager->CreateNtupleFColumn("eDepSum"); // 1 6
         // analysisManager->CreateNtupleSColumn("part"); // 1 7
 
         // vector part
         auto tupleVector2 = tupleVectorManager->GetTupleVectorContainer("tree_gc2");
-        analysisManager->CreateNtupleDColumn("x", tupleVector2->GetVectorRefD("x"));
-        analysisManager->CreateNtupleDColumn("y", tupleVector2->GetVectorRefD("y"));
-        analysisManager->CreateNtupleDColumn("z", tupleVector2->GetVectorRefD("z"));
-        analysisManager->CreateNtupleDColumn("px", tupleVector2->GetVectorRefD("px"));
-        analysisManager->CreateNtupleDColumn("py", tupleVector2->GetVectorRefD("py"));
-        analysisManager->CreateNtupleDColumn("pz", tupleVector2->GetVectorRefD("pz"));
-        analysisManager->CreateNtupleDColumn("eDep", tupleVector2->GetVectorRefD("eDep"));
-        // analysisManager->CreateNtupleDColumn("t", tupleVector2->GetVectorRefD("t"));
-        // analysisManager->CreateNtupleDColumn("q", tupleVector2->GetVectorRefD("q"));
-        analysisManager->CreateNtupleDColumn("stepLen", tupleVector2->GetVectorRefD("stepLen"));
+        analysisManager->CreateNtupleFColumn("x", tupleVector2->GetVectorRefF("x"));
+        analysisManager->CreateNtupleFColumn("y", tupleVector2->GetVectorRefF("y"));
+        analysisManager->CreateNtupleFColumn("z", tupleVector2->GetVectorRefF("z"));
+        analysisManager->CreateNtupleFColumn("px", tupleVector2->GetVectorRefF("px"));
+        analysisManager->CreateNtupleFColumn("py", tupleVector2->GetVectorRefF("py"));
+        analysisManager->CreateNtupleFColumn("pz", tupleVector2->GetVectorRefF("pz"));
+        analysisManager->CreateNtupleFColumn("eDep", tupleVector2->GetVectorRefF("eDep"));
+        // analysisManager->CreateNtupleFColumn("t", tupleVector2->GetVectorRefF("t"));
+        // analysisManager->CreateNtupleFColumn("q", tupleVector2->GetVectorRefF("q"));
+        analysisManager->CreateNtupleFColumn("stepLen", tupleVector2->GetVectorRefF("stepLen"));
         analysisManager->FinishNtuple();
     }
     catch(Exception const &e)
@@ -71,7 +71,7 @@ void TupleInitializerGasChamber::InitDigiTuples()
     try {
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         analysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
-        analysisManager->CreateNtupleDColumn("qdc", tupleVector3->GetVectorRefD("qdc"));
+        analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
         analysisManager->FinishNtuple();
     }
     catch(Exception const &e)

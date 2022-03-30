@@ -11,7 +11,10 @@
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
+#include <stdexcept>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+using namespace std;
 
 GasChamberDigitizer::GasChamberDigitizer(G4String name,
     G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
@@ -34,14 +37,18 @@ GasChamberDigitizer::~GasChamberDigitizer()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const std::vector<G4double> GasChamberDigitizer::GetChargeOnPads() const
+void GasChamberDigitizer::FillChargeOnPads(vector<G4float> &vec) const
 {
-    std::vector<G4double> charge;
-    charge.reserve(nPadX*nPadY);
-    for(const auto &yPads : *readoutPads)
-        for(const auto &pad : yPads)
-            charge.push_back(pad.GetCharge());
-    return charge;
+    try {
+        vec.resize(nPadX*nPadY);
+        for(int x = 0;x < nPadX;++x)
+            for(int y = 0;y < nPadY;++y)
+                vec.at(y*nPadX + x) = readoutPads->at(y).at(x).GetCharge();
+    }
+    catch(exception const &e)
+    {
+        cerr << string("In GasChamberDigitizer::FillChargeOnPads(vector<G4float> &), ") + e.what() << endl;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

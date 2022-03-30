@@ -23,17 +23,17 @@ class GasChamberDigi : public G4VDigi
     inline void  operator delete(void*);
 
     G4int GetPadNum() const { return padNum; }
-    G4double GetCharge() const { return charge; }
+    G4float GetCharge() const { return charge; }
 
-    void SetPadNum(G4double num);
-    void AddCharge(G4double _charge);
+    void SetPadNum(int num);
+    void AddCharge(G4float _charge);
 
     void Clear();
     void Draw();
     void Print();
     private:
     G4int padNum;
-    G4double charge;
+    G4float charge;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

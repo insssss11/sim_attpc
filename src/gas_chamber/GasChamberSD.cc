@@ -172,13 +172,18 @@ void GasChamberSD::FillHitTuples()
 
 void GasChamberSD::FillDigiTuples()
 {
-    // digitization
-    auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
-    digitizer->FillPadsInfo(fHitsCollection);
-    tupleVector3->FillVectorD("qdc", digitizer->GetChargeOnPads());
-    analysisManager->AddNtupleRow(2);
-    tupleVector3->ClearVectors();
-    digitizer->ClearPads();
+    try{
+        // digitization
+        auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
+        digitizer->FillPadsInfo(fHitsCollection);
+        digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));    
+        analysisManager->AddNtupleRow(2);
+        digitizer->ClearPads();
+    }
+    catch(Exception const &e)
+    {
+        e.WarnGeantKernel(FatalException);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

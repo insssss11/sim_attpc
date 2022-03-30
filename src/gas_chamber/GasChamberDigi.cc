@@ -49,14 +49,14 @@ G4bool GasChamberDigi::operator==(const GasChamberDigi &right) const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigi::SetPadNum(G4double num)
+void GasChamberDigi::SetPadNum(G4int num)
 {
     padNum = num;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigi::AddCharge(G4double _charge)
+void GasChamberDigi::AddCharge(G4float _charge)
 {
     charge += _charge;
 }

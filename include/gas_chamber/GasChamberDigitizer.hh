@@ -32,7 +32,7 @@ class GasChamberDigitizer : public G4VDigitizerModule
     void SetPadPlaneCenter(const G4ThreeVector &pos);
     void SetPadMargin(G4double margin);  
 
-    const std::vector<G4double> GetChargeOnPads() const;
+    void FillChargeOnPads(std::vector<G4float> &vector) const;
     
     void Digitize();
     void ClearPads();

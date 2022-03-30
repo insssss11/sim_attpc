@@ -5,7 +5,7 @@
 
 int AddTrees(const char *outFile, const char *treeName, const char *branchName, int nTrees, ...)
 {
-    BranchSummation<std::vector<double> >*adder = new BranchSummation<std::vector<double> >(branchName);
+    BranchSummation<std::vector<float> >*adder = new BranchSummation<std::vector<float> >(branchName);
     va_list ap;
     va_start(ap, nTrees);
     for(int i = 0; i < nTrees; i++)

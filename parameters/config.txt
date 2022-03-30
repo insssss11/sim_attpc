@@ -1,2 +1,2 @@
-ReaderType          FileName                ParamName
-txt                 gas_chamber.txt         gas_chamber
+# ReaderType        ParamName       FileName
+txt                 gas_chamber     gas_chamber.txt

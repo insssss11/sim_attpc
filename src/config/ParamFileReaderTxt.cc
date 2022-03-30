@@ -3,7 +3,6 @@
 
 #include "config/ParamFileReaderTxt.hh"
 
-
 #include "G4ios.hh"
 
 #include <sstream>

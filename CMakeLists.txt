@@ -104,6 +104,7 @@ set(SCRIPTS
   rmacros/BranchSummation/EntrySummation.hh
   rmacros/BranchSummation/BranchAppender.hh
 
+  parameters/config.txt
   parameters/gas_chamber.txt
   )
 

@@ -16,9 +16,6 @@
 #include "G4ios.hh"
 
 #include "Randomize.hh"
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void LoadParameter();
 
 int main(int argc, char **argv)
 {
@@ -42,7 +39,8 @@ int main(int argc, char **argv)
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
 
     // Load parameter files
-    LoadParameter();
+    ParamContainerTable::GetBuilder()->BuildFromConfigFile("parameters/config.txt");
+    ParamContainerTable::Instance()->DumpTable();
 
     // Construct the default run manager (sequential or multi-thread mode)
     // running with a single thread has no meaning
@@ -93,12 +91,4 @@ int main(int argc, char **argv)
     // in the main() program !
     delete visManager;
     delete runManager;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void LoadParameter()
-{
-    ParamContainerTable::GetBuilder()->AddParamContainer("txt", "gas_chamber", "parameters/gas_chamber.txt")->Build();
-    ParamContainerTable::Instance()->DumpTable();
 }

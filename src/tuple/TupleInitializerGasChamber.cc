@@ -39,7 +39,7 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleIColumn("evtId"); // 1 0
         analysisManager->CreateNtupleIColumn("trkId"); // 1 1
         analysisManager->CreateNtupleIColumn("Nstep"); // 1 2
-        analysisManager->CreateNtupleIColumn("atomNum"); // 1 3
+        analysisManager->CreateNtupleIColumn("pEnum"); // 1 3
         analysisManager->CreateNtupleFColumn("mass"); // 1 4
         analysisManager->CreateNtupleFColumn("trkLen"); // 1 5
         analysisManager->CreateNtupleFColumn("eDepSum"); // 1 6

@@ -11,6 +11,7 @@
 #include "G4THitsCollection.hh"
 #include "G4Allocator.hh"
 #include "G4ThreeVector.hh"
+#include "training_data/TrainingDataTypes.hh"
 
 class GasChamberHit : public G4VHit
 {
@@ -41,7 +42,7 @@ class GasChamberHit : public G4VHit
     G4float GetTrackLength() const {return fTrackLen;}
     G4int GetTrackId() const {return fTrackId;}
     G4int GetEventId() const {return fEventId;}
-    G4int GetAtomicNumber() const {return fZ;}
+    TrainingDataTypes::EParticle GetParticleEnum() const {return parEnum;}
     G4float GetMass() const {return fMass;}
     G4String GetPartName() const {return fPartName;}
     G4int GetNbOfStepPoints() const {return fNbOfStepPoints;}
@@ -57,7 +58,7 @@ class GasChamberHit : public G4VHit
     void AddTrackLength(G4float leng);
     void SetTrackId(G4float trkId);
     void SetEventId(G4float evtId);
-    void SetAtomicNumber(G4float z);
+    void SetParticleEnum(TrainingDataTypes::EParticle parEnum);
     void SetMass(G4float mass);
     void SetPartName(const G4String &name);
     void SetNbOfStepPoints(G4int nSteps);
@@ -65,9 +66,9 @@ class GasChamberHit : public G4VHit
     private:
     // by steps
     std::vector<G4float> fPosX, fPosY, fPosZ, fMomX, fMomY, fMomZ, fEdep, fTime, fCharge, fStepLen;
-    
+    TrainingDataTypes::EParticle parEnum;
     // by tracks
-    G4int fEventId, fTrackId, fZ, fNbOfStepPoints;
+    G4int fEventId, fTrackId, fNbOfStepPoints;
     G4float fEdepSum, fTrackLen, fMass;
     G4String fPartName;
 };

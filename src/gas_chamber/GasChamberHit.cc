@@ -16,7 +16,7 @@ G4ThreadLocal G4Allocator<GasChamberHit> *GasChamberHitAllocator;
 
 GasChamberHit::GasChamberHit()
     : G4VHit(),
-    fEventId(-1), fTrackId(-1), fZ(0),
+    parEnum(TrainingDataTypes::EParticle::Unknown), fEventId(-1), fTrackId(-1), 
     fEdepSum(0), fTrackLen(0)
 {}
 
@@ -29,7 +29,7 @@ GasChamberHit::GasChamberHit(const G4DynamicParticle *pDynamic, G4int evtId, G4i
     auto pDef = pDynamic->GetDefinition();
     SetPartName(pDef->GetParticleName());
     SetMass(pDef->GetPDGMass());
-    SetAtomicNumber(pDef->GetAtomicNumber());
+    SetParticleEnum(TrainingDataTypes::FromParticleDef(pDef));
     SetEventId(evtId);
     SetTrackId(trkId);
 }
@@ -54,7 +54,7 @@ GasChamberHit::GasChamberHit(const GasChamberHit &right)
     fTime = right.GetTime();
     fCharge = right.GetCharge();
     fEventId = right.GetEventId();
-    fZ = right.GetAtomicNumber();
+    parEnum = right.GetParticleEnum();
     fNbOfStepPoints = right.GetNbOfStepPoints();
     fEdepSum = right.GetEdepSum();
     fTrackLen = right.GetTrackLength();
@@ -76,7 +76,7 @@ const GasChamberHit &GasChamberHit::operator=(const GasChamberHit &right)
     fTime = right.GetTime();
     fCharge = right.GetCharge();
     fEventId = right.GetEventId();
-    fZ = right.GetAtomicNumber();
+    parEnum = right.GetParticleEnum();
     fNbOfStepPoints = right.GetNbOfStepPoints();
     fEdepSum = right.GetEdepSum();
     fTrackLen = right.GetTrackLength();
@@ -99,7 +99,7 @@ G4bool GasChamberHit::operator==(const GasChamberHit &right) const
     fTime == right.GetTime() &&
     fCharge == right.GetCharge() &&
     fEventId == right.GetEventId() &&
-    fZ == right.GetAtomicNumber() &&
+    parEnum == right.GetParticleEnum() &&
     fNbOfStepPoints == right.GetNbOfStepPoints() &&
     fEdepSum == right.GetEdepSum() &&
     fTrackLen == right.GetTrackLength() &&
@@ -207,9 +207,9 @@ void GasChamberHit::SetEventId(G4float evtId)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberHit::SetAtomicNumber(G4float z)
+void GasChamberHit::SetParticleEnum(TrainingDataTypes::EParticle _parEnum)
 {
-    fZ = z;
+    parEnum = _parEnum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

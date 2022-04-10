@@ -82,7 +82,7 @@ void GenTrainingData::InitDataReaderValue(DataReaderValue &dataReaderValue, Data
     dataReaderValue.nTrk = make_unique<TTreeReaderValue<int> >(*dataReader.reader1, "Ntrk");
 
     dataReaderValue.evtId = make_unique<TTreeReaderValue<int> >(*dataReader.reader2, "evtId");
-    dataReaderValue.atomNum = make_unique<TTreeReaderValue<int> >(*dataReader.reader2, "atomNum");
+    dataReaderValue.particleEnum = make_unique<TTreeReaderValue<int> >(*dataReader.reader2, "pEnum");
     dataReaderValue.nStep = make_unique<TTreeReaderValue<int> >(*dataReader.reader2, "Nstep");
 
     dataReaderValue.x = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader2, "x");
@@ -223,12 +223,11 @@ void GenTrainingData::ReadTracks(DataReaderValue &dataReaderValue, DataReader &d
         {
             dataReader.reader2->Next();
             evtId = **dataReaderValue.evtId;
-            int atomNum = **dataReaderValue.atomNum;
+            EParticle parEnum = static_cast<EParticle>(**dataReaderValue.particleEnum);
             if(curEvtId == -1)
                 curEvtId = evtId;
             else if(curEvtId != evtId)
                 throw GenTrainingDataException("ReadTracks(DataReaderValue &)", EVENT_ID_MISMATCH, to_string(curEvtId), to_string(evtId));
-            EParticle parEnum = FromAtomNum(atomNum);
             if(parEnum == EParticle::Carbon)
                 ++output.nBgCarbons;
             else if(parEnum == Gamma && !gammaIncluded)
@@ -290,7 +289,7 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 {
     ListParticleLabels(stream);
     stream << "# fullScaleRange is in the unit of pC" << endl;
-    stream << "# A row of data consists of pairs of none-zero indice and their values." << endl;
+    stream << "# A row of data consists of pairs of none-zero indice(starting index = 1) and their values." << endl;
     stream << setw(10) << "nEvents" << setw(15) << "inputSize"  << setw(20) << "fullScaleRange" << endl;
     stream << setw(10) << GetEventNum() << setw(15) << inputSize << setw(20) << fullScaleRange*1e12 << endl;
 }

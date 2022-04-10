@@ -17,7 +17,7 @@
 namespace TrainingDataTypes {
 
     typedef enum {
-        Nothing,
+        Emtpy,
         Gamma,
         Electron,
         Proton,
@@ -28,11 +28,11 @@ namespace TrainingDataTypes {
         Unknown,
     }EParticle;
 
-    const std::array<std::string, nParticles> paricleNames = {"Nothing", "Gamma", "Electron", "Proton", "Alpha", "Carbon", "Oxygen"};
+    const std::array<std::string, nParticles> paricleNames = {"Empty", "Gamma", "Electron", "Proton", "Alpha", "Carbon", "Oxygen"};
 
 
     static constexpr std::array<int, nParticles> kAtomicNum = {
-        -1, // Nothing
+        -1, // Empty
         0, // Gamma
         1, // Proton
         2, // Alhpa
@@ -40,7 +40,7 @@ namespace TrainingDataTypes {
         8  // Oxygen
     };
 
-    static EParticle FromAtomNum(int atomicNum)
+    inline EParticle FromAtomNum(int atomicNum)
     {
         switch(atomicNum)
         {
@@ -59,7 +59,7 @@ namespace TrainingDataTypes {
         }
     }
 
-    static EParticle FromParticleDef(const G4ParticleDefinition *parDef)
+    inline EParticle FromParticleDef(const G4ParticleDefinition *parDef)
     {
         if(parDef->GetParticleName() == "gamma")
             return Gamma;
@@ -85,7 +85,7 @@ namespace TrainingDataTypes {
         // tree1
         std::unique_ptr<TTreeReaderValue<int> > nTrk;
         // tree2
-        std::unique_ptr<TTreeReaderValue<int> > evtId, atomNum, nStep;
+        std::unique_ptr<TTreeReaderValue<int> > evtId, particleEnum, nStep;
         std::unique_ptr<TTreeReaderValue<float> > trkLen;
         std::unique_ptr<TTreeReaderValue<std::vector<float> > >
             x, y, z,
@@ -111,7 +111,7 @@ namespace TrainingDataTypes {
     }Label;
 
     static constexpr Track emptyTrack = {
-        EParticle::Nothing,
+        EParticle::Emtpy,
         -1., -1.,
         -1., -1., -1.,
         -1., -1., -1.};

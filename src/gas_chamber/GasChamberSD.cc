@@ -146,7 +146,7 @@ void GasChamberSD::FillHitTuples()
         analysisManager->FillNtupleIColumn(1, 0, G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID());
         analysisManager->FillNtupleIColumn(1, 1, hit->GetTrackId());
         analysisManager->FillNtupleIColumn(1, 2, hit->GetNbOfStepPoints());
-        analysisManager->FillNtupleIColumn(1, 3, hit->GetAtomicNumber());
+        analysisManager->FillNtupleIColumn(1, 3, hit->GetParticleEnum());
         analysisManager->FillNtupleFColumn(1, 4, hit->GetMass());
         analysisManager->FillNtupleFColumn(1, 5, hit->GetTrackLength());
         analysisManager->FillNtupleFColumn(1, 6, hit->GetEdepSum());

@@ -60,6 +60,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/tuple/*.cc
   ${PROJECT_SOURCE_DIR}/src/config/*.cc
   ${PROJECT_SOURCE_DIR}/src/readout/*.cc
+  ${PROJECT_SOURCE_DIR}/src/training_data/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
@@ -72,6 +73,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/tuple/*.hh
   ${PROJECT_SOURCE_DIR}/include/config/*.hh
   ${PROJECT_SOURCE_DIR}/include/readout/*.hh
+  ${PROJECT_SOURCE_DIR}/include/training_data/*.hh
   )
 
 #----------------------------------------------------------------------------
@@ -80,6 +82,9 @@ file(GLOB headers
 add_executable(sim_attpc sim_attpc.cc ${sources} ${headers})
 target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
 target_compile_options(sim_attpc PRIVATE -Wno-shadow)
+add_executable(gen_training_data gen_training_data.cc ${sources} ${headers})
+target_link_libraries(gen_training_data ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
+target_compile_options(gen_training_data PRIVATE -Wno-shadow)
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build B5. This is so that we can run the executable directly because it

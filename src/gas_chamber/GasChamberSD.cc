@@ -160,7 +160,7 @@ void GasChamberSD::FillHitTuples()
         tupleVector2->FillVectorF("py", hit->GetMomY());
         tupleVector2->FillVectorF("pz", hit->GetMomZ());
         tupleVector2->FillVectorF("eDep", hit->GetEdep());
-        // tupleVector2->FillVectorF("t", hit->GetTime());
+        tupleVector2->FillVectorF("t", hit->GetTime());
         // tupleVector2->FillVectorF("q", hit->GetCharge());
         tupleVector2->FillVectorF("stepLen", hit->GetStepLen());
         analysisManager->AddNtupleRow(1);

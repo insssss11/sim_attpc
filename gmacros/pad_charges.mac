@@ -18,9 +18,9 @@
 
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 100
 /attpc/output/setFileName pad_charges_evt.root
-/run/beamOn 100
+/run/beamOn 100000
 
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName pad_charges_bg.root
 /gun/number 10
-/run/beamOn 100
+/run/beamOn 100000

@@ -62,6 +62,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/readout/*.cc
   ${PROJECT_SOURCE_DIR}/src/training_data/*.cc
   ${PROJECT_SOURCE_DIR}/src/exception/*.cc
+  ${PROJECT_SOURCE_DIR}/src/tree_merger/*.cc
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
@@ -76,6 +77,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/readout/*.hh
   ${PROJECT_SOURCE_DIR}/include/training_data/*.hh
   ${PROJECT_SOURCE_DIR}/include/exception/*.hh
+  ${PROJECT_SOURCE_DIR}/include/tree_merger/*.hh
   )
 
 #----------------------------------------------------------------------------

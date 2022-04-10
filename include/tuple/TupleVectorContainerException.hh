@@ -4,7 +4,7 @@
 #ifndef TupleVectorContainerException_h
 #define TupleVectorContainerException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace TupleVectorContainerErrorNum {
     enum ErrorNum : unsigned int {

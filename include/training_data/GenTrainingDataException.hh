@@ -4,7 +4,7 @@
 #ifndef GenTrainingDataException_h
 #define GenTrainingDataException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace GenTrainingDataErrorNum {
     enum ErrorNum :unsigned int {

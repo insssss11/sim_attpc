@@ -4,12 +4,12 @@
 #ifndef Exception_h
 #define Exception_h 1
 
-#include "G4Exception.hh"
-
-#include <string>
-#include <exception>
 #include <vector>
+#include <vector>
+#include <exception>
+#include <stdexcept>
 
+#include "G4Exception.hh"
 /// This exception class is wrapper of G4Exception, derived from standard exception class.
 class Exception : public std::exception
 {
@@ -43,7 +43,6 @@ class Exception : public std::exception
     void SetErrorNum(unsigned int errorNumber);
 
     protected:
-    // string variable to be initilized.
     std::string message;
 
     private:

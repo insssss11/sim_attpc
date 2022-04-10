@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 using namespace std;
 
 DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstruction *detector)

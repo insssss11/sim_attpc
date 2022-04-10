@@ -1,7 +1,7 @@
 /// \file Exception.cc
 /// \brief Implementation of the Exception class
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 #include <iomanip>
 #include <sstream>

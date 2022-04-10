@@ -4,7 +4,7 @@
 #ifndef ParamContainerTableException_h
 #define ParamContainerTableException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace ParamContainerTableErrorNum {
     enum ErrorNum : unsigned int {

@@ -4,7 +4,7 @@
 #ifndef ParamFileReaderFactoryException_h
 #define ParamFileReaderFactoryException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace ParamFileReaderFactoryErrorNum {
     enum ErrorNum : unsigned int {

@@ -4,7 +4,7 @@
 #ifndef DetectorConstructionException_h
 #define DetectorConstructionException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace DetectorConstructionErrorNum {
     enum ErrorNum :unsigned int {

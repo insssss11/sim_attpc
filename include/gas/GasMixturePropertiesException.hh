@@ -4,7 +4,7 @@
 #ifndef GasMixturePropertiesException_h
 #define GasMixturePropertiesException_h 1
 
-#include "Exception.hh"
+#include "exception/Exception.hh"
 
 namespace GasMixturePropertiesErrorNum {
     enum ErrorNum :unsigned int {

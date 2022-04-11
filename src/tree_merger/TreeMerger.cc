@@ -10,7 +10,7 @@ using namespace std;
 using namespace TreeMergerErrorNum;
 
 TreeMerger::TreeMerger(G4int _nThreads, const string _fileName)
-    :nThreads(_nThreads), fileName(_fileName)
+    :nThreads(_nThreads), fileName(_fileName), treeLists(new TList())
 {
 }
 
@@ -28,15 +28,24 @@ void TreeMerger::MergeRootFiles(G4bool deleteMerged)
         return;
     }
     try {
+        masterFile = make_unique<TFile>(fileName.c_str(), "RECREATE");
         OpenThreadFiles();
-        auto rootFile = TFile::Open(fileName.c_str(), "RECREATE");
-        MergeTrees();
+        for(const auto &treeNameTitle : treeNameTitles)
+        {
+            TTree *mergedTree = MergeTrees(treeNameTitle.first, treeNameTitle.second); 
+            cout << "Fuck1" << endl;            
+            mergedTree->Write();
+            cout << "Fuck1" << endl;            
+            G4cout << "Successfully merged and saved " + treeNameTitle.first + "." << G4endl;
+            ClearRootFiles();
+        }
+        cout << "Fuck1" << endl;
         CloseThreadFiles();
+        masterFile->Close();
+        G4cout << "Successfully merged and saved all trees into " << fileName + "." << G4endl;
         if(deleteMerged)
             DeleteThreadFiles();
-        rootFile->Write();
-        rootFile->Close();
-        G4cout << "Successfully merged and closed " << fileName << G4endl;
+        G4cout << "Successfully deleted all thread root files."<< G4endl;
     } 
     catch(Exception const &e)
     {
@@ -73,34 +82,34 @@ void TreeMerger::CloseThreadFiles()
     openedThreadFiles.clear();
 }
 
-void TreeMerger::MergeTrees()
+TTree *TreeMerger::MergeTrees(const string &treeName, const string &treeTitle)
 {
-    for(const auto &treeNameTitle : treeNameTitles)
+
+    treeLists->Clear();
+    for(auto &threadFile : openedThreadFiles)
     {
-        auto treeList = ExtractThreadTrees(treeNameTitle.first);
-        if(!treeList->IsEmpty())
-        {
-            auto treeMerged = TTree::MergeTrees(treeList);
-            treeMerged->SetNameTitle(treeNameTitle.first.c_str(), treeNameTitle.second.c_str());
-        }
+        TTree *tree = GetTreeFromFile(treeName, threadFile.get());
+        treeLists->Add(tree);
     }
+    masterFile->cd();
+    TTree *treeMerged = TTree::MergeTrees(treeLists.get());
+    treeMerged->SetNameTitle(treeName.c_str(), treeTitle.c_str());
+    return treeMerged;  
 }
 
-TList *TreeMerger::ExtractThreadTrees(const string &treeName)
+TTree *TreeMerger::GetTreeFromFile(const string &treeName, TFile *rootFile)
 {
-    TList *threadTreeList = new TList();
-    for(auto &rootFile : openedThreadFiles)
-    {
-        try {
-            auto tree = GetTreeFromFile(treeName, rootFile.get());
-            threadTreeList->Add(tree);
-        }
-        catch(Exception const &e)
-        {
-            e.WarnGeantKernel(JustWarning);
-        }
-    }
-    return threadTreeList;
+    auto tree = static_cast<TTree*>(rootFile->Get(treeName.c_str()));
+    if(tree == nullptr)
+        throw TreeMergerException("GetTreeFromFile(const string &, TFile *)", TREE_NOT_FOUND, treeName);
+    return tree;
+}
+
+void TreeMerger::ClearRootFiles()
+{
+    masterFile->Clear();
+    for(auto &threadFile : openedThreadFiles)
+        threadFile->Clear();
 }
 
 void TreeMerger::DeleteThreadFiles()
@@ -119,14 +128,4 @@ void TreeMerger::DeleteThreadFiles()
         }
     }
 }
-
-TTree *TreeMerger::GetTreeFromFile(const string &treeName, TFile *rootFile)
-{
-    auto tree = static_cast<TTree*>(rootFile->Get(treeName.c_str()));
-    if(tree == nullptr)
-        throw TreeMergerException("GetTreeFromFile(const string &, TFile *)", TREE_NOT_FOUND, treeName);
-    return tree;
-}
-
-
 

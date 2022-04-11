@@ -8,6 +8,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TList.h"
 
 #include <string>
 #include <memory>
@@ -19,24 +20,25 @@ class TreeMerger
     TreeMerger(G4int nThreads, const std::string fileName);
     
     void MergeRootFiles(G4bool deleteMerged = true);
-
     TreeMerger &AddTreeNameTitle(const std::string &treeName, const std::string &treeTitle = "");
 
     private:
+    TTree *MergeTrees(const std::string &treeName, const std::string &treeTitle);
+    void ClearRootFiles(); // flush all in-memory objects loaded from root files.
+
     void OpenThreadFiles();
     void CloseThreadFiles();
     void DeleteThreadFiles();
 
     G4bool CheckOpened(const TFile *rootFile) const;
-
-    void MergeTrees();
-    TList *ExtractThreadTrees(const std::string &treeName);
     TTree *GetTreeFromFile(const std::string &treeName, TFile *rootFile);
 
     private:
     const G4int nThreads;
     const std::string fileName;
     // The trees with given name must exists in all thread root files.
+    std::unique_ptr<TList> treeLists;    
+    std::unique_ptr<TFile> masterFile;
     std::vector<std::pair<std::string, std::string> > treeNameTitles;
     std::vector<std::unique_ptr<TFile> > openedThreadFiles;
 };

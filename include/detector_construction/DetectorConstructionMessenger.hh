@@ -25,11 +25,9 @@ public:
 
     void SetNewValue(G4UIcommand * command, G4String newValues);
 private:
-
     void InitGasCommands();
     void InitGeometryCommands();
     void InitFieldCommands();
-
     void PassArgsToSetGasComposition(const G4String &newValues);
 private:
     DetectorConstruction *fDetector;
@@ -37,7 +35,6 @@ private:
     G4UIdirectory *gasDirectory;
     G4UIcommand *fSetGasCmd;
     G4UIcmdWithoutParameter *printGasStatsCmd;
-    G4UIcmdWithADoubleAndUnit *setPressureCmd;
     G4UIcmdWithADoubleAndUnit *fSetMaxStep;
     G4UIcmdWithADoubleAndUnit *fSetMaxTrack;
     G4UIcmdWithADoubleAndUnit *fSetMaxTime;

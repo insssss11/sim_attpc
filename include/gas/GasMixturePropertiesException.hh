@@ -8,9 +8,12 @@
 
 namespace GasMixturePropertiesErrorNum {
     enum ErrorNum :unsigned int {
-        INVALID_GAS_COMPONENT_NAME,
-        NOT_INITIALIZED,
+        MAGBOLTZ_UPDATE_FAILURE,
+        G4MATERIAL_UPDATE_FAILURE,
+        GASFILE_DIR_NOT_FOUND,
+        GASFILE_LOAD_FAILURE,
         MAGBOLTZ_CALCULATION_FAILURE,
+        NOT_INITIALIZED,
         OK = 9999
     };
 }

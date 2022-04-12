@@ -20,14 +20,25 @@ void GasMixturePropertiesException::InitErrorMessage()
     const std::string vecName = GetArgument(0);
     switch(GetErrorNum())
     {
-        case INVALID_GAS_COMPONENT_NAME:
-            message = "Failed to initialize a gas mixture : " + GetArgument(0);
+        case MAGBOLTZ_UPDATE_FAILURE:
+            message = "Failed to update the Magboltz instance with gas mixture : " + GetArgument(0);
+            break;
+        case G4MATERIAL_UPDATE_FAILURE:
+            message = "Failed to update the G4Material instance with gas mixture : " + GetArgument(0);
+            break;
+        case GASFILE_DIR_NOT_FOUND:
+            message = "Cannot find gas file directory at " + GetArgument(0);
+            break;
+        case GASFILE_LOAD_FAILURE:
+            message = std::string("Cannot find corresponding gas file for electron drift speen, diffusion coeff and attachment.\n") +
+                "Gas mixture is not updated.";
             break;
         case NOT_INITIALIZED:
-            message = "Gas composition not initialized.";
+            message = "Not initialized.";
             break;
         case MAGBOLTZ_CALCULATION_FAILURE:
-            message = "Magboltz failed to calculate " + GetArgument(0) + ".";
+            message = "Failed to estimate " + GetArgument(0);
+            break;
         case OK:
             break;
         default:

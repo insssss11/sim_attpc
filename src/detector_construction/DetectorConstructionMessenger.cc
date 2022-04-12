@@ -26,47 +26,40 @@ DetectorConstructionMessenger::DetectorConstructionMessenger(DetectorConstructio
 
 void DetectorConstructionMessenger::InitGasCommands()
 {
-    G4UIparameter *param;
-
     gasDirectory = new G4UIdirectory("/attpc/gas/");
     gasDirectory->SetGuidance("Gas volume control");
 
     fSetGasCmd = new G4UIcommand("/attpc/gas/setMixture", this);
     fSetGasCmd->SetGuidance("Set properties of gas mixture.");
-    fSetGasCmd->SetGuidance("[usage] /attpc/gas gas1 frac1 [gas2 frac2...]");
-    fSetGasCmd->SetGuidance(" gas1:(string) name of gas1");
-    fSetGasCmd->SetGuidance(" frac1:(int) fraction of gas1 in percentage");
-    fSetGasCmd->SetGuidance(" [gas2 frac2]... : additional gas components");
-
+    fSetGasCmd->SetGuidance("[usage] /attpc/gas gas1 frac1 gas2 frac2 pressure [temperature]");
+    fSetGasCmd->SetGuidance(" gas1          :(string) name of gas1");
+    fSetGasCmd->SetGuidance(" frac1         :(int) fraction of gas1 in percentage");
+    fSetGasCmd->SetGuidance(" gas1          :(string) name of gas1");
+    fSetGasCmd->SetGuidance(" frac1         :(int) fraction of gas1 in percentage");
+    fSetGasCmd->SetGuidance(" pressure      : gas pressure in Torr");
+    fSetGasCmd->SetGuidance(" [temperature] : temperature in kelvin");
+    
+    G4UIparameter *param;
     param = new G4UIparameter("gas1", 's', false);
     fSetGasCmd->SetParameter(param);
 
-    param = new G4UIparameter("frac1", 'i', true);
-    param->SetDefaultValue(100);
+    param = new G4UIparameter("frac1", 'i', false);
     fSetGasCmd->SetParameter(param);
-    G4String parName;
-    for(int i = 2;i < 7;++i)
-    {
-        parName = "gas" + std::to_string(i);
-        param = new G4UIparameter(parName.c_str(), 's', true);
-        param->SetDefaultValue("");
-        fSetGasCmd->SetParameter(param);
-        parName = "frac" + std::to_string(i);
-        param = new G4UIparameter(parName.c_str(), 'i', true);
-        param->SetDefaultValue(0);
-        fSetGasCmd->SetParameter(param);
-    }
-    fSetGasCmd->SetRange("frac1 > 0 && frac2 >= 0 && frac3 >= 0 && frac4 >= 0 && frac5 >= 0 && frac6 >= 0");
+
+    param = new G4UIparameter("gas2", 's', false);
+    fSetGasCmd->SetParameter(param);
+
+    param = new G4UIparameter("frac2", 'i', false);
+    fSetGasCmd->SetParameter(param);
+
+    param = new G4UIparameter("pressure", 'i', false);
+    fSetGasCmd->SetParameter(param);
+
+    param = new G4UIparameter("temperature", 'd', true);
+    fSetGasCmd->SetParameter(param);
 
     printGasStatsCmd = new G4UIcmdWithoutParameter("/attpc/gas/printGasStats", this);
     printGasStatsCmd->SetGuidance("Print information of gas material");
-
-    new G4UnitDefinition("Torr", "Torr", "Pressure", atmosphere/760.);
-    setPressureCmd = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setPressure", this);
-    setPressureCmd->SetGuidance("Set pressure of gas in the chamber");
-    setPressureCmd->SetParameterName("pressure", false);
-    setPressureCmd->SetRange("pressure > 0");
-    setPressureCmd->SetDefaultUnit("Torr");
 
     fSetMaxStep = new G4UIcmdWithADoubleAndUnit("/attpc/gas/setStepLimit", this);
     fSetMaxStep->SetGuidance("Set maximum of allowed step length.");
@@ -131,7 +124,6 @@ DetectorConstructionMessenger::~DetectorConstructionMessenger()
     delete gasDirectory;
     delete fSetGasCmd;
     delete printGasStatsCmd;
-    delete setPressureCmd;
     delete fSetMaxStep;
     delete fSetMaxTrack;
     delete fSetMaxTime;
@@ -152,9 +144,7 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String n
     if(command == fSetGasCmd)
         PassArgsToSetGasComposition(newValues);
     else if(command == printGasStatsCmd)
-        fDetector->PrintGasMaterialStats();
-    else if(command == setPressureCmd)
-        fDetector->SetPressure(setPressureCmd->GetNewDoubleValue(newValues));
+        fDetector->GetGasMixtureProperties()->DumpProperties();
     else if(command == fSetMaxStep)
         fDetector->GetUserLimits()->SetMaxAllowedStep(fSetMaxStep->GetNewDoubleValue(newValues));
     else if(command == fSetMaxTrack)
@@ -178,23 +168,24 @@ void DetectorConstructionMessenger::SetNewValue(G4UIcommand *command, G4String n
 void DetectorConstructionMessenger::PassArgsToSetGasComposition(const G4String &newValues)
 {
     G4Tokenizer token(newValues);
-    vector<string> gas;
-    vector<double> f;
-    string s1, s2;
+    vector<string> args;
+    string arg;
     while(true)
     {
-        s1 = token();
-        s2 = token();
-        if(s1 == "" || s2 == "0")
+        arg = token();
+        if(arg.empty())
             break;
         else
-        {
-            gas.push_back(s1);
-            f.push_back(StoD(s2)/100.);
-        }
+            args.push_back(arg);
     }
-    try{
-        fDetector->SetGasMixture(gas, f);
+    try
+    {
+        if(!(args.size() == 5 || args.size() == 6))
+            throw invalid_argument("Invalid arguments : the number of argmuments must be 5 or 6.");
+        else if(args.size() == 5)
+            fDetector->SetGasMixture({args[0], args[2]}, {StoI(args[1]), StoI(args[3])}, StoI(args[4]));
+        else
+            fDetector->SetGasMixture({args[0], args[2]}, {StoI(args[1]), StoI(args[3])}, StoI(args[4]), StoD(args[5])*kelvin);
     }
     catch(Exception const &e)
     {

@@ -7,6 +7,7 @@
 #include "config/ParamContainer.hh"
 #include "detector_construction/DetectorConstructionMessenger.hh"
 #include "gas/GasMixtureProperties.hh"
+#include "gas/GasMaterialTable.hh"
 
 #include "G4UniformMagField.hh"
 #include "G4VSolid.hh"
@@ -36,8 +37,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     virtual void ConstructSDandField();
 
-    void SetGasMixture(const std::vector<std::string> &comps, const std::vector<double> &fracs);
-    void SetPressure(const G4double pressure);
+    void SetGasMixture(
+        const std::vector<std::string> &comps, const std::vector<G4int> &fracs,
+        const G4int pressure, const G4double temperature = 273.15*kelvin);
 
     void SetMagneticField(const G4ThreeVector &bField);
     void SetElectricField(const G4ThreeVector &eFeidl);
@@ -46,11 +48,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     GasMixtureProperties *GetGasMixtureProperties() const;
     G4UserLimits *GetUserLimits() const;
 
-    void PrintGasMaterialStats();
     G4bool IsInitialized();
     private:
-    G4Material *FindGasMaterial(const std::string &gasName) const;
-    G4bool GasMaterialExists(const std::string &gasName) const;
+
     void Initialize();
     void InitializeGasMixture();
 
@@ -68,6 +68,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     void SetVisAttributes();
 
     private:
+    GasMaterialTable *gasMaterialTable;
     const ParamContainer *paramContainer;
     DetectorConstructionMessenger *fMessenger;
 

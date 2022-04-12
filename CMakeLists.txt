@@ -117,7 +117,10 @@ set(SCRIPTS
   parameters/gas_chamber.txt
   )
 
-  foreach(_script ${SCRIPTS})
+  file(GLOB_RECURSE RESOURCES RELATIVE ${CMAKE_SOURCE_DIR} resources/**)
+
+
+  foreach(_script ${SCRIPTS} ${RESOURCES})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}

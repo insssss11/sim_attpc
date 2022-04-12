@@ -124,7 +124,7 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
     }
     if(padNumX >= nPadX || padNumY >= nPadY)
         return;
-    G4double energyPerElectronPair = gasMixtureProperties->GetMeanEnergyPerIonPair();
+    G4double energyPerElectronPair = gasMixtureProperties->GetW();
     G4double charge = e_SI*chargeGain*eDep/energyPerElectronPair;
     readoutPads->at(padNumY).at(padNumX).AddCharge(charge);
 }

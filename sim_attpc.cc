@@ -6,6 +6,10 @@
 #include "PhysicsList.hh"
 #include "config/ParamContainerTable.hh"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "G4RunManagerFactory.hh"
 
 #include "G4UImanager.hh"
@@ -16,30 +20,61 @@
 #include "G4ios.hh"
 
 #include "Randomize.hh"
+void PrintUsage()
+{
+    G4cout << "Usage : ./sim_attpc [-t nThreads] [-m macroName] [-s seed] [-p configure file]" << G4endl;
+}
+
+long GetRandomLong()
+{
+    int fd;
+    long seed;
+    if((fd = open("/dev/random", O_RDONLY)) == -1)
+    {
+        perror("Failed open /dev/random to generate a random seed.");
+        exit(1);
+    }
+    if((read(fd, (void*)&seed, 4)) == -1)
+    {
+        perror("Failed open /dev/random to generate a random seed.");
+        exit(1);
+    }
+    return seed;
+}
+
 
 int main(int argc, char **argv)
 {
     // variables dependent to user inputs
-    int nThreads = 0;           // # of threads
+    int nThreads = 0;
+    long seed = GetRandomLong();           // # of threads , seed
     G4String macroName = "";    // if left empty, run as interactive mode.
+    G4String configureFile = "parameters/config.txt";
     for(int i = 1; i < argc;i += 2)
     {
         if(G4String(argv[i]) == "-t")
             nThreads = atoi(argv[i + 1]);
         else if(G4String(argv[i]) == "-m")
             macroName = argv[i + 1];
+        else if(G4String(argv[i]) == "-s")
+            seed = atoi(argv[i + 1]);
+        else if(G4String(argv[i]) == "-p")
+            configureFile = argv[i + 1];
+        else if(G4String(argv[i]) == "--help")
+        {
+            PrintUsage();
+            return -1;
+        }
         else
         {
-            if(G4String(argv[i]) != "--help")
-                G4cerr << "Invalid argument : " << argv[i] << G4endl;
-            G4cout << "Usage : ./sim_attpc [-t nThreads] [-m macroName]" << G4endl;
+            G4cerr << "Invalid argument : " << argv[i] << G4endl;
             return -1;
         }
     }
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-
+    CLHEP::HepRandom::setTheSeed(seed);
     // Load parameter files
-    ParamContainerTable::GetBuilder()->BuildFromConfigFile("parameters/config.txt");
+    ParamContainerTable::GetBuilder()->BuildFromConfigFile(configureFile );
     ParamContainerTable::Instance()->DumpTable();
 
     // Construct the default run manager (sequential or multi-thread mode)
@@ -68,8 +103,8 @@ int main(int argc, char **argv)
     // Get the pointer to the User Interface manager
     auto UImanager = G4UImanager::GetUIpointer();
     // execute macro for initialization
-    UImanager->ApplyCommand("/control/execute init.mac");    
-    
+    UImanager->ApplyCommand("/control/execute init.mac");
+
     G4UIExecutive *ui = nullptr;
     if(!macroName.empty())
     {

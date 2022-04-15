@@ -33,13 +33,10 @@ void TreeMerger::MergeRootFiles(G4bool deleteMerged)
         for(const auto &treeNameTitle : treeNameTitles)
         {
             TTree *mergedTree = MergeTrees(treeNameTitle.first, treeNameTitle.second); 
-            cout << "Fuck1" << endl;            
             mergedTree->Write();
-            cout << "Fuck1" << endl;            
             G4cout << "Successfully merged and saved " + treeNameTitle.first + "." << G4endl;
             ClearRootFiles();
         }
-        cout << "Fuck1" << endl;
         CloseThreadFiles();
         masterFile->Close();
         G4cout << "Successfully merged and saved all trees into " << fileName + "." << G4endl;

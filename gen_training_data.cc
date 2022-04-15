@@ -33,6 +33,6 @@ int main(int argc, char **argv)
 
     GenTrainingData genTrain("pad_charges_evt.root", "pad_charges_bg.root");
     genTrain.SetNtrkSecondaryMax(4);
-    genTrain.WriteTrainingData(prefix + "_input.dat", prefix + "training_output.dat");
+    genTrain.WriteTrainingData(prefix + "_input.dat", prefix + "_output.dat");
     return -1;
 }

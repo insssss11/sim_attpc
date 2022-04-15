@@ -176,11 +176,16 @@ void GenTrainingData::ResetDataReader(DataReader &dataReader)
 
 void GenTrainingData::ReadEvent()
 {
-    ReadAndMergeInput();
-    ResetOutputs();
-    ReadTracks(evtReaderValues, evtReaders);
-    ReadTracks(bgReaderValues, bgReaders);
-    SortOutputLabel();
+    try {
+        ReadAndMergeInput();
+        ResetOutputs();
+        ReadTracks(evtReaderValues, evtReaders);
+        ReadTracks(bgReaderValues, bgReaders);
+        SortOutputLabel();
+    }
+    catch(Exception const &e){
+        e.WarnGeantKernel(JustWarning);
+    }
 }
 
 G4bool GenTrainingData::NextAll()

@@ -27,12 +27,14 @@ int main(int argc, char **argv)
         prefix = argv[1];
         parFileName = argv[2];
     }
+    else
+        PrintUsage();
              
     ParamContainerTable::GetBuilder()->BuildFromConfigFile(parFileName);
     ParamContainerTable::Instance()->DumpTable();
 
     GenTrainingData genTrain("pad_charges_evt.root", "pad_charges_bg.root");
-    genTrain.SetNtrkSecondaryMax(4);
+    genTrain.SetNtrkSecondaryMax(3);
     genTrain.WriteTrainingData(prefix + "_input.dat", prefix + "_output.dat");
     return -1;
 }

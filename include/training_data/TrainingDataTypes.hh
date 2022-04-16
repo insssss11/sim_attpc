@@ -24,11 +24,11 @@ namespace TrainingDataTypes {
         Alpha,
         Carbon,
         Oxygen,
-        nParticles,
         Unknown,
+        nParticles,
     }EParticle;
 
-    const std::array<std::string, nParticles> paricleNames = {"Empty", "Gamma", "Electron", "Proton", "Alpha", "Carbon", "Oxygen"};
+    const std::array<std::string, nParticles> paricleNames = {"Empty", "Gamma", "Electron", "Proton", "Alpha", "Carbon", "Oxygen", "Unknown"};
 
 
     static constexpr std::array<int, nParticles> kAtomicNum = {

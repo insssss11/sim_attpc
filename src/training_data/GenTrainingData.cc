@@ -48,7 +48,9 @@ void GenTrainingData::Init()
 void GenTrainingData::InitDataInfo()
 {
     auto parContainer = ParamContainerTable::Instance()->GetContainer("gas_chamber");
-    inputSize = parContainer->GetParamI("nPadX")*parContainer->GetParamI("nPadY");
+    inputX = parContainer->GetParamI("nPadX");
+    inputY = parContainer->GetParamI("nPadY");
+    inputSize = inputX*inputY;
     input.reserve(inputSize);
     fullScaleRange = parContainer->GetParamD("fullScaleRange");
     SetNtrkSecondaryMax(6);
@@ -295,8 +297,10 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
     ListParticleLabels(stream);
     stream << "# fullScaleRange is in the unit of pC" << endl;
     stream << "# A row of data consists of pairs of none-zero indice(starting index = 1) and their values." << endl;
-    stream << setw(10) << "nEvents" << setw(15) << "inputSize"  << setw(20) << "fullScaleRange" << endl;
-    stream << setw(10) << GetEventNum() << setw(15) << inputSize << setw(20) << fullScaleRange*1e12 << endl;
+    stream << setw(10) << "nEvents" << setw(15) << "inputSize"  << setw(10)
+        << "inputX" << setw(10) << "inputY"  << setw(20) << "fullScaleRange" << endl;
+    stream << setw(10) << GetEventNum() << setw(15) << inputSize << setw(10)
+        << inputX << setw(10) << inputY  << setw(20) << fullScaleRange*1e12 << endl;
 }
 
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)

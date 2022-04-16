@@ -74,6 +74,7 @@ class GenTrainingData
 
     Long64_t nEvents;
     size_t inputSize;
+    size_t inputX, inputY;
     std::vector<std::pair<size_t, G4float> > input;
     
     TFile *evtRootFile, *bgRootFile;

@@ -17,30 +17,34 @@
 class TreeMerger
 {
     public:
-    TreeMerger(G4int nThreads, const std::string fileName);
+    TreeMerger();
     
-    void MergeRootFiles(G4bool deleteMerged = true);
     TreeMerger &AddTreeNameTitle(const std::string &treeName, const std::string &treeTitle = "");
+    
+    void MergeRootFiles(const std::string &fileName, const std::vector<std::string> subFileNames);
 
     private:
+
     TTree *MergeTrees(const std::string &treeName, const std::string &treeTitle);
     void ClearRootFiles(); // flush all in-memory objects loaded from root files.
 
-    void OpenThreadFiles();
-    void CloseThreadFiles();
-    void DeleteThreadFiles();
+    void OpenSubFiles();
+    void CloseSubFiles();
+    void DeleteSubFiles();
 
     G4bool CheckOpened(const TFile *rootFile) const;
     TTree *GetTreeFromFile(const std::string &treeName, TFile *rootFile);
 
     private:
-    const G4int nThreads;
-    const std::string fileName;
+    std::string fileName;
+    std::vector<std::string> subFileNames;
+    
     // The trees with given name must exists in all thread root files.
-    std::unique_ptr<TList> treeLists;    
+    std::unique_ptr<TList> treeLists;
     std::unique_ptr<TFile> masterFile;
+    
     std::vector<std::pair<std::string, std::string> > treeNameTitles;
-    std::vector<std::unique_ptr<TFile> > openedThreadFiles;
+    std::vector<std::unique_ptr<TFile> > openedSubFiles;
 };
 
 #endif

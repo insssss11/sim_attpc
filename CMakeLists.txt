@@ -63,6 +63,7 @@ file(GLOB sources
   ${PROJECT_SOURCE_DIR}/src/training_data/*.cc
   ${PROJECT_SOURCE_DIR}/src/exception/*.cc
   ${PROJECT_SOURCE_DIR}/src/tree_merger/*.cc
+  ${PROJECT_SOURCE_DIR}/src/draw_filtered_evt/**
   )
 file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/*.hh
@@ -78,6 +79,7 @@ file(GLOB headers
   ${PROJECT_SOURCE_DIR}/include/training_data/*.hh
   ${PROJECT_SOURCE_DIR}/include/exception/*.hh
   ${PROJECT_SOURCE_DIR}/include/tree_merger/*.hh
+  ${PROJECT_SOURCE_DIR}/include/draw_filtered_evt/**
   )
 
 #----------------------------------------------------------------------------
@@ -86,9 +88,14 @@ file(GLOB headers
 add_executable(sim_attpc sim_attpc.cc ${sources} ${headers})
 target_link_libraries(sim_attpc ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
 target_compile_options(sim_attpc PRIVATE -Wno-shadow)
+
 add_executable(gen_training_data gen_training_data.cc ${sources} ${headers})
 target_link_libraries(gen_training_data ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
 target_compile_options(gen_training_data PRIVATE -Wno-shadow)
+
+add_executable(draw_filtered_evt draw_filtered_evt.cc ${sources} ${headers})
+target_link_libraries(draw_filtered_evt ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} Garfield::Garfield)
+target_compile_options(draw_filtered_evt PRIVATE -Wno-shadow)
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build B5. This is so that we can run the executable directly because it

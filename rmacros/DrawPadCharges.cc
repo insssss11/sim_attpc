@@ -28,7 +28,6 @@ class DrawPadChargesAction : public EventDrawingAction {
         hist->SetTitle("Projection on the pads of mulplicated ionized charge;#it{x} (mm);#it{y} (mm);#it{charge} (pC)");
         hist->GetXaxis()->SetTitleOffset(2.0);
         hist->GetYaxis()->SetTitleOffset(2.0);
-        hist->GetZaxis()->SetTitleOffset(2.5);
     }
 
     virtual ~DrawPadChargesAction()
@@ -53,7 +52,7 @@ class DrawPadChargesAction : public EventDrawingAction {
 
 int DrawPadCharges(const char *fileName, int nPadX, int nPadY, double padPlaneX, double padPlaneY, const char *opt = "LEGO")
 {
-    auto c1 = new TCanvas("c1", "c1", 900, 900);
+    auto c1 = new TCanvas("c1", "c1", 800, 1000);
     c1->SetLeftMargin(0.2);
     auto fileRoot = new TFile(fileName, "READ");
     auto tree = (TTree*)fileRoot->Get("tree_gc3");

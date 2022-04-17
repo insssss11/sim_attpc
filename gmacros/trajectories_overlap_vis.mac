@@ -13,24 +13,19 @@
 /attpc/field/eField 150 0 0
 
 /attpc/geometry/setBeamPipePosY -50. mm
-/attpc/gas/setMixture He 90 iC4H10 10
-/attpc/gas/setPressure 0.1 atm
-/vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 0.5
 
-/vis/filtering/trajectories/create/particleFilter
-/vis/filtering/trajectories/particleFilter-0/add gamma
-/vis/filtering/trajectories/particleFilter-0/invert true
+# /vis/filtering/trajectories/create/particleFilter
+# /vis/filtering/trajectories/particleFilter-0/add gamma
+# /vis/filtering/trajectories/particleFilter-0/invert true
+/vis/viewer/refresh
+/vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 3.0
 /vis/scene/endOfRunAction accumulate
 
-/attpc/process/CarbonAlpha/forceAtTrkLen 20 mm
-/run/beamOn 100
-/attpc/process/CarbonAlpha/forceAtTrkLen 50 mm
-/run/beamOn 100
-/attpc/process/CarbonAlpha/forceAtTrkLen 80 mm
-/run/beamOn 100
-/attpc/process/CarbonAlpha/forceAtTrkLen 10 km
-/run/beamOn 20
-/vis/scene/endOfRunAction refresh
+/attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 120
+/run/beamOn 1
+/attpc/process/CarbonAlpha/activate false
+/run/beamOn 10
+
 
 # copy and paste line below to execute this macro.
-# /control/execute gmacros/trajectories_overlap.mac
+# /control/execute gmacros/trajectories_overlap_vis.mac

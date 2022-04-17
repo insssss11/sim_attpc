@@ -80,6 +80,7 @@
 /vis/modeling/trajectories/drawByParticleID-0/set gamma green
 /vis/modeling/trajectories/drawByParticleID-0/set O16 red
 /vis/modeling/trajectories/drawByParticleID-0/set alpha magenta
+/vis/modeling/trajectories/drawByParticleID-0/set He cyan
 /vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts false
 /vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSize 1
 /vis/modeling/trajectories/drawByParticleID-0/default/setLineWidth 2

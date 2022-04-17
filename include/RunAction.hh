@@ -4,7 +4,9 @@
 #ifndef RunAction_h
 #define RunAction_h 1
 
+#include "tree_merger/TreeMerger.hh"
 #include "tuple/TupleInitializer.hh"
+#include "RunActionMessenger.hh"
 
 #include "AnalysisManager.hh"
 #include "G4UserRunAction.hh"
@@ -13,6 +15,7 @@
 
 #include <memory>
 
+class RunActionMessenger;
 class TupleInitializer;
 class EventAction;
 class G4Run;
@@ -27,17 +30,21 @@ class RunAction : public G4UserRunAction
     virtual void BeginOfRunAction(const G4Run *);
     virtual void   EndOfRunAction(const G4Run *);
 
-    private:
-    void MergeTrees();
     // for messenger and UI
-    void DefineCommands();
+    void SetFileName(const std::string &fileName);
+    void MergeFiles(const std::string &fileName, const std::vector<std::string> &subFiles);
+    void Activate(G4bool activate = true);
+
+    private:
+    void MergeThreadTrees();
+
     private:
     G4bool fAnaActivated;
     G4String fFileName;
     EventAction *fEventAction;
     G4AnalysisManager *fAnalysisManager;
-    G4GenericMessenger *fMessenger;
-
+    std::unique_ptr<RunActionMessenger> messenger;
+    std::unique_ptr<TreeMerger> merger;
     std::unique_ptr<TupleInitializer> tupleInitializer;
 };
 

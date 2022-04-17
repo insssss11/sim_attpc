@@ -9,8 +9,8 @@
 using namespace std;
 using namespace TreeMergerErrorNum;
 
-TreeMerger::TreeMerger(G4int _nThreads, const string _fileName)
-    :nThreads(_nThreads), fileName(_fileName), treeLists(new TList())
+TreeMerger::TreeMerger()
+    :treeLists(new TList())
 {
 }
 
@@ -20,7 +20,7 @@ TreeMerger &TreeMerger::AddTreeNameTitle(const string &treeName, const string &t
     return *this;
 }
 
-void TreeMerger::MergeRootFiles(G4bool deleteMerged)
+void TreeMerger::MergeRootFiles(const std::string &fileName, const std::vector<std::string> subFileNames)
 {
     if(treeNameTitles.empty())
     {
@@ -28,8 +28,11 @@ void TreeMerger::MergeRootFiles(G4bool deleteMerged)
         return;
     }
     try {
+        if(subFileNames.size() < 2)
+            throw invalid_argument("The number of files to be merged must be larger than two.");
+        this->subFileNames = subFileNames;
         masterFile = make_unique<TFile>(fileName.c_str(), "RECREATE");
-        OpenThreadFiles();
+        OpenSubFiles();
         for(const auto &treeNameTitle : treeNameTitles)
         {
             TTree *mergedTree = MergeTrees(treeNameTitle.first, treeNameTitle.second); 
@@ -37,30 +40,28 @@ void TreeMerger::MergeRootFiles(G4bool deleteMerged)
             G4cout << "Successfully merged and saved " + treeNameTitle.first + "." << G4endl;
             ClearRootFiles();
         }
-        CloseThreadFiles();
+        CloseSubFiles();
         masterFile->Close();
         G4cout << "Successfully merged and saved all trees into " << fileName + "." << G4endl;
-        if(deleteMerged)
-            DeleteThreadFiles();
+        DeleteSubFiles();
         G4cout << "Successfully deleted all thread root files."<< G4endl;
     } 
     catch(Exception const &e)
     {
         e.WarnGeantKernel(JustWarning);
-        CloseThreadFiles();
+        CloseSubFiles();
     }
 }
 
-void TreeMerger::OpenThreadFiles()
+void TreeMerger::OpenSubFiles()
 {
-    CloseThreadFiles();
-    for(int i = 0;i < nThreads;++i)
+    CloseSubFiles();
+    for(const auto &subFileName : subFileNames)
     {
-        auto threadRootFile = fileName.substr(0, fileName.find_last_of('.')) + "_t" + to_string(i) + ".root";
-        auto rootFile = TFile::Open(threadRootFile.c_str(), "READ");
+        auto rootFile = TFile::Open(subFileName.c_str(), "READ");
         if(!CheckOpened(rootFile))
-            throw TreeMergerException("OpenThreadFiles()", THREAD_FILE_OPEN_FAILURE, threadRootFile);
-        openedThreadFiles.emplace_back(rootFile);
+            throw TreeMergerException("OpenSubFiles()", THREAD_FILE_OPEN_FAILURE, subFileName);
+        openedSubFiles.emplace_back(rootFile);
     }
 }
 
@@ -72,18 +73,18 @@ G4bool TreeMerger::CheckOpened(const TFile *rootFile) const
         return rootFile->IsOpen();
 }
 
-void TreeMerger::CloseThreadFiles()
+void TreeMerger::CloseSubFiles()
 {
-    for(auto &files : openedThreadFiles)
+    for(auto &files : openedSubFiles)
         files->Close();
-    openedThreadFiles.clear();
+    openedSubFiles.clear();
 }
 
 TTree *TreeMerger::MergeTrees(const string &treeName, const string &treeTitle)
 {
 
     treeLists->Clear();
-    for(auto &threadFile : openedThreadFiles)
+    for(auto &threadFile : openedSubFiles)
     {
         TTree *tree = GetTreeFromFile(treeName, threadFile.get());
         treeLists->Add(tree);
@@ -105,19 +106,18 @@ TTree *TreeMerger::GetTreeFromFile(const string &treeName, TFile *rootFile)
 void TreeMerger::ClearRootFiles()
 {
     masterFile->Clear();
-    for(auto &threadFile : openedThreadFiles)
+    for(auto &threadFile : openedSubFiles)
         threadFile->Clear();
 }
 
-void TreeMerger::DeleteThreadFiles()
+void TreeMerger::DeleteSubFiles()
 {
-    for(int i = 0;i < nThreads;++i)
+    for(const auto &subFileName : subFileNames)
     {
         try{
-            auto threadRootFile = fileName.substr(0, fileName.find_last_of('.')) + "_t" + to_string(i) + ".root";
-            if(remove(threadRootFile.c_str()) != 0)
-                throw TreeMergerException("DeleteThreadFiles()", THREAD_FILE_REMOVE_FAILURE, threadRootFile);
-            G4cout << "Merged and deleted " + threadRootFile << "." << G4endl;
+            if(remove(subFileName.c_str()) != 0)
+                throw TreeMergerException("DeleteSubFiles()", THREAD_FILE_REMOVE_FAILURE, subFileName);
+            G4cout << "Merged and deleted " + subFileName << "." << G4endl;
         }
         catch(Exception const &e)
         {
@@ -125,4 +125,3 @@ void TreeMerger::DeleteThreadFiles()
         }
     }
 }
-

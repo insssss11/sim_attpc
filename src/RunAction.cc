@@ -1,7 +1,6 @@
 /// \file RunAction.cc
 /// \brief Implementation of the RunAction class
 
-#include "tree_merger/TreeMerger.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
 
@@ -9,24 +8,30 @@
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+
+using namespace std;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction(EventAction *eventAction)
     : G4UserRunAction(),
     fAnaActivated(false), fFileName("sim_attpc.root"),
     fEventAction(eventAction), fAnalysisManager(nullptr),
+    messenger(new RunActionMessenger(this)),
+    merger(new TreeMerger),
     tupleInitializer(new TupleInitializer)
 {
+    merger->AddTreeNameTitle("tree_gc1", "gas chamber hit data saved by event");
+    merger->AddTreeNameTitle("tree_gc2", "gas chamber hit data saved by trk");
+    merger->AddTreeNameTitle("tree_gc3", "gas chamber digitization data");
     fAnalysisManager = G4AnalysisManager::Instance();
     fAnalysisManager->SetVerboseLevel(1);
-    DefineCommands();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::~RunAction()
 {
-    delete fMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -45,27 +50,29 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
     fAnalysisManager->CloseFile();
     fAnalysisManager->Clear();
     if(fAnaActivated && G4RunManager::GetRunManager()->GetRunManagerType() == G4RunManager::RMType::masterRM)
-        MergeTrees();
+        MergeThreadTrees();
 }
 
-void RunAction::MergeTrees()
+void RunAction::MergeThreadTrees()
 {
-    TreeMerger merger(G4RunManager::GetRunManager()->GetNumberOfThreads(), fFileName);
-    merger.AddTreeNameTitle("tree_gc1", "gas chamber hit data saved by event");
-    merger.AddTreeNameTitle("tree_gc2", "gas chamber hit data saved by trk");
-    merger.AddTreeNameTitle("tree_gc3", "gas chamber digitization data");
-    merger.MergeRootFiles();
+    string filePrefix = fFileName.substr(0, fFileName.find_last_of('.'));
+    vector<string> subFiles;
+    for(G4int thread = 0;thread < G4RunManager::GetRunManager()->GetNumberOfThreads();++thread)
+        subFiles.push_back(filePrefix + "_t" + to_string(thread) + ".root");
+    merger->MergeRootFiles(fFileName, subFiles);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::DefineCommands()
+void RunAction::SetFileName(const std::string &fileName)
 {
-    fMessenger = new G4GenericMessenger(this, "/attpc/output/", "File output control");
-    
-    auto activateCmd = fMessenger->DeclareProperty("activate", fAnaActivated, "Activation of file output");
-    activateCmd.SetParameterName("active", true);
-    activateCmd.SetDefaultValue("true");
+    fFileName = fileName;
+}
 
-    fMessenger->DeclareProperty("setFileName", fFileName, "Set Name of output file.");
+void RunAction::MergeFiles(const std::string &_fileName, const std::vector<std::string> &subFiles)
+{
+    merger->MergeRootFiles(_fileName, subFiles);
+}
+
+void RunAction::Activate(G4bool activate)
+{
+    fAnaActivated = activate;
 }

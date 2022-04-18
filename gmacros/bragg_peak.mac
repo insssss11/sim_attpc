@@ -17,9 +17,8 @@
 
 /attpc/field/bField 0. 0. 0. tesla
 
-/attpc/gas/setMixture He 90 iC4H10 10
-/attpc/gas/setPressure 1.0 atm
-/attpc/gas/setStepLimit 1 mm
+/attpc/gas/setMixture He 90 iC4H10 10 760
+/attpc/gas/setStepLimit 0.1 mm
 
 /attpc/output/activate true
 /attpc/output/setFileName ionranges.root

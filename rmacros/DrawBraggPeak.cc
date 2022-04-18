@@ -12,10 +12,10 @@
 // To draw Bragg's peak from output data of macro file ionranges.mac
 using namespace std;
 
-std::vector<double> Accumulate(const std::vector<double> &v)
+std::vector<float> Accumulate(const std::vector<float> &v)
 {
-    std::vector<double> out;
-    double sum = 0;
+    std::vector<float> out;
+    float sum = 0;
     out.reserve(v.size());
     for(auto n : v)
     {
@@ -25,8 +25,8 @@ std::vector<double> Accumulate(const std::vector<double> &v)
     return out;
 }
 
-void FillData(const int nStep, const std::vector<double> &stepLen, const std::vector<double> &eDep,
-    std::vector<double> &trkLen, std::vector<double> &dEdX)
+void FillData(const int nStep, const std::vector<float> &stepLen, const std::vector<float> &eDep,
+    std::vector<float> &trkLen, std::vector<float> &dEdX)
 {
     trkLen = Accumulate(stepLen);
     dEdX.resize(nStep);
@@ -43,13 +43,13 @@ int DrawBraggPeak(const char *fileName)
     TTreeReader reader("tree_gc2", fileRoot);
     TTreeReaderValue <int> evtId_(reader, "evtId");
     TTreeReaderValue <int> Nstep_(reader, "Nstep");
-    TTreeReaderValue <vector<double>> eDep_(reader, "eDep");
-    TTreeReaderValue <vector<double>> stepLen_(reader, "stepLen");
-    TTreeReaderValue <vector<double>> pz_(reader, "pz");
-    TTreeReaderValue <vector<double>> z_(reader, "z");
+    TTreeReaderValue <vector<float>> eDep_(reader, "eDep");
+    TTreeReaderValue <vector<float>> stepLen_(reader, "stepLen");
+    TTreeReaderValue <vector<float>> pz_(reader, "pz");
+    TTreeReaderValue <vector<float>> z_(reader, "z");
 
     int Nstep;
-    std::vector<double> eDep, stepLen, z, pz;
+    std::vector<float> eDep, stepLen, z, pz;
     if(reader.GetEntries() == 0)
     {
         std::cerr << "Error : The tree is empty." << std::endl;
@@ -62,23 +62,23 @@ int DrawBraggPeak(const char *fileName)
     stepLen = *stepLen_;
     pz = *pz_;
     z = *z_;
-    std::vector<double> trkLen = Accumulate(stepLen);
-    std::vector<double> dEdX(stepLen.size());
-    std::vector<double> ranges(reader.GetEntries());
+    std::vector<float> trkLen = Accumulate(stepLen);
+    std::vector<float> dEdX(stepLen.size());
+    std::vector<float> ranges(reader.GetEntries());
     
     FillData(Nstep, stepLen, eDep, trkLen, dEdX);
 
-    double trkLenMax = *std::max_element(trkLen.begin(), trkLen.end());
-    double dEdXmax = *std::max_element(dEdX.begin(), dEdX.end());
-    double zmin = z.front() - stepLen.front();
-    double pzmax = pz.front();
-    TH2D *hist1 = new TH2D("hist1", "hist1", 100, 0, 1.5*trkLenMax, 100, 0, 1.5*dEdXmax);
-    hist1->SetTitle("Bragg Curve of 4 MeV {}^{12}_{ 6}C^{4+} in He(90)/Ar(10);trkLen (mm);d#it{E}/d#it{x} (MeV/#it{cm})");
+    float trkLenMax = *std::max_element(trkLen.begin(), trkLen.end());
+    float dEdXmax = *std::max_element(dEdX.begin(), dEdX.end());
+    float zmin = z.front() - stepLen.front();
+    float pzmax = pz.front();
+    TH2D *hist1 = new TH2D("hist1", "hist1", 100, 0, 10., 100, 0, 12);
+    hist1->SetTitle("Bragg Curve of 4 MeV {}^{12}_{ 6}C^{+4} in He(90)/Ar(10);trkLen (mm);d#it{E}/d#it{x} (MeV/#it{cm})");
 
-    TH2D *hist2 = new TH2D("hist2", "hist2", 100, 10, 1.2*pzmax, 100, 0, 1.5*dEdXmax);
+    TH2D *hist2 = new TH2D("hist2", "hist2", 100, 10, 1.2, 100, 0, 12);
     hist2->SetTitle("Momentum vs Stopping Power;Momentum (MeV/c);d#it{E}/d#it{x} (MeV/#it{cm})");
 
-    TH1D *hist3 = new TH1D("hist3", "hist3", 100, 0.8*trkLenMax, 1.2*trkLenMax);
+    TH1D *hist3 = new TH1D("hist3", "hist3", 100, 5., 15.);
     hist3->SetTitle("Projected Ranges of Ion;Projected Range(mm);cnt");
 
     reader.Restart();

@@ -5,7 +5,7 @@
 #include "draw_filtered_evt/PadEvent.hh"
 #include "config/ParamContainerTable.hh"
 
-#include "TMultiGraph.h"
+#include "TPolyMarker.h"
 #include "TAttLine.h"
 #include "TH2D.h"
 #include "TCanvas.h"
@@ -24,17 +24,17 @@ class DrawPadEvent{
 
     void InitCanvas();
     void InitPadDimensions();
-    void InitHist(const PadEvent &padEvent);
-    void InitGraphs(const PadEvent &padEvent);
+    void DrawCharges(const PadEvent &padEvent);
+    void DrawTracks(const PadEvent &padEvent);
 
     private:
     EColor GetTrackColor(const TrainingDataTypes::EParticle par);
-    std::unique_ptr<TCanvas> canvasHist;
-    std::unique_ptr<TCanvas> canvasTrk;
+    std::unique_ptr<TCanvas> canvas;
     std::unique_ptr<TH2D> qdcHist;
-    std::unique_ptr<TMultiGraph> graphs;
+    std::vector<TPolyMarker*> tracks;
     ParamContainerTable *paramTable;
 
+    static constexpr size_t trackBuffer = 20;
     // pad plane dimension
     int nPadX, nPadY;
     double padPlaneX, padPlaneY;

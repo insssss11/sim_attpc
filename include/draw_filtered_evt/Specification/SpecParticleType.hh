@@ -1,24 +1,28 @@
-#ifndef ISpecification_h
-#define ISpecification_h 1
+#ifndef SpecParticleType_h
+#define SpecParticleType_h 1
 
 #include "draw_filtered_evt/PadEvent.hh"
+#include "draw_filtered_evt/Specification/ISpecification.hh"
 
-class SpecParticleType : public ISpecification<Event>
+class SpecParticleType : public ISpecification<PadEvent>
 {
     public:
-    SpecParticleType(const TrainingDataTypes::EParticle &parEnum) : parEnum{parEnum}
+    SpecParticleType(const TrainingDataTypes::EParticle &parEnum) : parEnum{parEnum}, inverse(false)
     {}
-    virtual bool IsSatisfied(const Event &event) const override
+    virtual bool IsSatisfied(const PadEvent &event) const override
     {
         for(const auto &parEnum : event.parEnums)
             if(this->parEnum == parEnum)
-                return true;
-        return false;
+                return !inverse;
+        return inverse;
+    }
+    void Invert(bool invert = true)
+    {
+        inverse = invert;
     }
     private:
+    bool inverse;
     const TrainingDataTypes::EParticle parEnum;
 };
 
 #endif
-
-

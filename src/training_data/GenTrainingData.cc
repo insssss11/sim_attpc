@@ -12,7 +12,7 @@ using namespace TrainingDataTypes;
 
 GenTrainingData::GenTrainingData(const string &evtFileName, const string &bgFileName)
     : evtRootFile(nullptr), bgRootFile(nullptr),
-    gammaIncluded(false)
+    gammaIncluded(false), parContainer(ParamContainerTable::Instance()->GetContainer("gas_chamber"))
 {
     try {
         OpenRootFiles(evtFileName, bgFileName);
@@ -47,7 +47,6 @@ void GenTrainingData::Init()
 
 void GenTrainingData::InitDataInfo()
 {
-    auto parContainer = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     inputX = parContainer->GetParamI("nPadX");
     inputY = parContainer->GetParamI("nPadY");
     inputSize = inputX*inputY;
@@ -93,7 +92,6 @@ void GenTrainingData::InitDataReaderValue(DataReaderValue &dataReaderValue, Data
     dataReaderValue.px = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader2, "px");
     dataReaderValue.py = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader2, "py");
     dataReaderValue.pz = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader2, "pz");
-    dataReaderValue.time = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader2, "t");
     dataReaderValue.trkLen = make_unique<TTreeReaderValue<float> >(*dataReader.reader2, "trkLen");
 
     dataReaderValue.qdc = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader3, "qdc");
@@ -107,7 +105,6 @@ G4bool GenTrainingData::CheckEventNum() const
 void GenTrainingData::SetNtrkSecondaryMax(size_t bufferSize)
 {
     nSecondaryTrkMax = bufferSize;
-    output.tracks.resize(nSecondaryTrkMax);
 }
 
 void GenTrainingData::CloseRootFiles()
@@ -183,7 +180,6 @@ void GenTrainingData::ReadEvent()
         ResetOutputs();
         ReadTracks(evtReaderValues, evtReaders);
         ReadTracks(bgReaderValues, bgReaders);
-        SortOutputLabel();
     }
     catch(Exception const &e){
         e.WarnGeantKernel(JustWarning);
@@ -212,17 +208,24 @@ void GenTrainingData::ReadAndMergeInput()
 
 void GenTrainingData::ResetOutputs()
 {
-    output.nBgCarbons = 0;
-    output.nSecondaries = 0;
-    output.tracks.assign(nSecondaryTrkMax, emptyTrack);
+    output = {
+        0, 0, 0,
+        0., 0., 0.,
+        0., 0., 0.,
+        0., 0., 0.,
+        0.};
 }
 
 void GenTrainingData::ReadTracks(DataReaderValue &dataReaderValue, DataReader &dataReader)
 {
     int nTrk = **dataReaderValue.nTrk;
     int evtId;
+    const double padPlaneX = parContainer->GetParamD("chamberX");
+    const double padPlaneY = parContainer->GetParamD("chamberY");
+    const double planeCenterX = parContainer->GetParamD("chamberPosX");
+    const double planeCenterY = parContainer->GetParamD("chamberPosY");
     float trkLen;
-    vector<float> x, y, z, px, py, pz, time;
+    vector<float> x, y, z, px, py, pz;
     int curEvtId = -1;
     try {
         int nOxygen = 0;
@@ -241,22 +244,30 @@ void GenTrainingData::ReadTracks(DataReaderValue &dataReaderValue, DataReader &d
                 continue; // if gammaIncluded flag not set, ignore gamma track.
             else
             {
-                if(parEnum == EParticle::Oxygen)
-                    ++nOxygen;
+                // secondary
+                ++output.nSecondaries;
                 x = **dataReaderValue.x;
                 y = **dataReaderValue.y;
                 z = **dataReaderValue.z;
                 px = **dataReaderValue.px;
                 py = **dataReaderValue.py;
                 pz = **dataReaderValue.pz;
-                time = **dataReaderValue.time;
                 trkLen = **dataReaderValue.trkLen;
-                output.tracks.at(output.nSecondaries) = {
-                    parEnum,
-                    trkLen, time.at(0),
-                    px.at(0), py.at(0), pz.at(0),
-                    x.at(0), y.at(0), z.at(0)};
-                ++output.nSecondaries;
+                if(parEnum == EParticle::Oxygen)
+                {
+                    output.reactionFlag = 1;
+                    output.px = pz.front();
+                    output.py = py.front();
+                    output.pz = px.front();
+                    output.x1 = z.front() + padPlaneX/2 - planeCenterX;
+                    output.y1 = y.front() + padPlaneY/2 - planeCenterY;
+                    output.z1 = x.front();
+                    output.x2 = z.back() + padPlaneX/2 - planeCenterX;
+                    output.y2 = y.back() + padPlaneY/2 - planeCenterY;
+                    output.z2 = x.back();
+                    output.trkLen = trkLen;
+                    ++nOxygen;
+                }
             }
         }
         // The number of oxygen tracks must be subtracted to that of background Carbon tracks
@@ -264,21 +275,8 @@ void GenTrainingData::ReadTracks(DataReaderValue &dataReaderValue, DataReader &d
     }
     catch(out_of_range const &e)
     {
-        cerr << "The number of track : " << output.tracks.size() << endl;
-        throw GenTrainingDataException("ReadTracks(DataReaderValue &, DataReader &)", OUTPUT_OUT_OF_RANGE);
+        throw GenTrainingDataException("ReadTracks(DataReaderValue &, DataReader &)", OUTPUT_OUT_OF_RANGE);        
     }
-}
-
-bool compareTrack(const Track &trk1, const Track &trk2)
-{
-    return trk1.time < trk2.time;
-}
-
-#include <algorithm>
-
-void GenTrainingData::SortOutputLabel()
-{
-    sort(output.tracks.begin(), output.tracks.begin() + output.nSecondaries, compareTrack);
 }
 
 void GenTrainingData::ListParticleLabels(std::ofstream &stream)
@@ -306,9 +304,9 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 {
     ListParticleLabels(stream);
-    stream << "# [# of background C12 ions] [paticle labels 1...nSecondaryTrkMax] [x positions(mm)] [y, z positions(mm)] [px(MeV/c)] [py, pz(MeV/c)] [trkLen(mm)]" << endl;
-    stream << setw(10) << "nEvents" << setw(20) << "nSecondaryTrkMax" << setw(20) << "nParticleLabels" << endl;
-    stream << setw(10) << GetEventNum() << setw(20) << nSecondaryTrkMax << setw(20) << nParticles << endl;
+    stream << "# [# of background C12 ions] [n secondaries] [Capture Reaction Flag] [vertex momentum (MeV/c)] [vertex position(mm)] [end position(mm)] [trkLen(mm)]" << endl;
+    stream << setw(10) << "nEvents" << G4endl;
+    stream << setw(10) << GetEventNum() << G4endl;;
 }
 
 void GenTrainingData::WriteInputData(std::ofstream &stream)
@@ -321,23 +319,13 @@ void GenTrainingData::WriteInputData(std::ofstream &stream)
 void GenTrainingData::WriteOutputData(std::ofstream &stream)
 {
     stream << output.nBgCarbons << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.particle << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.x << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.y << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.z << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.px << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.py << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.pz << " ";
-    for(const auto &trk: output.tracks)
-        stream << trk.trkLen << " ";
-    stream << endl;
+    stream << output.nSecondaries << " ";
+    stream << output.reactionFlag << " ";
+    stream << output.px << " "  << output.py << " ";
+    stream << output.x1 << " "  << output.y1 << " ";
+    stream << output.x2 << " "  << output.y2 << " ";
+    stream << output.trkLen << endl;
+
 }
 
 Long64_t GenTrainingData::GetEventNum() const

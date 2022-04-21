@@ -3,6 +3,7 @@
 
 #include "gas_chamber/GasChamberDigitizer.hh"
 #include "gas_chamber/GasChamberHit.hh"
+#include "config/ParamContainerTable.hh"
 
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
@@ -17,18 +18,24 @@
 using namespace std;
 
 GasChamberDigitizer::GasChamberDigitizer(G4String name,
-    G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
-    const G4ThreeVector &_centerPos)
+    G4double _padPlaneX, G4double _padPlaneY, G4double _chamberH,
+    G4int _nPadX, G4int _nPadY,
+    const G4ThreeVector &_centerPos, G4double margin)
     : G4VDigitizerModule(name),
-    padPlaneX(_padPlaneX), padPlaneY(_padPlaneY), nPadX(_nPadX), nPadY(_nPadY),
-    padMargin(0.),
+    totalChargeIntegrator(new ROOT::Math::IntegratorMultiDim(ROOT::Math::IntegrationMultiDim::kADAPTIVE, 1e-3)),
+    diffusion(new DiffusionGaussian),
+    gasMixtureProperties(nullptr),
+    padPlaneX(_padPlaneX), padPlaneY(_padPlaneY), chamberH(_chamberH),
+    nPadX(_nPadX), nPadY(_nPadY),
+    padMargin(margin),
     centerPos(_centerPos),
     readoutPads(nullptr)
 {
-    InitPads();
+    Init();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 GasChamberDigitizer::~GasChamberDigitizer()
 {
@@ -36,6 +43,41 @@ GasChamberDigitizer::~GasChamberDigitizer()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberDigitizer::Init()
+{
+    InitPads();
+    InitDiffusion();
+}
+
+void GasChamberDigitizer::InitPads()
+{
+    const G4double xPad = padPlaneX/nPadX, yPad = padPlaneY/nPadY;
+    const G4double xLowerLeft = centerPos[0] - (padPlaneX - xPad)/2;
+    const G4double yLowerLeft = centerPos[1] - (padPlaneY - yPad)/2;
+    G4cout << xLowerLeft << " " << yLowerLeft << G4endl;
+    if(readoutPads != nullptr)
+        delete readoutPads;
+    readoutPads = new std::vector<std::vector<GasChamberDigi>>;
+    readoutPads->reserve(nPadY);
+    for(int y = 0;y < nPadY;++y)
+    {
+        readoutPads->push_back(std::vector<GasChamberDigi>{});
+        for(int x = 0;x < nPadX;++x)
+        {
+            readoutPads->at(y).emplace_back(
+                G4TwoVector(xLowerLeft + xPad*x, yLowerLeft + yPad*y),
+                xPad/2, yPad/2, padMargin);
+        }
+
+    }
+}
+
+void GasChamberDigitizer::InitDiffusion()
+{
+    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    diffusion->SetIntrinsicDiff(container->GetParamD("gemDiffusionStd"));
+}
 
 void GasChamberDigitizer::FillChargeOnPads(vector<G4float> &vec) const
 {
@@ -93,40 +135,32 @@ void GasChamberDigitizer::FillPadsTrack(const GasChamberHit *hit)
 
 void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
 {
+    static G4double intRange = 15.0; // perform integrate only if (dist between electron cloud and pad center)/(std of electron cloud) < intRange
     // coordinate in the frame of gas chamber
-    const G4double ePosX = ePos.getZ(), ePosY = ePos.getY(), ePosZ = -ePos.getZ();
-    const G4double
-        minPadPlaneX = centerPos.getX() - padPlaneX/2,
-        minPadPlaneY = centerPos.getY() - padPlaneY/2,
-        maxPadPlaneX = centerPos.getX() + padPlaneX/2,
-        maxPadPlaneY = centerPos.getY() + padPlaneY/2,
-        padX = padPlaneX/nPadX,
-        padY = padPlaneY/nPadY;
+    const G4double ePosX = ePos.getZ(), ePosY = ePos.getY(), ePosZ = ePos.getX();
 
-    if(ePosX < minPadPlaneX + padMargin || ePosX > maxPadPlaneX - padMargin ||
-        ePosY < minPadPlaneY + padMargin || ePosY > maxPadPlaneY - padMargin)
-        return;
+    // ready to integrate over each pad
+    const G4double driftLen = ePosZ - centerPos.getZ() + chamberH/2;
+    G4double charge = e_SI*chargeGain*eDep/gasMixtureProperties->GetW();    
+    diffusion->SetDriftLen(driftLen);
+    diffusion->SetCharge(charge);
+    diffusion->SetPosition(ePosX, ePosY);
 
-    int padNumX = 0, padNumY = 0;
-    for(padNumX = 0;padNumX < nPadX;++padNumX)
-    {
-        if(ePosX < minPadPlaneX + (padNumX + 1)*padX - padMargin)
-            break;
-        else if(ePosX < minPadPlaneX + (padNumX + 1)*padX + padMargin)
-            return;
-    }
-    for(padNumY = 0;padNumY < nPadY;++padNumY)
-    {
-        if(ePosY < minPadPlaneY + (padNumY + 1)*padY - padMargin)
-            break;
-        else if(ePosY < minPadPlaneY + (padNumY + 1)*padY + padMargin)
-            return;
-    }
-    if(padNumX >= nPadX || padNumY >= nPadY)
-        return;
-    G4double energyPerElectronPair = gasMixtureProperties->GetW();
-    G4double charge = e_SI*chargeGain*eDep/energyPerElectronPair;
-    readoutPads->at(padNumY).at(padNumX).AddCharge(charge);
+    G4TwoVector pos;
+    G4double padMin[2], padMax[2], dist2;
+    G4double partialCharge = 0;
+    for(auto &padRows : *readoutPads)
+        for(auto &pad : padRows)
+        {
+            pad.GetRange(padMin, padMax);
+            pos = pad.GetPosition();
+            dist2 = (pos[0] - ePosX)*(pos[0] - ePosX) + (pos[1] - ePosY)*(pos[1] - ePosY);
+            if(dist2*dist2/(diffusion->GetCloudStd()*diffusion->GetCloudStd()) < intRange*intRange)
+            {
+                partialCharge = totalChargeIntegrator->Integral(*diffusion, padMin, padMax);
+                pad.AddCharge(partialCharge);
+            }
+        }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -134,6 +168,7 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
 void GasChamberDigitizer::SetGasMixtureProperties(GasMixtureProperties *_gasMixtureProperties)
 {
     gasMixtureProperties = _gasMixtureProperties;
+    diffusion->SetDiffusionCoef(gasMixtureProperties->GetTransverseDiffusion());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -171,16 +206,3 @@ void GasChamberDigitizer::SetPadMargin(G4double margin)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigitizer::InitPads()
-{
-    if(readoutPads != nullptr)
-        delete readoutPads;
-    readoutPads = new std::vector<std::vector<GasChamberDigi>>;
-    readoutPads->reserve(nPadY);
-    for(int y = 0;y < nPadY;++y)
-    {
-        readoutPads->push_back(std::vector<GasChamberDigi>(nPadX));
-        for(int x = 0;x < nPadX;++x)
-            readoutPads->at(y).at(x).SetPadNum(x + y*nPadX);
-    }
-}

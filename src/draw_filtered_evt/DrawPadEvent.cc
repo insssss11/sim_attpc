@@ -6,11 +6,11 @@ using namespace std;
 using namespace TrainingDataTypes;
 
 DrawPadEvent::DrawPadEvent(ParamContainerTable *paramTable)
-    : canvas(nullptr), paramTable{paramTable}
+    : canvas(nullptr), paramTable{paramTable}, dir("./")
 {
     InitPadDimensions();
     qdcHist = make_unique<TH2D>("", "Mulplicated ionized charge on pads", nPadX, 0, padPlaneX, nPadY, 0, padPlaneY);
-    qdcHist->SetTitle("Mulplicated ionized charge on pads;#it{x} (mm);#it{y} (mm);#it{charge} (pC)");    
+    qdcHist->SetTitle("Mulplicated ionized charge on pads;#it{x} (mm);#it{y} (mm);#it{charge} (pC)");
     qdcHist->GetXaxis()->SetTitleOffset(1.0);
     qdcHist->GetYaxis()->SetTitleOffset(1.2);
     qdcHist->GetZaxis()->SetTitleOffset(1.2);
@@ -32,12 +32,19 @@ void DrawPadEvent::InitPadDimensions()
 
 void DrawPadEvent::Draw(const PadEvent &padEvent)
 {
+    static int figNum = 0;
     if(canvas == nullptr)
         InitCanvas();
     canvas->cd();
     DrawCharges(padEvent);
     DrawTracks(padEvent);
-    canvas->Print("filtered_pad_event.png", "png");
+    char figName[256];
+    if(dir.back() != '/')
+        snprintf(figName, 256, "%s/figure%04d.png", dir.c_str(), figNum);
+    else
+        snprintf(figName, 256, "%sfigure%04d.png", dir.c_str(), figNum);
+    canvas->Print(figName, "png");
+    ++figNum;
 }
 
 void DrawPadEvent::InitCanvas()
@@ -98,4 +105,9 @@ EColor DrawPadEvent::GetTrackColor(EParticle par)
         default:
             return kWhite;
     }
+}
+
+void DrawPadEvent::SetDirectory(const std::string &dir)
+{
+    this->dir = dir;
 }

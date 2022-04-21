@@ -13,16 +13,18 @@
 G4ThreadLocal G4Allocator<GasChamberDigi> *GasChamberDigiAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-GasChamberDigi::GasChamberDigi()
-    : G4VDigi()
+GasChamberDigi::GasChamberDigi(const G4TwoVector &pos, const G4double xHalf, const G4double yHalf, G4double margin)
+    : G4VDigi(), pos(pos), xHalf(xHalf), yHalf(yHalf), margin(margin)
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 GasChamberDigi::GasChamberDigi(const GasChamberDigi& right)
-    : G4VDigi(), padNum(right.GetPadNum()), charge(right.GetCharge())
+    : GasChamberDigi(right.pos, right.xHalf, right.yHalf)
 {
+    padNum = right.GetPadNum();
+    charge = right.GetCharge();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,11 +41,29 @@ const GasChamberDigi &GasChamberDigi::operator=(const GasChamberDigi &right)
     return *this;
 }
 
+const G4TwoVector GasChamberDigi::GetPosition() const
+{
+    return pos;
+}
+
+void GasChamberDigi::GetRange(G4double *min, G4double *max) const
+{
+    min[0] = pos[0] - xHalf + margin;
+    max[0] = pos[0] + xHalf - margin;
+
+    min[1] = pos[1] - yHalf + margin;
+    max[1] = pos[1] + yHalf - margin; 
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4bool GasChamberDigi::operator==(const GasChamberDigi &right) const
 {
-    return  padNum == right.GetPadNum() &&
+    return
+        pos == right.pos &&
+        xHalf == right.xHalf &&
+        yHalf == right.yHalf &&
+        padNum == right.GetPadNum() &&
         charge == right.GetCharge();
 }
 
@@ -52,6 +72,13 @@ G4bool GasChamberDigi::operator==(const GasChamberDigi &right) const
 void GasChamberDigi::SetPadNum(G4int num)
 {
     padNum = num;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberDigi::SetMargin(G4double margin)
+{
+    this->margin = margin;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -72,7 +99,7 @@ void GasChamberDigi::Clear()
 
 void GasChamberDigi::Draw()
 {
-    
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

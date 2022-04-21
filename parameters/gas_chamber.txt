@@ -8,9 +8,10 @@ chamberZ        double      80
 
 nPadX           int         40
 nPadY           int         40
-margin          double      0.2
+margin          double      0.1
 multiplication  double      1e5
 fullScaleRange  double      400e-12
+gemDiffusionStd double      0.06753
 
 # position and dimensions of gas volume
 gasPosX         double      0

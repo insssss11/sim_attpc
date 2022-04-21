@@ -77,9 +77,10 @@ void GasChamberSD::InitDigitizer()
     auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     // Digitizer
     digitizer = new GasChamberDigitizer(
-        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"),
+        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"), container->GetParamD("chamberZ"),
         container->GetParamI("nPadX"), container->GetParamI("nPadY"),
-        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")));
+        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")),
+        container->GetParamD("margin"));
     digitizer->SetGasMixtureProperties(gasMixtureProperties);
     digitizer->SetPadMargin(container->GetParamD("margin"));
     digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));

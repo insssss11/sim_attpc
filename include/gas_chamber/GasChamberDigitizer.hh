@@ -4,10 +4,13 @@
 #include "gas/GasMixtureProperties.hh"
 #include "gas_chamber/GasChamberDigi.hh"
 #include "gas_chamber/GasChamberHit.hh"
+#include "gas_chamber/diffusion/DiffusionGaussian.hh"
 
 #include "G4VDigitizerModule.hh"
 #include "G4Step.hh"
 #include "globals.hh"
+
+#include "Math/IntegratorMultiDim.h"
 
 #include <vector>
 
@@ -20,10 +23,9 @@ class GasChamberDigitizer : public G4VDigitizerModule
 {
     public:
     GasChamberDigitizer(G4String name,
-        G4double _padPlaneX, G4double _padPlaneY, G4int _nPadX, G4int _nPadY,
-        const G4ThreeVector &_centerPos = G4ThreeVector(0., 0., 0.));
+        G4double _padPlaneX, G4double _padPlaneY, G4double chamberH, G4int _nPadX, G4int _nPadY,
+        const G4ThreeVector &_centerPos = G4ThreeVector(0., 0., 0.), G4double margin = 0.);
     ~GasChamberDigitizer();    
-    void ProjectIonizedElectron(const G4ThreeVector &ePos, int nElectron);
 
     void SetGasMixtureProperties(GasMixtureProperties *GasMixtureProperties);
     void SetChargeMultiplication(G4double gain);
@@ -39,16 +41,20 @@ class GasChamberDigitizer : public G4VDigitizerModule
     void FillPadsInfo(const GasChamberHitsCollection* hitscollection);
 
     private:
+    void Init();
     void InitPads();
-
+    void InitDiffusion();
     private:
     void FillPadsTrack(const GasChamberHit *hit);
     void FillPadsStep(const G4ThreeVector &ePos, G4double eDep);
 
     private:
+    std::unique_ptr<ROOT::Math::IntegratorMultiDim> totalChargeIntegrator;
+    std::unique_ptr<DiffusionGaussian> diffusion;
+
     GasMixtureProperties *gasMixtureProperties;
     G4double fsr;
-    const G4double padPlaneX, padPlaneY;
+    const G4double padPlaneX, padPlaneY, chamberH;
     const G4int nPadX, nPadY;
     G4double padMargin;
     G4ThreeVector centerPos;

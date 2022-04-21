@@ -30,12 +30,9 @@ class GasChamberSD : public G4VSensitiveDetector
     private:
     void InitManagers();
     void InitDigitizer();
-
     void FillHitTuples();
     void FillDigiTuples();
-
     void PrintEndOfEvents();
-
     void DefineCommands();
 
     private:

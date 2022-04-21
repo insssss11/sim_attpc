@@ -19,22 +19,22 @@
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 120
 /attpc/output/setFileName pad_charges_evt1.root
-/run/beamOn 50000
+/run/beamOn 25000
 
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName pad_charges_bg1.root
 /gun/number 10
-/run/beamOn 50000
+/run/beamOn 25000
 
 # simulate the case with no interested events(Alpha capture)
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName pad_charges_evt2.root
-/run/beamOn 50000
+/run/beamOn 25000
 
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName pad_charges_bg2.root
 /gun/number 10
-/run/beamOn 50000
+/run/beamOn 25000
 
 /attpc/output/mergeFiles pad_charges_evt.root pad_charges_evt1.root pad_charges_evt2.root 
 /attpc/output/mergeFiles pad_charges_bg.root pad_charges_bg1.root pad_charges_bg2.root 

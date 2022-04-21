@@ -26,13 +26,15 @@ class DrawPadEvent{
     void InitPadDimensions();
     void DrawCharges(const PadEvent &padEvent);
     void DrawTracks(const PadEvent &padEvent);
-
+    void SetDirectory(const std::string &dir);
     private:
     EColor GetTrackColor(const TrainingDataTypes::EParticle par);
     std::unique_ptr<TCanvas> canvas;
     std::unique_ptr<TH2D> qdcHist;
     std::vector<TPolyMarker*> tracks;
     ParamContainerTable *paramTable;
+
+    std::string dir;
 
     static constexpr size_t trackBuffer = 20;
     // pad plane dimension

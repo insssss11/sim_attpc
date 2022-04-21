@@ -264,7 +264,6 @@ G4double GasMixtureProperties::GetI() const
     return gasPhysicalProperties.meanExcitationEnergy;
 }
 
-
 G4double GasMixtureProperties::GetDriftVelocity() const
 {
     return 1e3*gasPhysicalProperties.driftVel;
@@ -277,7 +276,7 @@ G4double GasMixtureProperties::GetTransverseDiffusion() const
 
 G4double GasMixtureProperties::GetLongitudinalDiffusion() const
 {
-    return gasPhysicalProperties.diffTrans;
+    return gasPhysicalProperties.diffLongi;
 }
 
 G4double GasMixtureProperties::GetElectronAttachment() const

@@ -4,6 +4,8 @@
 
 #include "TTree.h"
 
+#include "G4SystemOfUnits.hh"
+
 #include <memory>
 
 using namespace std;
@@ -318,14 +320,15 @@ void GenTrainingData::WriteInputData(std::ofstream &stream)
 
 void GenTrainingData::WriteOutputData(std::ofstream &stream)
 {
+    static constexpr double mO = 14899.168636*MeV;
     stream << output.nBgCarbons << " ";
     stream << output.nSecondaries << " ";
     stream << output.reactionFlag << " ";
     stream << output.px << " "  << output.py << " ";
     stream << output.x1 << " "  << output.y1 << " ";
     stream << output.x2 << " "  << output.y2 << " ";
-    stream << output.trkLen << endl;
-
+    stream << output.trkLen << " ";
+    stream << sqrt(output.px*output.px + output.py*output.py + output.pz*output.pz + mO*mO);
 }
 
 Long64_t GenTrainingData::GetEventNum() const

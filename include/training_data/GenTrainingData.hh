@@ -15,6 +15,8 @@
 #include "TFile.h"
 #include "TTreeReader.h"
 
+#include "config/ParamContainerTable.hh"
+
 // this class reads a pair of root file saved by pad_charges.mac and generates training data for DNN.
 class GenTrainingData
 {
@@ -70,6 +72,7 @@ class GenTrainingData
     void WriteOutputData(std::ofstream &stream);
 
     private:
+
     G4float fullScaleRange;
 
     Long64_t nEvents;
@@ -82,11 +85,12 @@ class GenTrainingData
     // buffer size of output output, the last are filled with EmptyTrack defined in "TrainingDataTypes.hh"
     size_t nSecondaryTrkMax;
 
-    TrainingDataTypes::Label output;
+    TrainingDataTypes::Output output;
     TrainingDataTypes::DataReader evtReaders, bgReaders;
     TrainingDataTypes::DataReaderValue evtReaderValues, bgReaderValues;
 
     G4bool gammaIncluded;
+    const ParamContainer *parContainer;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

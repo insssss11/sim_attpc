@@ -105,8 +105,12 @@ namespace TrainingDataTypes {
         // the number of tracks of background carbon tracks
         int nBgCarbons;
         int nSecondaries;
-        std::vector<Track> tracks;
-    }Label;
+        int reactionFlag;
+        G4float px, py, pz;
+        G4float x1, y1, z1;        
+        G4float x2, y2, z2;
+        G4float trkLen;
+    }Output;
 
     static constexpr Track emptyTrack = {
         EParticle::Emtpy,

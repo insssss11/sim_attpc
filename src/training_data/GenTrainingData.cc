@@ -306,7 +306,7 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 {
     ListParticleLabels(stream);
-    stream << "# [# of background C12 ions] [n secondaries] [Capture Reaction Flag] [vertex momentum (MeV/c)] [vertex position(mm)] [end position(mm)] [trkLen(mm)]" << endl;
+    stream << "# [# of background C12 ions] [n secondaries] [Capture Reaction Flag] [vertex momentum (MeV/c)] [vertex position(mm)] [end position(mm)] [trkLen(mm)] [Kinetic Energy(MeV)]" << endl;
     stream << setw(10) << "nEvents" << G4endl;
     stream << setw(10) << GetEventNum() << G4endl;;
 }
@@ -328,7 +328,7 @@ void GenTrainingData::WriteOutputData(std::ofstream &stream)
     stream << output.x1 << " "  << output.y1 << " ";
     stream << output.x2 << " "  << output.y2 << " ";
     stream << output.trkLen << " ";
-    stream << sqrt(output.px*output.px + output.py*output.py + output.pz*output.pz + mO*mO);
+    stream << sqrt(output.px*output.px + output.py*output.py + output.pz*output.pz + mO*mO) - mO << endl;
 }
 
 Long64_t GenTrainingData::GetEventNum() const

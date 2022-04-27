@@ -105,30 +105,15 @@ target_compile_options(draw_filtered_evt PRIVATE -Wno-shadow)
 set(SCRIPTS
   init.mac
   vis.mac
-  ${gps_macros}
-  gmacros/bragg_peak.mac
-  rmacros/DrawBraggPeak.cc
-
-  gmacros/trajectories_overlap_vis.mac
-  
-  gmacros/pad_charges_vis.mac
-  gmacros/pad_charges.mac  
-  rmacros/DrawPadCharges.cc
-  rmacros/EventDrawingAction.hh
-  
-  rmacros/AddTrees.cc
-  rmacros/BranchSummation/BranchSummation.hh
-  rmacros/BranchSummation/EntrySummation.hh
-  rmacros/BranchSummation/BranchAppender.hh
-
-  parameters/config.txt
-  parameters/gas_chamber.txt
   )
 
   file(GLOB_RECURSE RESOURCES RELATIVE ${CMAKE_SOURCE_DIR} resources/**)
+  file(GLOB_RECURSE GMACROS RELATIVE ${CMAKE_SOURCE_DIR} gmacros/**)
+  file(GLOB_RECURSE RMACROS RELATIVE ${CMAKE_SOURCE_DIR} rmacros/**)
+  file(GLOB_RECURSE PARAMETERS RELATIVE ${CMAKE_SOURCE_DIR} parameters/**)
 
 
-  foreach(_script ${SCRIPTS} ${RESOURCES})
+  foreach(_script ${SCRIPTS} ${RESOURCES} ${GMACROS} ${RMACROS} ${PARAMETERS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}

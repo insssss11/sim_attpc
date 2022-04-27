@@ -6,6 +6,7 @@
 #include "config/ParamContainerTable.hh"
 
 #include "TPolyMarker.h"
+#include "TLine.h"
 #include "TAttLine.h"
 #include "TH2D.h"
 #include "TCanvas.h"
@@ -26,11 +27,13 @@ class DrawPadEvent{
     void InitPadDimensions();
     void DrawCharges(const PadEvent &padEvent);
     void DrawTracks(const PadEvent &padEvent);
+    void DrawGrid();
     void SetDirectory(const std::string &dir);
     private:
     EColor GetTrackColor(const TrainingDataTypes::EParticle par);
     std::unique_ptr<TCanvas> canvas;
     std::unique_ptr<TH2D> qdcHist;
+    std::unique_ptr<TLine> grid;
     std::vector<TPolyMarker*> tracks;
     ParamContainerTable *paramTable;
 

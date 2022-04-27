@@ -12,11 +12,16 @@ DrawPadEvent::DrawPadEvent(ParamContainerTable *paramTable)
     qdcHist = make_unique<TH2D>("", "Mulplicated ionized charge on pads", nPadX, 0, padPlaneX, nPadY, 0, padPlaneY);
     qdcHist->SetTitle("Mulplicated ionized charge on pads;#it{x} (mm);#it{y} (mm);#it{charge} (pC)");
     qdcHist->GetXaxis()->SetTitleOffset(1.0);
+    qdcHist->GetXaxis()->SetTickLength(0.);
     qdcHist->GetYaxis()->SetTitleOffset(1.2);
-    qdcHist->GetZaxis()->SetTitleOffset(1.2);
+    qdcHist->GetYaxis()->SetTickLength(0.);
+    qdcHist->GetZaxis()->SetTitleOffset(1.3);
     qdcHist->SetStats(false);
     for(size_t i = 0;i < trackBuffer;++i)
         tracks.push_back(new TPolyMarker);
+    grid = make_unique<TLine>();
+    grid->SetLineWidth(1);
+    grid->SetNDC(false);
 }
 
 void DrawPadEvent::InitPadDimensions()
@@ -62,6 +67,7 @@ void DrawPadEvent::DrawCharges(const PadEvent &padEvent)
         for(int x = 0;x < nPadX;++x)
             qdcHist->SetBinContent(x + 1, y + 1, 1e12*padEvent.qdc.at(x + y*nPadX));
     qdcHist->Draw("colz");
+    DrawGrid();
 }
 
 void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
@@ -86,6 +92,14 @@ void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
             cerr << e.what() << endl;
         }
     }
+}
+
+void DrawPadEvent::DrawGrid()
+{
+    for(size_t x = 1;x < nPadX;++x)
+        grid->DrawLine(padPlaneX*x/nPadX, 0., padPlaneX*x/nPadX, padPlaneY);
+    for(size_t y = 1;y < nPadY;++y)
+        grid->DrawLine(0., padPlaneY*y/nPadY, padPlaneX, padPlaneY*y/nPadY);
 }
 
 EColor DrawPadEvent::GetTrackColor(EParticle par)

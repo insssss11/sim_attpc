@@ -1,7 +1,7 @@
 #ifndef DrawPadEvent_h
 #define DrawPadEvent_h 1
 
-#include "training_data/TrainingDataTypes.hh"
+// #include "training_data/TrainingDataTypes.hh"
 #include "draw_filtered_evt/PadEvent.hh"
 #include "config/ParamContainerTable.hh"
 

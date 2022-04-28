@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     DrawPadEvent drawer(parTable);
     EventIterator iter(file1, file2);
     FilterNextEvent filter;
-    SpecParticleNum specNum(3);
+    SpecParticleNum specNum(0);
     SpecParticleType specType(Oxygen);
     char key;
     while(true)

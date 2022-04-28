@@ -76,47 +76,29 @@ namespace TrainingDataTypes {
     }
 
     typedef struct {
-        std::unique_ptr<TTreeReader> reader1, reader2, reader3;
+        std::unique_ptr<TTreeReader> reader;
     }DataReader;
 
     typedef struct {
-        // tree1
-        std::unique_ptr<TTreeReaderValue<int> > nTrk;
-        // tree2
-        std::unique_ptr<TTreeReaderValue<int> > evtId, particleEnum, nStep;
+        std::unique_ptr<TTreeReaderValue<int> > flag;
+        std::unique_ptr<TTreeReaderValue<float> > Ek;
+        std::unique_ptr<TTreeReaderValue<float> > xv;
+        std::unique_ptr<TTreeReaderValue<float> > yv;
+        std::unique_ptr<TTreeReaderValue<float> > zv;
+        std::unique_ptr<TTreeReaderValue<float> > theta;
         std::unique_ptr<TTreeReaderValue<float> > trkLen;
-        std::unique_ptr<TTreeReaderValue<std::vector<float> > >
-            x, y, z,
-            px, py, pz,
-            time;
-        // tree3
         std::unique_ptr<TTreeReaderValue<std::vector<float> > > qdc;
+        std::unique_ptr<TTreeReaderValue<std::vector<float> > > tSig;
     }DataReaderValue;
+    
 
     typedef struct {
-        EParticle particle;
-        G4float trkLen;
-        G4float time;
-        G4float px, py, pz;
-        G4float x, y, z;
-    }Track;
-
-    typedef struct {
-        // the number of tracks of background carbon tracks
-        int nBgCarbons;
-        int nSecondaries;
-        int reactionFlag;
-        G4float px, py, pz;
-        G4float x1, y1, z1;        
-        G4float x2, y2, z2;
-        G4float trkLen;
+        int flag;
+        float Ek;
+        float xv, yv, zv;
+        float theta;
+        float trkLen;
     }Output;
-
-    static constexpr Track emptyTrack = {
-        EParticle::Emtpy,
-        -1., -1.,
-        -1., -1., -1.,
-        -1., -1., -1.};
 }
 #endif
 

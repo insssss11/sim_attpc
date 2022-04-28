@@ -49,7 +49,6 @@ class GenTrainingData
     G4bool CheckReaderValues();
     void ResetDataReaders();
     void ResetDataReader(TrainingDataTypes::DataReader &dataReader);
-    void ResetOutputs();
 
     void OpenRootFiles(const std::string &evtFileName, const std::string &bgFileName);
     TFile *OpenRootFile(const std::string &fileName);
@@ -61,10 +60,8 @@ class GenTrainingData
     G4bool NextAll();
 
     void ReadAndMergeInput();
-    void ReadTracks(TrainingDataTypes::DataReaderValue &dataReaderValue, TrainingDataTypes::DataReader &dataReader);
-    void SortOutputLabel();
+    void ReadTracks();
 
-    void ListParticleLabels(std::ofstream &stream);
     void WriteInputHeader(std::ofstream &stream);
     void WriteOutputHeader(std::ofstream &stream);
 
@@ -78,7 +75,8 @@ class GenTrainingData
     Long64_t nEvents;
     size_t inputSize;
     size_t inputX, inputY;
-    std::vector<std::pair<size_t, G4float> > input;
+    // [idx, [charge, time]]
+    std::vector<std::pair<size_t, std::pair<G4float, G4float> > > input;
     
     TFile *evtRootFile, *bgRootFile;
 

@@ -1,0 +1,35 @@
+# This macro must be executed in vis UI session.
+
+# primary partice setting
+/gun/particle ion
+/gun/ion 6 12 2
+/gun/energy 10 MeV
+
+/attpc/gun/setPosX 0 mm
+/attpc/gun/setPosY -50. mm
+/attpc/gun/setPosZ -300. mm
+
+/attpc/geometry/setBeamPipePosY -50. mm
+
+/attpc/field/bField 2.5 0 0 tesla
+/attpc/output/activate true
+
+/attpc/gas/setStepLimit 0.05 mm
+
+# simulate the case with interested events(Alpha capture)
+/attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
+/attpc/output/setFileName pad_charges_evt1.root
+/run/beamOn 5
+
+# simulate the case with no interested events(No alpha capture)
+/attpc/process/CarbonAlpha/activate false
+/attpc/output/setFileName pad_charges_evt2.root
+/run/beamOn 5
+
+/attpc/output/mergeFiles pad_charges_evt.root pad_charges_evt1.root pad_charges_evt2.root 
+
+# backgrounds
+/attpc/process/CarbonAlpha/activate false
+/attpc/output/setFileName pad_charges_bg.root
+/gun/number 10
+/run/beamOn 10

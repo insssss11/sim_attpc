@@ -26,7 +26,11 @@ class GasChamberDigi : public G4VDigi
     void GetRange(G4double *min, G4double *max) const;
     G4int GetPadNum() const { return padNum; }
     G4float GetCharge() const { return static_cast<G4double>(charge);}
-    G4float GetTime() const {return static_cast<G4double>(timeWeightedSum/charge);}
+    G4float GetTime() const {
+        if(charge > 0)
+            return static_cast<G4double>(timeWeightedSum/charge);
+        else
+            return 0;}
     G4double GetMargin() const {return margin;}
 
     void SetPadNum(int num);

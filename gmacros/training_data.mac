@@ -19,22 +19,17 @@
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
 /attpc/output/setFileName training_data_evt1.root
-/run/beamOn 20000
-
-/attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName training_data_bg1.root
-/gun/number 10
-/run/beamOn 20000
+/run/beamOn 50000
 
 # simulate the case with no interested events(Alpha capture)
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName training_data_evt2.root
-/run/beamOn 20000
+/run/beamOn 50000
 
+/attpc/output/mergeFiles training_data_evt.root training_data_evt1.root training_data_evt2.root 
+
+# backgrounds
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName training_data_bg2.root
+/attpc/output/setFileName training_data_bg.root
 /gun/number 10
-/run/beamOn 20000
-
-/attpc/output/mergeFiles training_data_evt.root training_data_evt1.root training_data_bg1.root 
-/attpc/output/mergeFiles training_data_bg.root training_data_evt2.root training_data_bg2.root 
+/run/beamOn 100000

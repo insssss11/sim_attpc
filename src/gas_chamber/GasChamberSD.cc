@@ -30,12 +30,28 @@ GasChamberSD::GasChamberSD(G4String name, GasMixtureProperties *_gasMixturePrope
 {
     if(gasMixtureProperties == nullptr)
         throw invalid_argument("In GasChamberSD::GasChamberSD(G4String, GasMixtureProperties *, G4int), a pointer to GasMixtureProperties is a null pointer.");
-    
     verboseLevel = verbose;
     collectionName.insert("GasChamberHColl");
     InitManagers();
     InitDigitizer();
     DefineCommands();
+}
+
+void GasChamberSD::InitDigitizer()
+{
+    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    padPlaneX = container->GetParamD("chamberX"), padPlaneY = container->GetParamD("chamberY"), padPlaneZ = container->GetParamD("chamberZ");
+    padCenterX = container->GetParamD("chamberPosX"), padCenterY = container->GetParamD("chamberPosY"), padCenterZ = container->GetParamD("chamberPosZ");
+    // Digitizer
+    digitizer = new GasChamberDigitizer(
+        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"), container->GetParamD("chamberZ"),
+        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
+        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")),
+        container->GetParamD("margin"));
+    digitizer->SetGasMixtureProperties(gasMixtureProperties);
+    digitizer->SetPadMargin(container->GetParamD("margin"));
+    digitizer->SetChargeMultiplication(container->GetParamD("gainMean"), container->GetParamD("gainStd"));
+    digitizerManager->AddNewModule(digitizer);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,7 +71,7 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
         fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
     }
     hce->AddHitsCollection(fHCID, fHitsCollection);
-
+    flag = 0, theta = 0., Ek = 0., xv = 0., yv = 0., zv = 0., trkLen = 0.;
     fNbOfStepPoints = 0;
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
@@ -68,23 +84,6 @@ void GasChamberSD::InitManagers()
     tupleVectorManager = TupleVectorManager::Instance();
     analysisManager = G4AnalysisManager::Instance();
     digitizerManager = G4DigiManager::GetDMpointer();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void GasChamberSD::InitDigitizer()
-{
-    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
-    // Digitizer
-    digitizer = new GasChamberDigitizer(
-        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"), container->GetParamD("chamberZ"),
-        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
-        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")),
-        container->GetParamD("margin"));
-    digitizer->SetGasMixtureProperties(gasMixtureProperties);
-    digitizer->SetPadMargin(container->GetParamD("margin"));
-    digitizer->SetChargeMultiplication(container->GetParamD("gainMean"), container->GetParamD("gainStd"));
-    digitizerManager->AddNewModule(digitizer);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -108,6 +107,27 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
     const auto track = step->GetTrack();
     const auto pDynamic = step->GetTrack()->GetDynamicParticle();
+    const auto postStepPoint = step->GetPostStepPoint();
+
+    auto vector = step->GetSecondaryInCurrentStep();    
+    if(vector != nullptr)
+        for(auto trackSec : *vector)
+            if(trackSec->GetParticleDefinition()->GetParticleName() == "O16")
+            {
+                flag = 1;
+                auto pos = track->GetPosition();
+                theta = trackSec->GetMomentumDirection().angle(pDynamic->GetMomentumDirection());
+                Ek = trackSec->GetKineticEnergy();
+                xv = pos.getZ() - padCenterX + padPlaneX/2;
+                yv = pos.getY() - padCenterY + padPlaneY/2;
+                zv = pos.getX() - padCenterZ + padPlaneZ/2;
+            }
+    
+    // if end or geometry boundary of Oxygen track
+    if(pDynamic->GetParticleDefinition()->GetParticleName() == "O16" &&
+        (track->GetTrackStatus() == G4TrackStatus::fStopAndKill || postStepPoint->GetStepStatus() == G4StepStatus::fGeomBoundary))
+            trkLen = track->GetTrackLength();
+
     // if new track
     if(fTrackId != track->GetTrackID())
     {
@@ -151,7 +171,6 @@ void GasChamberSD::FillHitTuples()
         analysisManager->FillNtupleFColumn(1, 4, hit->GetMass());
         analysisManager->FillNtupleFColumn(1, 5, hit->GetTrackLength());
         analysisManager->FillNtupleFColumn(1, 6, hit->GetEdepSum());
-        // analysisManager->FillNtupleSColumn(1, 7, hit->GetPartName());
 
         // vector part
         tupleVector2->FillVectorF("x", hit->GetPosX());
@@ -162,7 +181,6 @@ void GasChamberSD::FillHitTuples()
         tupleVector2->FillVectorF("pz", hit->GetMomZ());
         tupleVector2->FillVectorF("eDep", hit->GetEdep());
         tupleVector2->FillVectorF("t", hit->GetTime());
-        // tupleVector2->FillVectorF("q", hit->GetCharge());
         tupleVector2->FillVectorF("stepLen", hit->GetStepLen());
         analysisManager->AddNtupleRow(1);
         tupleVector2->ClearVectors();
@@ -177,6 +195,13 @@ void GasChamberSD::FillDigiTuples()
         // digitization
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         digitizer->FillPadsInfo(fHitsCollection);
+        analysisManager->FillNtupleIColumn(2, 0, flag);
+        analysisManager->FillNtupleFColumn(2, 1, Ek);
+        analysisManager->FillNtupleFColumn(2, 2, xv);
+        analysisManager->FillNtupleFColumn(2, 3, yv);
+        analysisManager->FillNtupleFColumn(2, 4, zv);
+        analysisManager->FillNtupleFColumn(2, 5, theta);
+        analysisManager->FillNtupleFColumn(2, 6, trkLen);
         digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));
         digitizer->FillTimeOnPads(tupleVector3->GetVectorRefF("tSig"));
         analysisManager->AddNtupleRow(2);
@@ -220,18 +245,33 @@ void GasChamberSD::PrintEndOfEvents()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "tuple/TupleInitializerBase.hh"
+
+void GasChamberSD::ActivateHitTuples(G4bool activate)
+{
+    hitTupleActivated = activate;
+    TupleInitializerBase::ActivateTuple("tree_gc1", activate);
+    TupleInitializerBase::ActivateTuple("tree_gc2", activate);
+}
+
+void GasChamberSD::ActivateDigiTuples(G4bool activate)
+{
+    digiTupleActivated = activate;
+    TupleInitializerBase::ActivateTuple("tree_gc3", activate);
+}
+
+
 void GasChamberSD::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/gasChamber/", "Gas Chamger SD control");
     // auto fVerboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
+    auto commandHitTuple = fMessenger->DeclareMethod("activateHitTuple", &GasChamberSD::ActivateHitTuples, "Activate hit tuple(s)");
     fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
-    auto commandHitTuple
-        = fMessenger->DeclareProperty("activateHitTuple", hitTupleActivated, "Activate hit tuple(s)");
     commandHitTuple.SetParameterName("hitTupleActivated", true);
     commandHitTuple.SetDefaultValue("true");
     commandHitTuple.SetGuidance("Activate writing hit tuple(s)");
-    auto commandDigiTuple = 
-        fMessenger->DeclareProperty("activateDigiTuple", digiTupleActivated, "Activate digi tuple(s)");
+
+    auto commandDigiTuple = fMessenger->DeclareMethod("activateDigiTuple", &GasChamberSD::ActivateDigiTuples, "Activate digi tuple(s)");
     commandDigiTuple.SetParameterName("digiTupleActivated", true);
     commandDigiTuple.SetDefaultValue("true");
     commandDigiTuple.SetGuidance("Activate writing digi tuple(s)");    

@@ -21,9 +21,6 @@ RunAction::RunAction(EventAction *eventAction)
     merger(new TreeMerger),
     tupleInitializer(new TupleInitializer)
 {
-    merger->AddTreeNameTitle("tree_gc1", "gas chamber hit data saved by event");
-    merger->AddTreeNameTitle("tree_gc2", "gas chamber hit data saved by trk");
-    merger->AddTreeNameTitle("tree_gc3", "gas chamber digitization data");
     fAnalysisManager = G4AnalysisManager::Instance();
     fAnalysisManager->SetVerboseLevel(1);
 }
@@ -53,8 +50,14 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
         MergeThreadTrees();
 }
 
+#include "tuple/TupleInitializerBase.hh"
+
 void RunAction::MergeThreadTrees()
 {
+    merger->ClearTreeNameTitles();
+    for(auto stat : TupleInitializerBase::GetTuplesActivationStat())
+        if(stat.second.second)
+            merger->AddTreeNameTitle(stat.first, stat.second.first);
     string filePrefix = fFileName.substr(0, fFileName.find_last_of('.'));
     vector<string> subFiles;
     for(G4int thread = 0;thread < G4RunManager::GetRunManager()->GetNumberOfThreads();++thread)

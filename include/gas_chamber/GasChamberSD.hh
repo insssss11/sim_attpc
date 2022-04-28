@@ -33,6 +33,10 @@ class GasChamberSD : public G4VSensitiveDetector
     void FillHitTuples();
     void FillDigiTuples();
     void PrintEndOfEvents();
+    
+    // for custom command
+    void ActivateHitTuples(G4bool Activate = true);
+    void ActivateDigiTuples(G4bool Activate = true);
     void DefineCommands();
 
     private:
@@ -49,6 +53,11 @@ class GasChamberSD : public G4VSensitiveDetector
     G4int fEventId;
     G4int fTrackId;
     G4int fNbOfStepPoints;
+    
+    G4bool flag;
+    G4double theta, Ek, xv, yv, zv, trkLen;
+    G4double padPlaneX, padPlaneY, padPlaneZ;
+    G4double padCenterX, padCenterY, padCenterZ;
 
     G4bool hitTupleActivated;
     G4bool digiTupleActivated;

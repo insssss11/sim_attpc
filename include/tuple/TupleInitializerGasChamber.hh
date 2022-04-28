@@ -4,7 +4,7 @@
 #ifndef TupleInitializerGasChamber_h
 #define TupleInitializerGasChamber_h 1
 
-#include "tuple/ITupleInitializer.hh"
+#include "tuple/TupleInitializerBase.hh"
 #include "tuple/TupleInitializer.hh"
 
 /// This class initialize tuples in gas chamber sensitive detector.

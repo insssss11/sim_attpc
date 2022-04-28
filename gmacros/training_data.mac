@@ -16,6 +16,8 @@
 
 /attpc/gas/setStepLimit 0.05 mm
 
+/attpc/gasChamber/activateHitTuple false
+
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
 /attpc/output/setFileName training_data_evt1.root
@@ -32,4 +34,4 @@
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName training_data_bg.root
 /gun/number 10
-/run/beamOn 600000
+/run/beamOn 60000

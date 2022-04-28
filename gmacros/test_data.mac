@@ -16,6 +16,8 @@
 
 /attpc/gas/setStepLimit 0.05 mm
 
+/attpc/gasChamber/activateHitTuple false
+
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
 /attpc/output/setFileName test_data_evt1.root

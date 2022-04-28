@@ -20,6 +20,11 @@ TreeMerger &TreeMerger::AddTreeNameTitle(const string &treeName, const string &t
     return *this;
 }
 
+void TreeMerger::ClearTreeNameTitles()
+{
+    treeNameTitles.clear();
+}
+
 void TreeMerger::MergeRootFiles(const std::string &fileName, const std::vector<std::string> subFileNames)
 {
     if(treeNameTitles.empty())

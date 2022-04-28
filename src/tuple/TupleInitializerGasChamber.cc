@@ -3,8 +3,13 @@
 
 #include "tuple/TupleInitializerGasChamber.hh"
 
+using namespace std;
+
 TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase("gas_chamber")
 {
+    RegisterTupleName("tree_gc1", "gas chamber hit data saved by event");
+    RegisterTupleName("tree_gc2", "gas chamber hit data saved by event");
+    RegisterTupleName("tree_gc3", "gas chamber hit data saved by event");
     try {
         tupleVectorManager->AddTupleVectorContainer("tree_gc2")
             ->AddVectorsF("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
@@ -26,6 +31,7 @@ void TupleInitializerGasChamber::Init()
 {
     InitHitTuples();
     InitDigiTuples();
+    G4cout << "Initialized tuples for gas chamber detector..." << G4endl;
 }
 
 void TupleInitializerGasChamber::InitHitTuples()
@@ -43,7 +49,6 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleFColumn("mass"); // 1 4
         analysisManager->CreateNtupleFColumn("trkLen"); // 1 5
         analysisManager->CreateNtupleFColumn("eDepSum"); // 1 6
-        // analysisManager->CreateNtupleSColumn("part"); // 1 7
 
         // vector part
         auto tupleVector2 = tupleVectorManager->GetTupleVectorContainer("tree_gc2");
@@ -55,7 +60,6 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleFColumn("pz", tupleVector2->GetVectorRefF("pz"));
         analysisManager->CreateNtupleFColumn("eDep", tupleVector2->GetVectorRefF("eDep"));
         analysisManager->CreateNtupleFColumn("t", tupleVector2->GetVectorRefF("t"));
-        // analysisManager->CreateNtupleFColumn("q", tupleVector2->GetVectorRefF("q"));
         analysisManager->CreateNtupleFColumn("stepLen", tupleVector2->GetVectorRefF("stepLen"));
         analysisManager->FinishNtuple();
     }
@@ -71,6 +75,13 @@ void TupleInitializerGasChamber::InitDigiTuples()
     try {
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         analysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
+        analysisManager->CreateNtupleIColumn("flag"); // 2 0 
+        analysisManager->CreateNtupleFColumn("Ek"); // 2 1 
+        analysisManager->CreateNtupleFColumn("xv"); // 2 2 
+        analysisManager->CreateNtupleFColumn("yv"); // 2 3 
+        analysisManager->CreateNtupleFColumn("zv"); // 2 4 
+        analysisManager->CreateNtupleFColumn("theta"); // 2 5 
+        analysisManager->CreateNtupleFColumn("trkLen"); // 2 5 
         analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
         analysisManager->CreateNtupleFColumn("tSig", tupleVector3->GetVectorRefF("tSig"));
         analysisManager->FinishNtuple();

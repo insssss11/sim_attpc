@@ -4,7 +4,7 @@
 #ifndef TupleInitilaizer_h
 #define TupleInitilaizer_h 1
 
-#include "ITupleInitializer.hh"
+#include "TupleInitializerBase.hh"
 #include "RunAction.hh"
 
 #include "AnalysisManager.hh"

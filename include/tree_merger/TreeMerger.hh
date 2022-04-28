@@ -18,8 +18,8 @@ class TreeMerger
 {
     public:
     TreeMerger();
-    
     TreeMerger &AddTreeNameTitle(const std::string &treeName, const std::string &treeTitle = "");
+    void ClearTreeNameTitles();
     
     void MergeRootFiles(const std::string &fileName, const std::vector<std::string> subFileNames);
 

@@ -83,7 +83,7 @@ void GasChamberSD::InitDigitizer()
         container->GetParamD("margin"));
     digitizer->SetGasMixtureProperties(gasMixtureProperties);
     digitizer->SetPadMargin(container->GetParamD("margin"));
-    digitizer->SetChargeMultiplication(container->GetParamD("multiplication"));
+    digitizer->SetChargeMultiplication(container->GetParamD("gainMean"), container->GetParamD("gainStd"));
     digitizerManager->AddNewModule(digitizer);
 }
 
@@ -177,7 +177,8 @@ void GasChamberSD::FillDigiTuples()
         // digitization
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         digitizer->FillPadsInfo(fHitsCollection);
-        digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));    
+        digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));
+        digitizer->FillTimeOnPads(tupleVector3->GetVectorRefF("tSig"));
         analysisManager->AddNtupleRow(2);
         digitizer->ClearPads();
     }

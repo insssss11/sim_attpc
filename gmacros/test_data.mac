@@ -14,17 +14,17 @@
 /attpc/field/bField 2.5 0 0 tesla
 /attpc/output/activate true
 
-/attpc/gas/setStepLimit 0.1 mm
+/attpc/gas/setStepLimit 0.05 mm
 
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
 /attpc/output/setFileName test_data_evt1.root
-/run/beamOn 25000
+/run/beamOn 15000
 
 # simulate the case with no interested events(No alpha capture)
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName test_data_evt2.root
-/run/beamOn 25000
+/run/beamOn 15000
 
 /attpc/output/mergeFiles test_data_evt.root test_data_evt1.root test_data_evt2.root 
 
@@ -32,4 +32,4 @@
 /attpc/process/CarbonAlpha/activate false
 /attpc/output/setFileName test_data_bg.root
 /gun/number 10
-/run/beamOn 50000
+/run/beamOn 30000

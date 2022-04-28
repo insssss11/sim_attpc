@@ -38,6 +38,7 @@ const GasChamberDigi &GasChamberDigi::operator=(const GasChamberDigi &right)
 {
     padNum = right.GetPadNum();
     charge = right.GetCharge();
+    timeWeightedSum = right.timeWeightedSum;
     return *this;
 }
 
@@ -49,9 +50,9 @@ const G4TwoVector GasChamberDigi::GetPosition() const
 void GasChamberDigi::GetRange(G4double *min, G4double *max) const
 {
     min[0] = pos[0] - xHalf + margin;
-    max[0] = pos[0] + xHalf - margin;
-
     min[1] = pos[1] - yHalf + margin;
+
+    max[0] = pos[0] + xHalf - margin;
     max[1] = pos[1] + yHalf - margin; 
 }
 
@@ -64,7 +65,8 @@ G4bool GasChamberDigi::operator==(const GasChamberDigi &right) const
         xHalf == right.xHalf &&
         yHalf == right.yHalf &&
         padNum == right.GetPadNum() &&
-        charge == right.GetCharge();
+        charge == right.GetCharge() &&
+        timeWeightedSum == right.timeWeightedSum;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -83,7 +85,14 @@ void GasChamberDigi::SetMargin(G4double margin)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigi::AddCharge(G4float _charge)
+void GasChamberDigi::AddWeightedTime(G4double time, G4double charge)
+{
+    timeWeightedSum += time*charge;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void GasChamberDigi::AddCharge(G4double _charge)
 {
     charge += _charge;
 }
@@ -93,6 +102,7 @@ void GasChamberDigi::AddCharge(G4float _charge)
 void GasChamberDigi::Clear()
 {
     charge = 0.;
+    timeWeightedSum = 0.;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

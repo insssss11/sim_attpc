@@ -9,7 +9,7 @@ TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase(
         tupleVectorManager->AddTupleVectorContainer("tree_gc2")
             ->AddVectorsF("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
         tupleVectorManager->AddTupleVectorContainer("tree_gc3")
-            ->AddVectorsF("qdc");
+            ->AddVectorsF("qdc", "tSig");
     }
     catch(Exception const &e)
     {
@@ -72,6 +72,7 @@ void TupleInitializerGasChamber::InitDigiTuples()
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         analysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
         analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
+        analysisManager->CreateNtupleFColumn("tSig", tupleVector3->GetVectorRefF("tSig"));
         analysisManager->FinishNtuple();
     }
     catch(Exception const &e)

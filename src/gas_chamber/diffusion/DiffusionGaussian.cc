@@ -30,7 +30,7 @@ unsigned int DiffusionGaussian::NDim() const
     return 2;
 }
 
-G4double DiffusionGaussian::GetCloudStd() const
+G4double DiffusionGaussian::GetClusterStd() const
 {
     return Sqrt(stdstd);
 }
@@ -64,8 +64,7 @@ void DiffusionGaussian::SetPosition(G4double x, G4double y)
 
 void DiffusionGaussian::SetDriftLen(G4double l)
 {
-    // diffusion spread = D_t*sqrt(length), in the unit of D_t : cm^(1/2)
-    stdstd = diffusionCoef*diffusionCoef*cm*l + intrinsicStd*intrinsicStd;
+    stdstd = diffusionCoef*diffusionCoef*l + intrinsicStd*intrinsicStd;
 }
 
 double DiffusionGaussian::DoEval(const double *x) const

@@ -28,14 +28,15 @@ class GasChamberDigitizer : public G4VDigitizerModule
     ~GasChamberDigitizer();    
 
     void SetGasMixtureProperties(GasMixtureProperties *GasMixtureProperties);
-    void SetChargeMultiplication(G4double gain);
+    void SetChargeMultiplication(G4double gainMean, G4double gainStd);
     void SetFullScaleRange(G4double fsr);
     void SetThreshold(G4double threshold);
     void SetPadPlaneCenter(const G4ThreeVector &pos);
     void SetPadMargin(G4double margin);  
 
     void FillChargeOnPads(std::vector<G4float> &vector) const;
-    
+    void FillTimeOnPads(std::vector<G4float> &vector) const;
+
     void Digitize();
     void ClearPads();
     void FillPadsInfo(const GasChamberHitsCollection* hitscollection);
@@ -44,13 +45,23 @@ class GasChamberDigitizer : public G4VDigitizerModule
     void Init();
     void InitPads();
     void InitDiffusion();
+
+    // Physical quantities with fluctuation
+    G4double DiffusedDriftLen(G4double driftLen) const;
+    G4double MultiplicatedCharge(G4double clusterSize) const;
+    // check a pad is close enough to center electron cluster
+    G4bool CheckWorthIntegrate(const GasChamberDigi* pad, Double_t cluseterStd, Double_t xe, Double_t ye);
     private:
     void FillPadsTrack(const GasChamberHit *hit);
     void FillPadsStep(const G4ThreeVector &ePos, G4double eDep);
 
     private:
+    // for the integration of 2D gaussian on readout x-y plane
     std::unique_ptr<ROOT::Math::IntegratorMultiDim> totalChargeIntegrator;
     std::unique_ptr<DiffusionGaussian> diffusion;
+
+    // for the diffusion along longitudinal direction.
+    G4double diffusionL, driftVel;
 
     GasMixtureProperties *gasMixtureProperties;
     G4double fsr;
@@ -61,10 +72,12 @@ class GasChamberDigitizer : public G4VDigitizerModule
     std::vector<std::vector<GasChamberDigi>> *readoutPads;
 
     G4double adcThreshold;
-    G4double chargeGain;
+    G4double gainMean;
+    G4double gainStd;
 
     GasChamberDigitsCollection*  digitsCollection;
     GasChamberDigitizerMessenger* digiMessenger;
+
 };
 
 #endif

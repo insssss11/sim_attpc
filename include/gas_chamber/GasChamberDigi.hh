@@ -25,11 +25,15 @@ class GasChamberDigi : public G4VDigi
     const G4TwoVector GetPosition() const;
     void GetRange(G4double *min, G4double *max) const;
     G4int GetPadNum() const { return padNum; }
-    G4float GetCharge() const { return charge; }
+    G4float GetCharge() const { return static_cast<G4double>(charge);}
+    G4float GetTime() const {return static_cast<G4double>(timeWeightedSum/charge);}
+    G4double GetMargin() const {return margin;}
 
     void SetPadNum(int num);
     void SetMargin(const G4double margin);
-    void AddCharge(G4float _charge);
+    // add time weighted by charge
+    void AddWeightedTime(G4double _time, G4double _charge);
+    void AddCharge(G4double _charge);
 
     void Clear();
     void Draw();
@@ -39,7 +43,9 @@ class GasChamberDigi : public G4VDigi
     const G4double xHalf, yHalf;
     G4double margin;
     G4int padNum;
-    G4float charge;
+
+    G4double charge;
+    G4double timeWeightedSum;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

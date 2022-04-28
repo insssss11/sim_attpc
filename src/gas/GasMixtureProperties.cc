@@ -266,7 +266,7 @@ G4double GasMixtureProperties::GetI() const
 
 G4double GasMixtureProperties::GetDriftVelocity() const
 {
-    return 1e3*gasPhysicalProperties.driftVel;
+    return 1e3*gasPhysicalProperties.driftVel > 0 ? 1e3*gasPhysicalProperties.driftVel : -1e3*gasPhysicalProperties.driftVel;
 }
 
 G4double GasMixtureProperties::GetTransverseDiffusion() const
@@ -300,9 +300,9 @@ void GasMixtureProperties::DumpProperties() const
     printf("Garfield++ Gas File                : %20s\n", gasFileName.substr(gasFileName.find_last_of("/") + 1, string::npos).c_str());
     printf("Mean Energy per Electron Pair      : %20.2f eV\n", GetW()/eV);
     printf("Mean Excitation Energy             : %20.2f eV\n", GetI()/eV);
-    printf("Drift Velocity                     : %20.2e cm/u\n", GetDriftVelocity());
-    printf("Transverse Diffusion Coefficient   : %20.2e cm^(1/2)\n", GetLongitudinalDiffusion());
-    printf("Longitudinal Diffusion Coefficient : %20.2e cm^(1/2)\n", GetTransverseDiffusion());
+    printf("Drift Velocity                     : %20.2e cm/us\n", GetDriftVelocity());
+    printf("Transverse Diffusion Coefficient   : %20.2e cm^(1/2)\n", GetTransverseDiffusion());
+    printf("Longitudinal Diffusion Coefficient : %20.2e cm^(1/2)\n", GetLongitudinalDiffusion());
     printf("Attachment Coefficient             : %20.2e cm^(-1)\n", GetElectronAttachment());
     printf("-----------------------------------------------------------------------------------------------------------------------\n");
 }

@@ -12,7 +12,7 @@ class DiffusionGaussian : public ROOT::Math::IBaseFunctionMultiDim
     virtual DiffusionGaussian *Clone() const override;
     virtual unsigned int NDim() const override;
 
-    G4double GetCloudStd() const;
+    G4double GetClusterStd() const;
     G4double GetCharge() const;
     void SetDiffusionCoef(G4double diff);
     void SetIntrinsicDiff(G4double std);

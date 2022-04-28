@@ -9,9 +9,10 @@ chamberZ        double      80
 nPadX           int         40
 nPadY           int         40
 margin          double      0.1
-multiplication  double      1e5
-fullScaleRange  double      400e-12
-gemDiffusionStd double      0.06753
+gainMean        double      4739.36
+gainStd         double      5312.24
+gemDiffusionStd double      0.07198
+fullScaleRange  double      20e-12
 
 # position and dimensions of gas volume
 gasPosX         double      0

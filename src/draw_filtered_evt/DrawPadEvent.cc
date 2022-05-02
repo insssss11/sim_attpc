@@ -96,9 +96,9 @@ void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
 
 void DrawPadEvent::DrawGrid()
 {
-    for(size_t x = 1;x < nPadX;++x)
+    for(int x = 1;x < nPadX;++x)
         grid->DrawLine(padPlaneX*x/nPadX, 0., padPlaneX*x/nPadX, padPlaneY);
-    for(size_t y = 1;y < nPadY;++y)
+    for(int y = 1;y < nPadY;++y)
         grid->DrawLine(0., padPlaneY*y/nPadY, padPlaneX, padPlaneY*y/nPadY);
 }
 

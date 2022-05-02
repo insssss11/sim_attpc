@@ -82,9 +82,8 @@ namespace TrainingDataTypes {
     typedef struct {
         std::unique_ptr<TTreeReaderValue<int> > flag;
         std::unique_ptr<TTreeReaderValue<float> > Ek;
-        std::unique_ptr<TTreeReaderValue<float> > xv;
-        std::unique_ptr<TTreeReaderValue<float> > yv;
-        std::unique_ptr<TTreeReaderValue<float> > zv;
+        std::unique_ptr<TTreeReaderValue<float> > pxv, pyv, pzv;
+        std::unique_ptr<TTreeReaderValue<float> > xv, yv, zv;
         std::unique_ptr<TTreeReaderValue<float> > theta;
         std::unique_ptr<TTreeReaderValue<float> > trkLen;
         std::unique_ptr<TTreeReaderValue<std::vector<float> > > qdc;
@@ -95,6 +94,7 @@ namespace TrainingDataTypes {
     typedef struct {
         int flag;
         float Ek;
+        float pxv, pyv, pzv;
         float xv, yv, zv;
         float theta;
         float trkLen;

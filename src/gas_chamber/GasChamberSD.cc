@@ -71,7 +71,10 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
         fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
     }
     hce->AddHitsCollection(fHCID, fHitsCollection);
-    flag = 0, theta = 0., Ek = 0., xv = 0., yv = 0., zv = 0., trkLen = 0.;
+    flag = 0, Ek = 0.;
+    pxv = 0., pyv = 0., pzv = 0.;
+    xv = 0., yv = 0., zv = 0.;
+    theta = 0., trkLen = 0.;
     fNbOfStepPoints = 0;
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
@@ -121,6 +124,9 @@ G4bool GasChamberSD::ProcessHits(G4Step *step, G4TouchableHistory *)
                 xv = pos.getZ() - padCenterX + padPlaneX/2;
                 yv = pos.getY() - padCenterY + padPlaneY/2;
                 zv = pos.getX() - padCenterZ + padPlaneZ/2;
+                pxv = trackSec->GetMomentum().getZ();
+                pyv = trackSec->GetMomentum().getY();
+                pzv = trackSec->GetMomentum().getX();
             }
     
     // if end or geometry boundary of Oxygen track
@@ -197,11 +203,14 @@ void GasChamberSD::FillDigiTuples()
         digitizer->FillPadsInfo(fHitsCollection);
         analysisManager->FillNtupleIColumn(2, 0, flag);
         analysisManager->FillNtupleFColumn(2, 1, Ek);
-        analysisManager->FillNtupleFColumn(2, 2, xv);
-        analysisManager->FillNtupleFColumn(2, 3, yv);
-        analysisManager->FillNtupleFColumn(2, 4, zv);
-        analysisManager->FillNtupleFColumn(2, 5, theta);
-        analysisManager->FillNtupleFColumn(2, 6, trkLen);
+        analysisManager->FillNtupleFColumn(2, 2, pxv);
+        analysisManager->FillNtupleFColumn(2, 3, pyv);
+        analysisManager->FillNtupleFColumn(2, 4, pzv);
+        analysisManager->FillNtupleFColumn(2, 5, xv);
+        analysisManager->FillNtupleFColumn(2, 6, yv);
+        analysisManager->FillNtupleFColumn(2, 7, zv);
+        analysisManager->FillNtupleFColumn(2, 8, theta);
+        analysisManager->FillNtupleFColumn(2, 9, trkLen);
         digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));
         digitizer->FillTimeOnPads(tupleVector3->GetVectorRefF("tSig"));
         analysisManager->AddNtupleRow(2);

@@ -70,7 +70,7 @@ class GenTrainingData
 
     private:
 
-    G4float fullScaleRange;
+    G4float chargeFSR, timeFSR, timeOffset;
 
     Long64_t nEvents;
     size_t inputSize;

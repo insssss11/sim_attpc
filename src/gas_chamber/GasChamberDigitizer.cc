@@ -234,7 +234,7 @@ void GasChamberDigitizer::SetChargeMultiplication(G4double _gainMean, G4double _
 
 void GasChamberDigitizer::SetFullScaleRange(G4double _fsr)
 {
-    fsr = _fsr;
+    chargeFSR = _fsr;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

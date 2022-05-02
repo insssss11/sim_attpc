@@ -28,11 +28,13 @@ class GasChamberDigitizer : public G4VDigitizerModule
     ~GasChamberDigitizer();    
 
     void SetGasMixtureProperties(GasMixtureProperties *GasMixtureProperties);
+    
     void SetChargeMultiplication(G4double gainMean, G4double gainStd);
     void SetFullScaleRange(G4double fsr);
     void SetThreshold(G4double threshold);
+
     void SetPadPlaneCenter(const G4ThreeVector &pos);
-    void SetPadMargin(G4double margin);  
+    void SetPadMargin(G4double margin);
 
     void FillChargeOnPads(std::vector<G4float> &vector) const;
     void FillTimeOnPads(std::vector<G4float> &vector) const;
@@ -64,7 +66,7 @@ class GasChamberDigitizer : public G4VDigitizerModule
     G4double diffusionL, driftVel;
 
     GasMixtureProperties *gasMixtureProperties;
-    G4double fsr;
+    G4double chargeFSR;
     const G4double padPlaneX, padPlaneY, chamberH;
     const G4int nPadX, nPadY;
     G4double padMargin;

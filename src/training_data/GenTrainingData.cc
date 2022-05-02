@@ -53,7 +53,10 @@ void GenTrainingData::InitDataInfo()
     inputY = parContainer->GetParamI("nPadY");
     inputSize = inputX*inputY;
     input.reserve(inputSize);
-    fullScaleRange = parContainer->GetParamD("fullScaleRange");
+    chargeFSR = parContainer->GetParamD("chargeFSR");
+    timeFSR = parContainer->GetParamD("timeFSR");
+    timeOffset = parContainer->GetParamD("timeOffset");
+
     SetNtrkSecondaryMax(6);
 }
 
@@ -82,6 +85,9 @@ void GenTrainingData::InitDataReaderValue(DataReaderValue &dataReaderValue, Data
 {
     dataReaderValue.flag = make_unique<TTreeReaderValue<int> >(*dataReader.reader, "flag");
     dataReaderValue.Ek = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "Ek");
+    dataReaderValue.pxv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pxv");
+    dataReaderValue.pyv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pyv");
+    dataReaderValue.pzv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pzv");
     dataReaderValue.xv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "xv");
     dataReaderValue.yv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "yv");
     dataReaderValue.zv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "zv");
@@ -192,10 +198,16 @@ void GenTrainingData::ReadAndMergeInput()
         throw GenTrainingDataException("ReadAndMergeInput()", PAD_SIZES_MISMATCH);
     for(size_t i = 0;i < inputSize;++i)
     {
-        G4float qdc = (qdcEvt.at(i) + qdcBg.at(i)) > fullScaleRange ? 1. : (qdcEvt.at(i) + qdcBg.at(i))/fullScaleRange;
+        G4float qdc = (qdcEvt.at(i) + qdcBg.at(i)) > chargeFSR ? 1. : (qdcEvt.at(i) + qdcBg.at(i))/chargeFSR;
         if(qdc > 1e-4)
         {
             G4float time = (qdcEvt.at(i)*tSigEvt.at(i) + qdcBg.at(i)*tSigBg.at(i))/(qdcEvt.at(i) + qdcBg.at(i));
+            if(time < timeOffset)
+                time = 0.;
+            else if(time > timeOffset + timeFSR)
+                time = 1.;
+            else
+                time = (time - timeOffset)/timeFSR;
             input.emplace_back(i, make_pair(qdc, time));
         }
     }
@@ -205,6 +217,9 @@ void GenTrainingData::ReadTracks()
 {
     output.flag = **evtReaderValues.flag;
     output.Ek = **evtReaderValues.Ek;
+    output.pxv = **evtReaderValues.pxv;
+    output.pyv = **evtReaderValues.pyv;
+    output.pzv = **evtReaderValues.pzv;
     output.xv = **evtReaderValues.xv;
     output.yv = **evtReaderValues.yv;
     output.zv = **evtReaderValues.zv;
@@ -214,17 +229,17 @@ void GenTrainingData::ReadTracks()
 
 void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 {
-    stream << "# fullScaleRange is in the unit of pC" << endl;
+    stream << "# charge is in the unit of pC, time is in the unit of ns" << endl;
     stream << "# A row of data consists of pairs of none-zero indice(starting index = 1) and their values." << endl;
     stream << setw(10) << "nEvents" << setw(15) << "inputSize"  << setw(10)
-        << "inputX" << setw(10) << "inputY"  << setw(20) << "fullScaleRange" << endl;
-    stream << setw(10) << GetEventNum() << setw(15) << inputSize << setw(10)
-        << inputX << setw(10) << inputY  << setw(20) << fullScaleRange*1e12 << endl;
+        << "inputX" << setw(10) << "inputY"  << setw(20) << "chargeFSR"  << setw(10) << "timeFSR" << setw(15) << "timeOffset" <<  endl;
+    stream << setw(10) << GetEventNum() << setw(15) << inputSize << setw(10) 
+        << inputX << setw(10) << inputY  << setw(20) << chargeFSR*1e12 << setw(10) << timeFSR << setw(15) << timeOffset <<  endl;
 }
 
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 {
-    stream << "# [Reaction Flag] [Ek] [xv] [yv] [zv] [theta] [trkLen]" << endl;
+    stream << "# [Reaction Flag] [Ek] [pxv] [pyv] [pzv] [xv] [yv] [zv] [theta] [trkLen]" << endl;
     stream << setw(10) << "nEvents" << G4endl;
     stream << setw(10) << GetEventNum() << G4endl;;
 }
@@ -240,10 +255,13 @@ void GenTrainingData::WriteOutputData(std::ofstream &stream)
 {
     stream << output.flag << " "
     << output.Ek << " "
+    << output.pxv << " "
+    << output.pyv << " "
+    << output.pzv << " "
     << output.xv << " "
     << output.yv << " "
     << output.zv << " "
-    << output.theta << " "
+    << output.theta*180./3.141592 << " "
     << output.trkLen << " " << endl;
 }
 

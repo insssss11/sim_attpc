@@ -76,12 +76,15 @@ void TupleInitializerGasChamber::InitDigiTuples()
         auto tupleVector3 = tupleVectorManager->GetTupleVectorContainer("tree_gc3");
         analysisManager->CreateNtuple("tree_gc3", "gas chamber digitization data");
         analysisManager->CreateNtupleIColumn("flag"); // 2 0 
-        analysisManager->CreateNtupleFColumn("Ek"); // 2 1 
-        analysisManager->CreateNtupleFColumn("xv"); // 2 2 
-        analysisManager->CreateNtupleFColumn("yv"); // 2 3 
-        analysisManager->CreateNtupleFColumn("zv"); // 2 4 
-        analysisManager->CreateNtupleFColumn("theta"); // 2 5 
-        analysisManager->CreateNtupleFColumn("trkLen"); // 2 5 
+        analysisManager->CreateNtupleFColumn("Ek"); // 2 1
+        analysisManager->CreateNtupleFColumn("pxv"); // 2 2 
+        analysisManager->CreateNtupleFColumn("pyv"); // 2 3 
+        analysisManager->CreateNtupleFColumn("pzv"); // 2 4 
+        analysisManager->CreateNtupleFColumn("xv"); // 2 5 
+        analysisManager->CreateNtupleFColumn("yv"); // 2 6 
+        analysisManager->CreateNtupleFColumn("zv"); // 2 7 
+        analysisManager->CreateNtupleFColumn("theta"); // 2 8 
+        analysisManager->CreateNtupleFColumn("trkLen"); // 2 9 
         analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
         analysisManager->CreateNtupleFColumn("tSig", tupleVector3->GetVectorRefF("tSig"));
         analysisManager->FinishNtuple();

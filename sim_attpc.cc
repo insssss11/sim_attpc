@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     CLHEP::HepRandom::setTheSeed(seed);
     // Load parameter files
-    ParamContainerTable::GetBuilder()->BuildFromConfigFile(configureFile );
+    ParamContainerTable::GetBuilder()->BuildFromConfigFile(configureFile);
     ParamContainerTable::Instance()->DumpTable();
 
     // Construct the default run manager (sequential or multi-thread mode)

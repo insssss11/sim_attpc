@@ -26,6 +26,10 @@ void TreeMergerException::InitErrorMessage()
             break;
         case TREE_NOT_FOUND:
             message = "Failed to find a tree from root file : " + GetArgument(0);
+            break;
+        case MERGED_TREE_EMPTY:
+            message = "Merged tree is empty : " + GetArgument(0);
+            break;
         case OK:
             break;
         default:

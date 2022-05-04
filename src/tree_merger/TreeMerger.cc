@@ -87,7 +87,6 @@ void TreeMerger::CloseSubFiles()
 
 TTree *TreeMerger::MergeTrees(const string &treeName, const string &treeTitle)
 {
-
     treeLists->Clear();
     for(auto &threadFile : openedSubFiles)
     {
@@ -96,6 +95,8 @@ TTree *TreeMerger::MergeTrees(const string &treeName, const string &treeTitle)
     }
     masterFile->cd();
     TTree *treeMerged = TTree::MergeTrees(treeLists.get());
+    if(treeMerged == nullptr)
+        throw TreeMergerException("TreeMerger::MergeTrees", MERGED_TREE_EMPTY, treeName);
     treeMerged->SetNameTitle(treeName.c_str(), treeTitle.c_str());
     return treeMerged;  
 }

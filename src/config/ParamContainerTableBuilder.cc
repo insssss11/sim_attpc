@@ -63,6 +63,8 @@ void ParamContainerTableBuilder::ReadConfigureFile(const G4String &configName)
     configIn.open(configName, ios_base::in);
     if(!configIn.is_open())
         throw ParamContainerTableException("ReadConfigureFile(const G4String &)", CONFIG_FILE_OPEN_FAILURE, configName);
+    string configDir = realpath(configName.c_str(), NULL);
+    configDir = configDir.substr(0, configDir.find_last_of('/'));
     while(!configIn.eof())
     {
         getline(configIn, line);
@@ -73,7 +75,7 @@ void ParamContainerTableBuilder::ReadConfigureFile(const G4String &configName)
         ss >> containerReaderType >> containerName >> fileName ;
         if(containerReaderType.empty())
             continue;
-        AddParamContainer(containerReaderType, containerName, "parameters/" + fileName);
+        AddParamContainer(containerReaderType, containerName, configDir + "/" + fileName);
     }
     configIn.close();
 }

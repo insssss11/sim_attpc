@@ -11,6 +11,7 @@ namespace TreeMergerErrorNum {
         THREAD_FILE_OPEN_FAILURE,
         THREAD_FILE_REMOVE_FAILURE,
         TREE_NOT_FOUND,
+        MERGED_TREE_EMPTY,
         OK = 9999
     };
 }

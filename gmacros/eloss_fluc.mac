@@ -1,13 +1,13 @@
-# demonstration of ionranges (dE/dx, projected ranges etc...)
-# MUST BE EXECUTED WITH "paramter/bragg_peak/config.txt"
+# demonstration of energy loss fluctuation
+# MUST BE EXECUTED WITH "paramter/elos_fucl/config.txt"
 # primary partice setting
 /gun/particle ion
 /gun/ion 8 16 8 
-/gun/energy 5 MeV
+/gun/energy 30 MeV
 
 /attpc/gun/setPosX 0. mm
 /attpc/gun/setPosY 0. mm
-/attpc/gun/setPosZ -240. mm
+/attpc/gun/setPosZ -.50001 mm
 
 /attpc/gasChamber/activateDigiTuple false
 /attpc/physics/activateDeltaRay false
@@ -21,7 +21,7 @@
 /attpc/field/bField 0. 0. 0. tesla
 
 /attpc/gas/setMixture He 90 iC4H10 10 76
-#/attpc/gas/setStepLimit 1 mm
+#/attpc/gas/setStepLimit 0.1 mm
 
 /attpc/output/activate true
 /attpc/output/setFileName ionranges.root

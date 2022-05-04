@@ -204,7 +204,7 @@ void DetectorConstruction::BuildMagnet()
 void DetectorConstruction::BuildMagField()
 {
     auto vacuum = gasMaterialTable->FindGasMaterial("Vacuum");
-    const G4double rMagField = 150*mm, pDzMagField = 200*mm/2;
+    const G4double rMagField = paramContainer->GetParamD("magFieldRad"), pDzMagField = 200*mm/2;
     auto solidMagField = new G4Tubs("solidMagField", 0., rMagField, pDzMagField, 0., 360. * deg);
     fLogicMagField = new G4LogicalVolume(solidMagField, vacuum, "LogicMagField");
     fLogicMagField->SetUserLimits(fUserLimits);

@@ -1,6 +1,6 @@
 /// \file GasChamberSD.cc
 /// \brief Implementation of the GasChamberSD class
-
+#include "tuple/TupleInitializerBase.hh"
 #include "gas_chamber/GasChamberSD.hh"
 #include "gas_chamber/GasChamberHit.hh"
 
@@ -78,6 +78,9 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
     fNbOfStepPoints = 0;
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
+    TupleInitializerBase::ActivateTuple("tree_gc1", hitTupleActivated);
+    TupleInitializerBase::ActivateTuple("tree_gc2", hitTupleActivated);
+    TupleInitializerBase::ActivateTuple("tree_gc3", digiTupleActivated);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -186,6 +189,7 @@ void GasChamberSD::FillHitTuples()
         tupleVector2->FillVectorF("py", hit->GetMomY());
         tupleVector2->FillVectorF("pz", hit->GetMomZ());
         tupleVector2->FillVectorF("eDep", hit->GetEdep());
+        tupleVector2->FillVectorF("q", hit->GetCharge());
         tupleVector2->FillVectorF("t", hit->GetTime());
         tupleVector2->FillVectorF("stepLen", hit->GetStepLen());
         analysisManager->AddNtupleRow(1);
@@ -254,19 +258,16 @@ void GasChamberSD::PrintEndOfEvents()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "tuple/TupleInitializerBase.hh"
 
 void GasChamberSD::ActivateHitTuples(G4bool activate)
 {
     hitTupleActivated = activate;
-    TupleInitializerBase::ActivateTuple("tree_gc1", activate);
-    TupleInitializerBase::ActivateTuple("tree_gc2", activate);
+
 }
 
 void GasChamberSD::ActivateDigiTuples(G4bool activate)
 {
     digiTupleActivated = activate;
-    TupleInitializerBase::ActivateTuple("tree_gc3", activate);
 }
 
 
@@ -274,13 +275,13 @@ void GasChamberSD::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/gasChamber/", "Gas Chamger SD control");
     // auto fVerboseCmd = fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
-    auto commandHitTuple = fMessenger->DeclareMethod("activateHitTuple", &GasChamberSD::ActivateHitTuples, "Activate hit tuple(s)");
+    auto commandHitTuple = fMessenger->DeclareProperty("activateHitTuple", hitTupleActivated, "Activate hit tuple(s)");
     fMessenger->DeclareProperty("verbose", verboseLevel, "Set verbosity");
     commandHitTuple.SetParameterName("hitTupleActivated", true);
     commandHitTuple.SetDefaultValue("true");
     commandHitTuple.SetGuidance("Activate writing hit tuple(s)");
 
-    auto commandDigiTuple = fMessenger->DeclareMethod("activateDigiTuple", &GasChamberSD::ActivateDigiTuples, "Activate digi tuple(s)");
+    auto commandDigiTuple = fMessenger->DeclareProperty("activateDigiTuple", digiTupleActivated, "Activate digi tuple(s)");
     commandDigiTuple.SetParameterName("digiTupleActivated", true);
     commandDigiTuple.SetDefaultValue("true");
     commandDigiTuple.SetGuidance("Activate writing digi tuple(s)");    

@@ -60,6 +60,7 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleFColumn("pz", tupleVector2->GetVectorRefF("pz"));
         analysisManager->CreateNtupleFColumn("eDep", tupleVector2->GetVectorRefF("eDep"));
         analysisManager->CreateNtupleFColumn("t", tupleVector2->GetVectorRefF("t"));
+        analysisManager->CreateNtupleFColumn("q", tupleVector2->GetVectorRefF("q"));
         analysisManager->CreateNtupleFColumn("stepLen", tupleVector2->GetVectorRefF("stepLen"));
         analysisManager->FinishNtuple();
     }

@@ -295,8 +295,9 @@ void GasMixtureProperties::DumpProperties() const
     printf("Gas Mixture Name                   : %20s\n", gasMixtureName.substr(0, gasMixtureName.find_first_of("_")).c_str());
     printf("Pressure                           : %20d torr\n", pressure);
     printf("Temperature                        : %20.2f K\n", temperature/kelvin);
-    printf("Electric Field                     :      (%3.0f, %3.0f, %3.0f) V/cm\n", eField[0], eField[1], eField[2]);
-    printf("Magnetic Field                     :      (%1.1f, %1.1f, %1.1f) T\n", bField[0]/tesla, bField[1]/tesla, bField[2]/tesla);
+    printf("Mass Density                       : %20.6f g/cm^3\n", gasMagboltz->GetMassDensity());
+    printf("Electric Field                     : (%3.0f, %3.0f, %3.0f) V/cm\n", eField[0], eField[1], eField[2]);
+    printf("Magnetic Field                     : (%1.1f, %1.1f, %1.1f) T\n", bField[0]/tesla, bField[1]/tesla, bField[2]/tesla);
     printf("Garfield++ Gas File                : %20s\n", gasFileName.substr(gasFileName.find_last_of("/") + 1, string::npos).c_str());
     printf("Mean Energy per Electron Pair      : %20.2f eV\n", GetW()/eV);
     printf("Mean Excitation Energy             : %20.2f eV\n", GetI()/eV);

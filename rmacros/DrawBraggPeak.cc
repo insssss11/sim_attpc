@@ -68,18 +68,18 @@ int DrawBraggPeak(const char *fileName)
     
     FillData(Nstep, stepLen, eDep, trkLen, dEdX);
 
-    float trkLenMax = *std::max_element(trkLen.begin(), trkLen.end());
-    float dEdXmax = *std::max_element(dEdX.begin(), dEdX.end());
+    float trkLenMax = ceil(*std::max_element(trkLen.begin(), trkLen.end())/10.)*15.;
+    float dEdXmax = ceil(*std::max_element(dEdX.begin(), dEdX.end())*1.5);
     float zmin = z.front() - stepLen.front();
     float pzmax = pz.front();
-    TH2D *hist1 = new TH2D("hist1", "hist1", 100, 0, 10., 100, 0, 12);
-    hist1->SetTitle("Bragg Curve of 4 MeV {}^{12}_{ 6}C^{+4} in He(90)/Ar(10);trkLen (mm);d#it{E}/d#it{x} (MeV/#it{cm})");
+    TH2D *hist1 = new TH2D("hist1", "hist1", 100, 0, trkLenMax, 100, 0, dEdXmax);
+    hist1->SetTitle("Bragg Curve of 5 MeV {}^{16}_{ 8}O^{8+} in He(90)/Ar(10) 0.1 atm;Path Length[mm];d#it{E}/d#it{x}[MeV/#it{cm}]");
 
-    TH2D *hist2 = new TH2D("hist2", "hist2", 100, 10, 1.2, 100, 0, 12);
-    hist2->SetTitle("Momentum vs Stopping Power;Momentum (MeV/c);d#it{E}/d#it{x} (MeV/#it{cm})");
+    TH2D *hist2 = new TH2D("hist2", "hist2", 100, 10, 1.2, 100, 0, 30.);
+    hist2->SetTitle("Momentum vs Stopping Power;Momentum [MeV/#it{c}];#it{dE}/#it{dx}[MeV/#it{cm}]");
 
-    TH1D *hist3 = new TH1D("hist3", "hist3", 100, 5., 15.);
-    hist3->SetTitle("Projected Ranges of Ion;Projected Range(mm);cnt");
+    TH1D *hist3 = new TH1D("hist3", "hist3", 100, 3*trkLenMax/4, trkLenMax);
+    hist3->SetTitle("Projected Ranges of 5 MeV {}^{16}_{ 8}O^{8+} in He(90)/Ar(10) 0.1 atm;Projected Range[mm];cnt");
 
     reader.Restart();
     while(reader.Next())
@@ -101,7 +101,6 @@ int DrawBraggPeak(const char *fileName)
     auto c1 = new TCanvas("c1", "c1", 900, 900);
     c1->SetLeftMargin(0.125);
     hist1->Draw("zcol");
-
     auto c2 = new TCanvas("c2", "c2", 900, 900);
     c2->SetLeftMargin(0.125);
     c2->SetLogx();

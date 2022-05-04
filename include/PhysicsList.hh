@@ -20,6 +20,9 @@ class PhysicsList : public G4VModularPhysicsList
     virtual void ConstructProcess();
 
     private:
+    void ActivateDeltaRay(G4bool activate = true);
+    void ActivateRecoilNuclei(G4bool activate = true);
+
     void AddIonGasProcess();
     void AddCarbonAlphaProcess();
     void AddLimiterProcess();

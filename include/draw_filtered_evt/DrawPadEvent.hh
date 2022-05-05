@@ -4,6 +4,7 @@
 // #include "training_data/TrainingDataTypes.hh"
 #include "draw_filtered_evt/PadEvent.hh"
 #include "config/ParamContainerTable.hh"
+#include "draw_filtered_evt/DrawPadGrid.hh"
 
 #include "TPolyMarker.h"
 #include "TLine.h"
@@ -18,6 +19,7 @@
 class DrawPadEvent{
     public:
     DrawPadEvent(ParamContainerTable *paramTable);
+    ~DrawPadEvent();
     void Draw(const PadEvent &padEvent);
     
     private:
@@ -33,7 +35,7 @@ class DrawPadEvent{
     EColor GetTrackColor(const TrainingDataTypes::EParticle par);
     std::unique_ptr<TCanvas> canvas;
     std::unique_ptr<TH2D> qdcHist;
-    std::unique_ptr<TLine> grid;
+    std::unique_ptr<DrawPadGrid> gridDrawer;
     std::vector<TPolyMarker*> tracks;
     ParamContainerTable *paramTable;
 

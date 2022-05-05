@@ -37,7 +37,7 @@ TupleVectorContainer *TupleVectorManager::AddTupleVectorContainer(const std::str
 TupleVectorContainer *TupleVectorManager::GetTupleVectorContainer(const std::string &tupleName)
 {
     if(!ContainerExisits(tupleName))
-        throw TupleVectorManagerException("GetTupleVectorContainer(const std::string &)", TUPLE_DUPLICATED, tupleName);
+        throw TupleVectorManagerException("GetTupleVectorContainer(const std::string &)", TUPLE_NOT_FOUND, tupleName);
     else
         return &tupleVectorMap[tupleName];
 }

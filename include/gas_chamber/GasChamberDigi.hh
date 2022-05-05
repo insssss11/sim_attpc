@@ -32,7 +32,9 @@ class GasChamberDigi : public G4VDigi
         else
             return 0;}
     G4double GetMargin() const {return margin;}
+    G4bool IsHit() const {return isHit;}
 
+    void Hit();
     void SetPadNum(int num);
     void SetMargin(const G4double margin);
     // add time weighted by charge
@@ -43,6 +45,7 @@ class GasChamberDigi : public G4VDigi
     void Draw();
     void Print();
     private:
+    G4bool isHit;
     const G4TwoVector pos;
     const G4double xHalf, yHalf;
     G4double margin;

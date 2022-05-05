@@ -19,9 +19,12 @@ DrawPadEvent::DrawPadEvent(ParamContainerTable *paramTable)
     qdcHist->SetStats(false);
     for(size_t i = 0;i < trackBuffer;++i)
         tracks.push_back(new TPolyMarker);
-    grid = make_unique<TLine>();
-    grid->SetLineWidth(1);
-    grid->SetNDC(false);
+}
+
+DrawPadEvent::~DrawPadEvent()
+{
+    for(auto &markerPtr : tracks)
+        delete markerPtr;
 }
 
 void DrawPadEvent::InitPadDimensions()
@@ -33,6 +36,7 @@ void DrawPadEvent::InitPadDimensions()
     padPlaneY = container->GetParamD("chamberY");
     planeCenterX = container->GetParamD("chamberPosX");
     planeCenterY = container->GetParamD("chamberPosY");
+    gridDrawer = make_unique<DrawPadGrid>(nPadX, nPadY, padPlaneX, padPlaneY);
 }
 
 void DrawPadEvent::Draw(const PadEvent &padEvent)
@@ -67,7 +71,7 @@ void DrawPadEvent::DrawCharges(const PadEvent &padEvent)
         for(int x = 0;x < nPadX;++x)
             qdcHist->SetBinContent(x + 1, y + 1, 1e12*padEvent.qdc.at(x + y*nPadX));
     qdcHist->Draw("colz");
-    DrawGrid();
+    gridDrawer->Draw();
 }
 
 void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
@@ -92,14 +96,6 @@ void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
             cerr << e.what() << endl;
         }
     }
-}
-
-void DrawPadEvent::DrawGrid()
-{
-    for(int x = 1;x < nPadX;++x)
-        grid->DrawLine(padPlaneX*x/nPadX, 0., padPlaneX*x/nPadX, padPlaneY);
-    for(int y = 1;y < nPadY;++y)
-        grid->DrawLine(0., padPlaneY*y/nPadY, padPlaneX, padPlaneY*y/nPadY);
 }
 
 EColor DrawPadEvent::GetTrackColor(EParticle par)

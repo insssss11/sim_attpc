@@ -14,7 +14,7 @@ G4ThreadLocal G4Allocator<GasChamberDigi> *GasChamberDigiAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 GasChamberDigi::GasChamberDigi(const G4TwoVector &pos, const G4double xHalf, const G4double yHalf, G4double margin)
-    : G4VDigi(), pos(pos), xHalf(xHalf), yHalf(yHalf), margin(margin)
+    : G4VDigi(), isHit(false), pos(pos), xHalf(xHalf), yHalf(yHalf), margin(margin)
 {
 }
 
@@ -53,7 +53,7 @@ void GasChamberDigi::GetRange(G4double *min, G4double *max) const
     min[1] = pos[1] - yHalf + margin;
 
     max[0] = pos[0] + xHalf - margin;
-    max[1] = pos[1] + yHalf - margin; 
+    max[1] = pos[1] + yHalf - margin;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -69,7 +69,11 @@ G4bool GasChamberDigi::operator==(const GasChamberDigi &right) const
         timeWeightedSum == right.timeWeightedSum;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void GasChamberDigi::Hit()
+{
+    isHit = true;
+}
+
 
 void GasChamberDigi::SetPadNum(G4int num)
 {
@@ -102,6 +106,7 @@ void GasChamberDigi::AddCharge(G4double _charge)
 void GasChamberDigi::Clear()
 {
     charge = 0.;
+    isHit = false;
     timeWeightedSum = 0.;
 }
 

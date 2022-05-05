@@ -16,6 +16,6 @@ void TupleInitializerBase::RegisterTupleName(const std::string &name, const std:
 void TupleInitializerBase::ActivateTuple(const std::string &name, G4bool activate)
 {
     if(tupleActivated.find(name) == tupleActivated.end())
-        throw std::invalid_argument("Cannot find tuple named " + name + ". Failed to changed activation.");
+        throw std::invalid_argument("Cannot find tuple named " + name + ". Failed to change activation.");
     tupleActivated[name].second = activate;
 }

@@ -30,13 +30,14 @@ class GasChamberSD : public G4VSensitiveDetector
     private:
     void InitManagers();
     void InitDigitizer();
+    
     void FillHitTuples();
     void FillDigiTuples();
+    void FillHitHist(); // for hit dist histogram
+
     void PrintEndOfEvents();
     
     // for custom command
-    void ActivateHitTuples(G4bool Activate = true);
-    void ActivateDigiTuples(G4bool Activate = true);
     void DefineCommands();
 
     private:
@@ -61,6 +62,7 @@ class GasChamberSD : public G4VSensitiveDetector
 
     G4bool hitTupleActivated;
     G4bool digiTupleActivated;
+    G4bool hitHistActivated;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

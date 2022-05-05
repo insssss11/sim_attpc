@@ -42,15 +42,10 @@ void GasChamberSD::InitDigitizer()
     auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
     padPlaneX = container->GetParamD("chamberX"), padPlaneY = container->GetParamD("chamberY"), padPlaneZ = container->GetParamD("chamberZ");
     padCenterX = container->GetParamD("chamberPosX"), padCenterY = container->GetParamD("chamberPosY"), padCenterZ = container->GetParamD("chamberPosZ");
-    // Digitizer
-    digitizer = new GasChamberDigitizer(
-        "GasChamberDigitizer", container->GetParamD("chamberX"), container->GetParamD("chamberY"), container->GetParamD("chamberZ"),
-        container->GetParamI("nPadX"), container->GetParamI("nPadY"),
-        G4ThreeVector(container->GetParamD("chamberPosX"), container->GetParamD("chamberPosY"), container->GetParamD("chamberPosZ")),
-        container->GetParamD("margin"));
+    
+    // Digitizer    
+    digitizer = new GasChamberDigitizer("GasChamberDigitizer");
     digitizer->SetGasMixtureProperties(gasMixtureProperties);
-    digitizer->SetPadMargin(container->GetParamD("margin"));
-    digitizer->SetChargeMultiplication(container->GetParamD("gainMean"), container->GetParamD("gainStd"));
     digitizerManager->AddNewModule(digitizer);
 }
 
@@ -71,16 +66,22 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
         fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
     }
     hce->AddHitsCollection(fHCID, fHitsCollection);
+    
     flag = 0, Ek = 0.;
     pxv = 0., pyv = 0., pzv = 0.;
     xv = 0., yv = 0., zv = 0.;
     theta = 0., trkLen = 0.;
     fNbOfStepPoints = 0;
+    
     fEventId = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     fTrackId = -1;
+    
     TupleInitializerBase::ActivateTuple("tree_gc1", hitTupleActivated);
     TupleInitializerBase::ActivateTuple("tree_gc2", hitTupleActivated);
     TupleInitializerBase::ActivateTuple("tree_gc3", digiTupleActivated);
+    TupleInitializerBase::ActivateTuple("tree_gc4", hitHistActivated);
+
+    digitizer->UpdateGasProperties();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -256,21 +257,6 @@ void GasChamberSD::PrintEndOfEvents()
     G4cout.precision(prec);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-void GasChamberSD::ActivateHitTuples(G4bool activate)
-{
-    hitTupleActivated = activate;
-
-}
-
-void GasChamberSD::ActivateDigiTuples(G4bool activate)
-{
-    digiTupleActivated = activate;
-}
-
-
 void GasChamberSD::DefineCommands()
 {
     fMessenger = new G4GenericMessenger(this, "/attpc/gasChamber/", "Gas Chamger SD control");
@@ -284,5 +270,5 @@ void GasChamberSD::DefineCommands()
     auto commandDigiTuple = fMessenger->DeclareProperty("activateDigiTuple", digiTupleActivated, "Activate digi tuple(s)");
     commandDigiTuple.SetParameterName("digiTupleActivated", true);
     commandDigiTuple.SetDefaultValue("true");
-    commandDigiTuple.SetGuidance("Activate writing digi tuple(s)");    
+    commandDigiTuple.SetGuidance("Activate writing digi tuple(s)");   
 }

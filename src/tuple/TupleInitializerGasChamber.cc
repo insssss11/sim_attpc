@@ -8,13 +8,16 @@ using namespace std;
 TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase("gas_chamber")
 {
     RegisterTupleName("tree_gc1", "gas chamber hit data saved by event");
-    RegisterTupleName("tree_gc2", "gas chamber hit data saved by event");
-    RegisterTupleName("tree_gc3", "gas chamber hit data saved by event");
+    RegisterTupleName("tree_gc2", "gas chamber hit data saved by trk");
+    RegisterTupleName("tree_gc3", "gas chamber digitization data");
+    RegisterTupleName("tree_gc4", "gas chamber hit distribution data");
     try {
         tupleVectorManager->AddTupleVectorContainer("tree_gc2")
             ->AddVectorsF("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
         tupleVectorManager->AddTupleVectorContainer("tree_gc3")
             ->AddVectorsF("qdc", "tSig");
+        tupleVectorManager->AddTupleVectorContainer("tree_gc4")
+            ->AddVectorsI("hits");
     }
     catch(Exception const &e)
     {

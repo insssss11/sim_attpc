@@ -1,6 +1,9 @@
 /// \file RunAction.cc
 /// \brief Implementation of the RunAction class
 
+#include "tuple/TupleInitializerBase.hh"
+#include "tuple/TupleVectorManager.hh"
+
 #include "RunAction.hh"
 #include "EventAction.hh"
 
@@ -8,6 +11,8 @@
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+
+#include <fstream>
 
 using namespace std;
 
@@ -48,9 +53,48 @@ void RunAction::EndOfRunAction(const G4Run * /*run*/)
     fAnalysisManager->Clear();
     if(fAnaActivated && G4RunManager::GetRunManager()->GetRunManagerType() == G4RunManager::RMType::masterRM)
         MergeThreadTrees();
+    WriteHitHistTxt();
 }
 
-#include "tuple/TupleInitializerBase.hh"
+void RunAction::WriteHitHistTxt()
+{
+    vector<G4int> &hits = TupleVectorManager::Instance()->GetTupleVectorContainer("tree_gc4")->GetVectorRefI("hits");
+    static vector<atomic<G4int> > hitHistSum(hits.size());
+
+    if(fAnaActivated)
+    {
+        // consider situation under multi-threading mode.
+        // All hit hist data of worker thread are summed up and saved in master thread.
+        G4RunManager::RMType runManagerType = G4RunManager::GetRunManager()->GetRunManagerType();
+        if(runManagerType == G4RunManager::RMType::workerRM)
+            AddHitHist(hitHistSum, hits);
+        else if(runManagerType == G4RunManager::RMType::masterRM)
+            SaveHitHist(hitHistSum);
+        else if(runManagerType == G4RunManager::RMType::sequentialRM)
+        {
+            AddHitHist(hitHistSum, hits);
+            SaveHitHist(hitHistSum);
+        }
+    }
+}
+
+void RunAction::AddHitHist(vector<atomic<G4int> > &hitHistSum, const vector<G4int> &hitHist)
+{
+    for(size_t i = 0;i < hitHist.size();++i)
+        hitHistSum.at(i).fetch_add(hitHist.at(i));
+}
+
+void RunAction::SaveHitHist(const vector<atomic<G4int> > &hitHistSum) const
+{
+    const string &histFileName = fFileName.substr(0, fFileName.rfind(".root")) + "_hit_hist.txt";
+    ofstream histTxt(histFileName, ios_base::out);
+    for(auto &hit : hitHistSum)
+        histTxt << hit.load() << " ";
+    histTxt << G4endl;
+    histTxt.close();
+    G4cout << "Text data file for Hit Histgram are successfully saved : " + histFileName << G4endl;
+}
+
 
 void RunAction::MergeThreadTrees()
 {
@@ -65,12 +109,12 @@ void RunAction::MergeThreadTrees()
     merger->MergeRootFiles(fFileName, subFiles);
 }
 
-void RunAction::SetFileName(const std::string &fileName)
+void RunAction::SetFileName(const string &fileName)
 {
     fFileName = fileName;
 }
 
-void RunAction::MergeFiles(const std::string &_fileName, const std::vector<std::string> &subFiles)
+void RunAction::MergeFiles(const string &_fileName, const vector<string> &subFiles)
 {
     merger->MergeRootFiles(_fileName, subFiles);
 }

@@ -5,6 +5,8 @@
 #include "gas_chamber/GasChamberDigi.hh"
 #include "gas_chamber/GasChamberHit.hh"
 #include "gas_chamber/diffusion/DiffusionGaussian.hh"
+#include "config/ParamContainerTable.hh"
+#include "training_data/TrainingDataTypes.hh"
 
 #include "G4VDigitizerModule.hh"
 #include "G4Step.hh"
@@ -22,13 +24,12 @@ class GasChamberDigitizerMessenger;
 class GasChamberDigitizer : public G4VDigitizerModule
 {
     public:
-    GasChamberDigitizer(G4String name,
-        G4double _padPlaneX, G4double _padPlaneY, G4double chamberH, G4int _nPadX, G4int _nPadY,
-        const G4ThreeVector &_centerPos = G4ThreeVector(0., 0., 0.), G4double margin = 0.);
+    GasChamberDigitizer(const G4String &name);
     ~GasChamberDigitizer();    
 
     void SetGasMixtureProperties(GasMixtureProperties *GasMixtureProperties);
-    
+    void UpdateGasProperties();
+
     void SetChargeMultiplication(G4double gainMean, G4double gainStd);
     void SetFullScaleRange(G4double fsr);
     void SetThreshold(G4double threshold);
@@ -45,8 +46,8 @@ class GasChamberDigitizer : public G4VDigitizerModule
 
     private:
     void Init();
-    void InitPads();
-    void InitDiffusion();
+    void InitPads(const ParamContainer *container);
+    void InitMulplier(const ParamContainer *container);
 
     // Physical quantities with fluctuation
     G4double DiffusedDriftLen(G4double driftLen) const;
@@ -55,8 +56,9 @@ class GasChamberDigitizer : public G4VDigitizerModule
     G4bool CheckWorthIntegrate(const GasChamberDigi* pad, Double_t cluseterStd, Double_t xe, Double_t ye);
     private:
     void FillPadsTrack(const GasChamberHit *hit);
-    void FillPadsStep(const G4ThreeVector &ePos, G4double eDep);
+    void FillPadsStep(const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum);
 
+    G4bool CheckFillHist(const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum) const;
     private:
     // for the integration of 2D gaussian on readout x-y plane
     std::unique_ptr<ROOT::Math::IntegratorMultiDim> totalChargeIntegrator;
@@ -67,8 +69,8 @@ class GasChamberDigitizer : public G4VDigitizerModule
 
     GasMixtureProperties *gasMixtureProperties;
     G4double chargeFSR;
-    const G4double padPlaneX, padPlaneY, chamberH;
-    const G4int nPadX, nPadY;
+    G4double padPlaneX, padPlaneY, chamberH;
+    G4int nPadX, nPadY;
     G4double padMargin;
     G4ThreeVector centerPos;
     std::vector<std::vector<GasChamberDigi>> *readoutPads;
@@ -79,7 +81,6 @@ class GasChamberDigitizer : public G4VDigitizerModule
 
     GasChamberDigitsCollection*  digitsCollection;
     GasChamberDigitizerMessenger* digiMessenger;
-
 };
 
 #endif

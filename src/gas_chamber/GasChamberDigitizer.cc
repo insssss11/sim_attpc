@@ -3,7 +3,7 @@
 
 #include "gas_chamber/GasChamberDigitizer.hh"
 #include "gas_chamber/GasChamberHit.hh"
-#include "config/ParamContainerTable.hh"
+#include "tuple/TupleVectorManager.hh"
 
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
@@ -20,19 +20,11 @@
 using namespace std;
 using namespace CLHEP;
 
-GasChamberDigitizer::GasChamberDigitizer(G4String name,
-    G4double _padPlaneX, G4double _padPlaneY, G4double _chamberH,
-    G4int _nPadX, G4int _nPadY,
-    const G4ThreeVector &_centerPos, G4double margin)
+GasChamberDigitizer::GasChamberDigitizer(const G4String &name)
     : G4VDigitizerModule(name),
     totalChargeIntegrator(new ROOT::Math::IntegratorMultiDim(ROOT::Math::IntegrationMultiDim::kADAPTIVE, 1e-3)),
     diffusion(new DiffusionGaussian),
-    gasMixtureProperties(nullptr),
-    padPlaneX(_padPlaneX), padPlaneY(_padPlaneY), chamberH(_chamberH),
-    nPadX(_nPadX), nPadY(_nPadY),
-    padMargin(margin),
-    centerPos(_centerPos),
-    readoutPads(nullptr)
+    gasMixtureProperties(nullptr), readoutPads(nullptr)
 {
     Init();
 }
@@ -49,12 +41,27 @@ GasChamberDigitizer::~GasChamberDigitizer()
 
 void GasChamberDigitizer::Init()
 {
-    InitPads();
-    InitDiffusion();
+    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    InitPads(container);
+    InitMulplier(container);
 }
 
-void GasChamberDigitizer::InitPads()
+void GasChamberDigitizer::InitPads(const ParamContainer *container)
 {
+    padPlaneX = container->GetParamD("chamberX");
+    padPlaneY = container->GetParamD("chamberY");
+    chamberH = container->GetParamD("chamberZ");
+
+    nPadX = container->GetParamI("nPadX");
+    nPadY = container->GetParamI("nPadY");
+
+    centerPos = G4ThreeVector(
+        container->GetParamD("chamberPosX"),
+        container->GetParamD("chamberPosY"),
+        container->GetParamD("chamberPosZ"));
+
+    padMargin = container->GetParamD("margin");
+
     const G4double xPad = padPlaneX/nPadX, yPad = padPlaneY/nPadY;
     const G4double xLowerLeft = centerPos[0] - (padPlaneX - xPad)/2;
     const G4double yLowerLeft = centerPos[1] - (padPlaneY - yPad)/2;
@@ -62,6 +69,8 @@ void GasChamberDigitizer::InitPads()
         delete readoutPads;
     readoutPads = new std::vector<std::vector<GasChamberDigi>>;
     readoutPads->reserve(nPadY);
+
+    // Fill out readoutPads
     for(int y = 0;y < nPadY;++y)
     {
         readoutPads->push_back(std::vector<GasChamberDigi>{});
@@ -75,19 +84,30 @@ void GasChamberDigitizer::InitPads()
     }
 }
 
-void GasChamberDigitizer::InitDiffusion()
+void GasChamberDigitizer::InitMulplier(const ParamContainer *container)
 {
-    auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
+    gainMean = container->GetParamD("gainMean");
+    gainStd = container->GetParamD("gainStd");
+    // Diffusion by triple GEM
     diffusion->SetIntrinsicDiff(container->GetParamD("gemDiffusionStd"));
 }
 
 void GasChamberDigitizer::FillChargeOnPads(vector<G4float> &vec) const
 {
+    // thread-local data for hit histogram
+    G4ThreadLocalStatic vector<G4int> &hitHistData = TupleVectorManager::Instance()->GetTupleVectorContainer("tree_gc4")->GetVectorRefI("hits");
+    if(hitHistData.empty())
+        hitHistData.assign(nPadX*nPadY, 0);
+    
     try {
         vec.resize(nPadX*nPadY);
-        for(int x = 0;x < nPadX;++x)
-            for(int y = 0;y < nPadY;++y)
+        for(int y = 0;y < nPadY;++y)
+            for(int x = 0;x < nPadX;++x)
+            {
                 vec.at(y*nPadX + x) = readoutPads->at(y).at(x).GetCharge();
+                if(readoutPads->at(y).at(x).IsHit())
+                    ++hitHistData.at(readoutPads->at(y).at(x).GetPadNum());
+            }
     }
     catch(exception const &e)
     {
@@ -106,7 +126,7 @@ void GasChamberDigitizer::FillTimeOnPads(std::vector<G4float> &vec) const
     catch(exception const &e)
     {
         cerr << string("In GasChamberDigitizer::FillChargeOnPads(vector<G4float> &), ") + e.what() << endl;
-    }    
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -144,19 +164,19 @@ void GasChamberDigitizer::FillPadsTrack(const GasChamberHit *hit)
     for(int step = 0;step < hit->GetNbOfStepPoints();++step)
         FillPadsStep(
         G4ThreeVector(xPos.at(step), yPos.at(step), zPos.at(step)),
-        eDeps.at(step));
+        eDeps.at(step), hit->GetParticleEnum());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
+void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum)
 {
     // coordinate in the frame of gas chamber
     const G4double ePosX = ePos.getZ(), ePosY = ePos.getY(), ePosZ = ePos.getX();
     const G4double driftLen = ePosZ - centerPos.getZ() + chamberH/2;
-    
+
     // ready to integrate over each pad    
-    G4double charge = MultiplicatedCharge(eDep/gasMixtureProperties->GetW());    
+    G4double charge = MultiplicatedCharge(eDep/gasMixtureProperties->GetW());
     diffusion->SetCharge(charge);
     diffusion->SetPosition(ePosX, ePosY);
     diffusion->SetDriftLen(driftLen);
@@ -173,13 +193,23 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep)
                 // gain
                 pad.GetRange(min, max);
                 partialCharge = totalChargeIntegrator->Integral(*diffusion, min, max);
-                
+
                 // update readout pad info
                 pad.AddCharge(partialCharge);
                 pad.AddWeightedTime(driftTime, partialCharge);
+                
+                if(CheckFillHist(ePos, eDep, parEnum))
+                    pad.Hit();
             }
         }
 }
+
+G4bool GasChamberDigitizer::CheckFillHist(const G4ThreeVector &, G4double, TrainingDataTypes::EParticle parEnum) const
+{
+    // if hit on pad is by Oxygen track.
+    return true;
+}
+
 
 G4bool GasChamberDigitizer::CheckWorthIntegrate(const GasChamberDigi* pad, Double_t cluseterStd, Double_t xe, Double_t ye)
 {
@@ -198,7 +228,7 @@ G4bool GasChamberDigitizer::CheckWorthIntegrate(const GasChamberDigi* pad, Doubl
         yD = min[1] - ye;
     distdistCorner = xD*xD + yD*yD;
     distdistCenter = (pos[0] - xe)*(pos[0] - xe) + (pos[1] - ye)*(pos[1] - ye);
-    return distdistCorner < cluseterStd*cluseterStd*intRange*intRange || 
+    return distdistCorner < cluseterStd*cluseterStd*intRange*intRange ||
         distdistCenter < cluseterStd*cluseterStd*intRange*intRange;
 }
 
@@ -219,6 +249,11 @@ G4double GasChamberDigitizer::MultiplicatedCharge(G4double clusterSize) const
 void GasChamberDigitizer::SetGasMixtureProperties(GasMixtureProperties *_gasMixtureProperties)
 {
     gasMixtureProperties = _gasMixtureProperties;
+    UpdateGasProperties();
+}
+
+void GasChamberDigitizer::UpdateGasProperties()
+{
     diffusion->SetDiffusionCoef(gasMixtureProperties->GetTransverseDiffusion()*sqrt(cm));
     diffusionL = gasMixtureProperties->GetLongitudinalDiffusion()*sqrt(cm);
     driftVel = gasMixtureProperties->GetDriftVelocity()*cm/us;

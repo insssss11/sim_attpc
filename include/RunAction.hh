@@ -14,6 +14,7 @@
 #include "globals.hh"
 
 #include <memory>
+#include <atomic>
 
 class RunActionMessenger;
 class TupleInitializer;
@@ -38,11 +39,16 @@ class RunAction : public G4UserRunAction
     private:
     void MergeThreadTrees();
 
+    void WriteHitHistTxt();
+    void AddHitHist(std::vector<std::atomic<G4int> > &hitHistSum, const std::vector<G4int> &hitHist);
+    void SaveHitHist(const std::vector<std::atomic<G4int> > &hitHistSum) const;
+
     private:
     G4bool fAnaActivated;
     G4String fFileName;
     EventAction *fEventAction;
     G4AnalysisManager *fAnalysisManager;
+
     std::unique_ptr<RunActionMessenger> messenger;
     std::unique_ptr<TreeMerger> merger;
     std::unique_ptr<TupleInitializer> tupleInitializer;

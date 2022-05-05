@@ -158,8 +158,7 @@ G4double GenericIonGasModel::MinEnergyCut(
 
 
 G4double GenericIonGasModel::MaxSecondaryEnergy(
-    const G4ParticleDefinition* particle,
-    G4double kineticEnergy)
+    const G4ParticleDefinition*, G4double kineticEnergy)
 {
     G4double tau = kineticEnergy/cacheMass;
     G4double tmax = 2.0 * electron_mass_c2 * tau * (tau + 2.) /

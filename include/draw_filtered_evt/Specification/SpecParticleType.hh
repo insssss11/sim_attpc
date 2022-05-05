@@ -7,7 +7,7 @@
 class SpecParticleType : public ISpecification<PadEvent>
 {
     public:
-    SpecParticleType(const TrainingDataTypes::EParticle &parEnum) : parEnum{parEnum}, inverse(false)
+    SpecParticleType(const TrainingDataTypes::EParticle &parEnum) : inverse(false), parEnum{parEnum} 
     {}
     virtual bool IsSatisfied(const PadEvent &event) const override
     {

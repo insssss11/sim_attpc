@@ -3,7 +3,7 @@
 # primary partice setting
 /gun/particle ion
 /gun/ion 6 12 2
-/gun/energy 10 MeV
+/gun/energy 6 MeV
 
 /attpc/gun/setPosX 0 mm
 /attpc/gun/setPosY -50. mm
@@ -16,20 +16,22 @@
 
 /attpc/gas/setStepLimit 0.05 mm
 
+/control/alias prefix pad_charges
+
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
-/attpc/output/setFileName pad_charges_evt1.root
-/run/beamOn 1000
+/attpc/output/setFileName {prefix}_evt1.root
+/run/beamOn 400
 
 # simulate the case with no interested events(No alpha capture)
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName pad_charges_evt2.root
-/run/beamOn 1000
+/attpc/output/setFileName {prefix}_evt2.root
+/run/beamOn 100
 
-/attpc/output/mergeFiles pad_charges_evt.root pad_charges_evt1.root pad_charges_evt2.root 
+/attpc/output/mergeFiles {prefix}_evt.root {prefix}_evt1.root {prefix}_evt2.root 
 
 # backgrounds
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName pad_charges_bg.root
+/attpc/output/setFileName {prefix}_bg.root
 /gun/number 10
-/run/beamOn 2000
+/run/beamOn 500

@@ -1,9 +1,7 @@
-# This macro must be executed in vis UI session.
-
 # primary partice setting
 /gun/particle ion
 /gun/ion 6 12 2
-/gun/energy 10 MeV
+/gun/energy 6 MeV
 
 /attpc/gun/setPosX 0 mm
 /attpc/gun/setPosY -50. mm
@@ -17,21 +15,22 @@
 /attpc/gas/setStepLimit 0.05 mm
 
 /attpc/gasChamber/activateHitTuple false
+/control/alias prefix test
 
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
-/attpc/output/setFileName test_data_evt1.root
+/attpc/output/setFileName {prefix}_evt1.root
 /run/beamOn 15000
 
 # simulate the case with no interested events(No alpha capture)
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName test_data_evt2.root
+/attpc/output/setFileName {prefix}_evt2.root
 /run/beamOn 15000
 
-/attpc/output/mergeFiles test_data_evt.root test_data_evt1.root test_data_evt2.root 
+/attpc/output/mergeFiles {prefix}_evt.root {prefix}_evt1.root {prefix}_evt2.root 
 
 # backgrounds
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName test_data_bg.root
+/attpc/output/setFileName {prefix}_bg.root
 /gun/number 10
 /run/beamOn 30000

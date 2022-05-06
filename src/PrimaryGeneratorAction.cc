@@ -9,7 +9,7 @@
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fMessenger(nullptr),
-    fPosX(0.*mm), fPosY(-70.*mm), fPosZ(-300*mm)
+    fPosX(0.*mm), fPosY(-50.*mm), fPosZ(-300*mm)
 {
     fParticleGun = new G4ParticleGun();
     fParticleGun->SetParticleEnergy(10*MeV);
@@ -33,7 +33,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event)
     {
         auto pDefinition = G4IonTable::GetIonTable()->GetIon(6, 12);
         fParticleGun->SetParticleDefinition(pDefinition);
-        fParticleGun->SetParticleCharge(4);
+        fParticleGun->SetParticleCharge(2);
     }
     fParticleGun->SetParticlePosition(G4ThreeVector(fPosX, fPosY, fPosZ));
     fParticleGun->GeneratePrimaryVertex(event);

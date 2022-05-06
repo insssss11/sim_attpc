@@ -264,7 +264,7 @@ void DetectorConstruction::BuildBeamPipe()
 {
     const G4double rPipe = 25*mm;
     const G4double zPipe = 150*mm/2;
-    const G4double xPos = 0.*mm, yPos = -70*mm, zPos = -150*mm - zPipe;
+    const G4double xPos = 0.*mm, yPos = -50*mm, zPos = -150*mm - zPipe;
 
     auto Vacuum = G4NistManager::Instance()->FindOrBuildMaterial("Vacuum");
 

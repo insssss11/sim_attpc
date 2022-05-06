@@ -11,8 +11,10 @@ chamberZ        double      80
 nPadX           int         40
 nPadY           int         40
 margin          double      0.1
-gainMean        double      4739.36
-gainStd         double      5312.24
+# polya fit result
+gainMean        double      6368
+gainTheta       double      0.4334
+collEff         double      0.741258
 gemDiffusionStd double      0.07198
 chargeFSR       double      20e-12
 timeFSR         double      500

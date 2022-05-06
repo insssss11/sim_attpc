@@ -76,7 +76,10 @@ class GasChamberDigitizer : public G4VDigitizerModule
     std::vector<std::vector<GasChamberDigi>> *readoutPads;
 
     G4double adcThreshold;
+
+    G4double collEff;
     G4double gainMean;
+    G4double gainTheta;
     G4double gainStd;
 
     GasChamberDigitsCollection*  digitsCollection;

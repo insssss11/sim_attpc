@@ -86,8 +86,15 @@ void GasChamberDigitizer::InitPads(const ParamContainer *container)
 
 void GasChamberDigitizer::InitMulplier(const ParamContainer *container)
 {
+    collEff = container->GetParamD("collEff");
     gainMean = container->GetParamD("gainMean");
-    gainStd = container->GetParamD("gainStd");
+    gainTheta = container->GetParamD("gainTheta");
+    gainStd = gainMean/sqrt(gainTheta + 1);
+    gainMean *= collEff;
+    gainStd *= collEff;
+    G4cout << "-------------------------------------------------------------------------------" << G4endl;  
+    G4cout << "Triple GEM Gain and std : " << gainMean << " " << gainStd << G4endl;  
+    G4cout << "-------------------------------------------------------------------------------" << G4endl;  
     // Diffusion by triple GEM
     diffusion->SetIntrinsicDiff(container->GetParamD("gemDiffusionStd"));
 }

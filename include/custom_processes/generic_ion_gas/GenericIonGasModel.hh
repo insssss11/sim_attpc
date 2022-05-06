@@ -155,6 +155,7 @@ class GenericIonGasModel : public G4VEmModel {
 
     private:
     G4bool CheckNewTrack(const G4Track &track);
+    G4bool IsRunStarted() const;
     // Function which updates parameters concerning the dE/dx calculation
     // (the parameters are only updated if the particle, the material or 
     // the associated energy cut has changed)
@@ -171,7 +172,8 @@ class GenericIonGasModel : public G4VEmModel {
         const G4MaterialCutsCouple*);  // Target material
 
     // Function, which updates parameters concering particle properties
-    inline void UpdateCache(const G4Track*);  // Projectile (ion) 
+    inline void UpdateCache(const G4Track*);    // update cache with dynamic particle(can be partially stripped)
+    inline void UpdateCache(const G4ParticleDefinition*);  // update cache with particle definition(only fully stripped)
 
     // Function, which builds range vs energy (and energy vs range) vectors
     // for a given particle, material and energy cut   

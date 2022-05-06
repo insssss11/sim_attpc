@@ -135,12 +135,14 @@ G4double GenericIonGasModel::GetParticleCharge(
 G4bool GenericIonGasModel::CheckNewTrack(const G4Track &track)
 {
     G4int evtId = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
+    // if new event
     if(cacheEvtId != evtId)
     {
         cacheEvtId = evtId;
         cacheTrackId = -1;
         return true;
     }
+    // if new track
     else if(cacheTrackId != track.GetTrackID())
     {
         cacheTrackId = track.GetTrackID();
@@ -158,14 +160,21 @@ G4double GenericIonGasModel::MinEnergyCut(
 
 
 G4double GenericIonGasModel::MaxSecondaryEnergy(
-    const G4ParticleDefinition*, G4double kineticEnergy)
+    const G4ParticleDefinition *particle, G4double kineticEnergy)
 {
+    // If called to prepare physics table before a run, the cache must be updated using particle definition.
+    if(!IsRunStarted())
+        UpdateCache(particle);
     G4double tau = kineticEnergy/cacheMass;
     G4double tmax = 2.0 * electron_mass_c2 * tau * (tau + 2.) /
         (1. + 2.0 * (tau + 1.) * cacheElecMassRatio +
         cacheElecMassRatio * cacheElecMassRatio);
-
     return tmax;
+}
+
+G4bool GenericIonGasModel::IsRunStarted() const
+{
+    return G4EventManager::GetEventManager()->GetConstCurrentEvent() != nullptr;
 }
 
 // #########################################################################
@@ -293,12 +302,35 @@ G4double GenericIonGasModel::ComputeCrossSectionPerAtom(
         G4double energy = kineticEnergy + cacheMass;
         G4double betaSquared = kineticEnergy*
             (energy + cacheMass)/(energy*energy);
-
+        G4double strippedSquareRatio = cacheStrippedRatio*cacheStrippedRatio;
         crosssection = 1.0/cutEnergy - 1.0/maxEnergy -
             betaSquared*log(maxEnergy/cutEnergy)/tmax;
-
-        crosssection *= twopi_mc2_rcl2 * cacheChargeSquare / betaSquared;
+        crosssection *= twopi_mc2_rcl2*cacheChargeSquare*strippedSquareRatio/betaSquared;
     }
+
+    /*
+    G4cout << "########################################################"
+        << G4endl
+        << "# G4IonParameterizedLossModel::ComputeCrossSectionPerAtom"
+        << G4endl
+        << "# particle =" << particle->GetParticleName()
+        <<  G4endl
+        << "# cut(MeV) = " << cutEnergy/MeV
+        << G4endl;
+
+    G4cout << "#"
+        << std::setw(13) << std::right << "E(MeV)"
+        << std::setw(14) << "CS(um)"
+        << std::setw(14) << "E_max_sec(MeV)"
+        << G4endl
+        << "# ------------------------------------------------------"
+        << G4endl;
+
+    G4cout << std::setw(14) << std::right << kineticEnergy / MeV
+        << std::setw(14) << crosssection / (um * um)
+        << std::setw(14) << tmax / MeV
+        << G4endl;
+    */
     crosssection *= atomicNumber;
     return crosssection;
 }
@@ -330,9 +362,7 @@ G4double GenericIonGasModel::ComputeDEDXPerVolume(
     LossTableList::iterator iter = dedxCacheIter;
 
     if(iter != lossTableList.end()) {
-
         G4double transitionEnergy = dedxCacheTransitionEnergy;
-
         if(transitionEnergy > kineticEnergy)
         {
             dEdx = (*iter)->GetDEDX(particle, material, kineticEnergy);
@@ -986,6 +1016,17 @@ void GenericIonGasModel::UpdateCache(const G4Track *track)
     cacheElecMassRatio = CLHEP::electron_mass_c2/cacheMass;
     
     cacheStrippedRatio = dParticle->GetCharge()/particle->GetPDGCharge();
+    cacheCharge = particle->GetPDGCharge();
+    cacheChargeSquare = cacheCharge*cacheCharge;
+}
+
+void GenericIonGasModel::UpdateCache(const G4ParticleDefinition* particle)
+{
+    cacheParticle = particle;
+    
+    cacheMass = cacheParticle->GetPDGMass();
+    cacheElecMassRatio = CLHEP::electron_mass_c2/cacheMass;
+    cacheStrippedRatio = 1.;
     cacheCharge = particle->GetPDGCharge();
     cacheChargeSquare = cacheCharge*cacheCharge;
 }

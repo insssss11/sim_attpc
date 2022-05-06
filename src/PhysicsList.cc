@@ -81,11 +81,6 @@ void PhysicsList::ConstructProcess()
 
 #include "custom_processes/generic_ion_gas/GenericIonGasModel.hh"
 #include "G4eIonisation.hh"
-#include "G4BetheBlochIonGasModel.hh"
-#include "G4BraggIonModel.hh"
-#include "G4IonParametrisedLossModel.hh"
-#include "G4LossTableManager.hh"
-#include "G4EmConfigurator.hh"
 #include "G4UniversalFluctuation.hh"
 
 void PhysicsList::AddIonGasProcess()
@@ -102,7 +97,6 @@ void PhysicsList::AddIonGasProcess()
             // effective charge and energy loss model of ion
             G4ionIonisation *iIon = new G4ionIonisation();
             auto gIgm = new GenericIonGasModel();
-            // auto gIgm = new G4IonParametrisedLossModel();
             iIon->AddEmModel(0, gIgm, new G4UniversalFluctuation);
 
             G4hMultipleScattering *hMsc = new G4hMultipleScattering();

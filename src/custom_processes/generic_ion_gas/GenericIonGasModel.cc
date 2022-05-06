@@ -47,7 +47,7 @@ GenericIonGasModel::GenericIonGasModel(
     upperEnergyEdgeIntegr = betheBlochModel->HighEnergyLimit();
 
     // Cache parameters are set
-    cacheParticle = 0;
+    cacheParticle = nullptr;
     cacheMass = 0;
     cacheElecMassRatio = 0;
     cacheCharge = 0;
@@ -57,13 +57,13 @@ GenericIonGasModel::GenericIonGasModel(
     cacheEvtId = -1;
 
     // Cache parameters are set
-    rangeCacheParticle = 0;
+    rangeCacheParticle = nullptr;
     rangeCacheMatCutsCouple = 0;
     rangeCacheEnergyRange = 0;
     rangeCacheRangeEnergy = 0;
 
     // Cache parameters are set
-    dedxCacheParticle = 0;
+    dedxCacheParticle = nullptr;
     dedxCacheMaterial = 0;
     dedxCacheEnergyCut = 0;
     dedxCacheIter = lossTableList.end();
@@ -163,12 +163,21 @@ G4double GenericIonGasModel::MaxSecondaryEnergy(
     const G4ParticleDefinition *particle, G4double kineticEnergy)
 {
     // If called to prepare physics table before a run, the cache must be updated using particle definition.
-    if(!IsRunStarted())
+    if(!IsRunStarted() || !particle->IsGeneralIon())
         UpdateCache(particle);
+
     G4double tau = kineticEnergy/cacheMass;
     G4double tmax = 2.0 * electron_mass_c2 * tau * (tau + 2.) /
         (1. + 2.0 * (tau + 1.) * cacheElecMassRatio +
         cacheElecMassRatio * cacheElecMassRatio);
+    /*
+    G4cerr << "-------------------------------------------------------------" << G4endl;
+    G4cerr << particle->GetParticleName() << " " << tau << " " << tmax  << " " << cacheElecMassRatio << " " << cacheParticle << G4endl;
+    if(!IsRunStarted())
+        G4cerr << "Before Run" << G4endl;
+    else
+        G4cerr << cacheParticle->GetParticleName() << G4endl;
+    */
     return tmax;
 }
 
@@ -185,7 +194,6 @@ G4bool GenericIonGasModel::IsRunStarted() const
 void GenericIonGasModel::Initialise(
     const G4ParticleDefinition* particle,
     const G4DataVector& cuts) {
-
     // Cached parameters are reset
     cacheParticle = 0;
     cacheMass = 0;
@@ -755,7 +763,7 @@ void GenericIonGasModel::CorrectionsAlongStep(
 
     G4double chargeSquareRatio
         = corrections->EffectiveChargeSquareRatio(particle, material, energy)*cacheStrippedRatio*cacheStrippedRatio;
-    
+
     GetModelOfFluctuations()->SetParticleAndCharge(particle, chargeSquareRatio);
 
     G4double transitionEnergy = dedxCacheTransitionEnergy;
@@ -1010,11 +1018,11 @@ void GenericIonGasModel::UpdateCache(const G4Track *track)
     const auto particle = track->GetParticleDefinition();
     cacheTrackId = track->GetTrackID();
     cacheParticle = track->GetDynamicParticle()->GetParticleDefinition();
-    
+
     cacheMass = cacheParticle->GetPDGMass();
-    
+
     cacheElecMassRatio = CLHEP::electron_mass_c2/cacheMass;
-    
+
     cacheStrippedRatio = dParticle->GetCharge()/particle->GetPDGCharge();
     cacheCharge = particle->GetPDGCharge();
     cacheChargeSquare = cacheCharge*cacheCharge;
@@ -1023,7 +1031,6 @@ void GenericIonGasModel::UpdateCache(const G4Track *track)
 void GenericIonGasModel::UpdateCache(const G4ParticleDefinition* particle)
 {
     cacheParticle = particle;
-    
     cacheMass = cacheParticle->GetPDGMass();
     cacheElecMassRatio = CLHEP::electron_mass_c2/cacheMass;
     cacheStrippedRatio = 1.;

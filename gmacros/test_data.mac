@@ -1,7 +1,19 @@
-# primary partice setting
+
+    
+
+
+# common alias
+/control/alias charge       2
+/control/alias eKin         6.0
+/control/alias bField       2.5
+/control/alias nBgO         10
+
+/control/alias testEvt  25000
+/control/alias testBg   50000
+/control/alias testPre  test_C{charge}_{eKin}MeV_{bField}T
+
+# common settings
 /gun/particle ion
-/gun/ion 6 12 2
-/gun/energy 6 MeV
 
 /attpc/gun/setPosX 0 mm
 /attpc/gun/setPosY -50. mm
@@ -9,28 +21,29 @@
 
 /attpc/geometry/setBeamPipePosY -50. mm
 
-/attpc/field/bField 2.5 0 0 tesla
-/attpc/output/activate true
-
 /attpc/gas/setStepLimit 0.05 mm
 
+/attpc/output/activate true
 /attpc/gasChamber/activateHitTuple false
-/control/alias prefix test
+
+/gun/ion 6 12 {charge}
+/gun/energy {eKin} MeV
+/attpc/field/bField {bField} 0 0 tesla
 
 # simulate the case with interested events(Alpha capture)
 /attpc/process/CarbonAlpha/forceAtRndmTrkLenUniform 0 110
-/attpc/output/setFileName {prefix}_evt1.root
-/run/beamOn 15000
+/attpc/output/setFileName {testPre}_evt1.root
+/run/beamOn {testEvt}
 
 # simulate the case with no interested events(No alpha capture)
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName {prefix}_evt2.root
-/run/beamOn 15000
+/attpc/output/setFileName {testPre}_evt2.root
+/run/beamOn {testEvt}
 
-/attpc/output/mergeFiles {prefix}_evt.root {prefix}_evt1.root {prefix}_evt2.root 
+/attpc/output/mergeFiles {testPre}_evt.root {testPre}_evt1.root {testPre}_evt2.root 
 
 # backgrounds
 /attpc/process/CarbonAlpha/activate false
-/attpc/output/setFileName {prefix}_bg.root
-/gun/number 10
-/run/beamOn 30000
+/attpc/output/setFileName {testPre}_bg.root
+/gun/number {nBgO}
+/run/beamOn {testBg}

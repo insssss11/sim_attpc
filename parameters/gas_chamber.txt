@@ -16,7 +16,7 @@ gainMean        double      6368
 gainTheta       double      0.4334
 collEff         double      0.741258
 gemDiffusionStd double      0.07198
-chargeFSR       double      20e-12
+chargeFSR       double      40e-12
 timeFSR         double      500
 timeOffset      double      1500
 

@@ -8,19 +8,23 @@ template <typename T>
 class FilterNext
 {
     public:
-    virtual bool NextFiltered(IIterator<T> &evtIter, const ISpecification<T> &spec)
+    virtual bool NextFiltered(IIterator<T> &iter, const ISpecification<T> &spec)
     {
         while(true)
         {
-            if(!evtIter.Next())
+            if(!iter.Next())
                 return false;
-            else if(spec.IsSatisfied(*evtIter))
-            {
-                filtered = *evtIter;
-                return true;
-            }
             else
-                continue;
+            {
+                if(spec.IsSatisfied(*iter))
+                {
+                    filtered = *iter;
+                    return true;
+                }
+                else
+                    continue;                
+            }
+
         }
     }
     const T &GetFiltered()

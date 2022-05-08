@@ -5,7 +5,27 @@ template <typename T>
 class ISpecification
 {
     public:
-    virtual bool IsSatisfied(const T &item) const = 0;
+    ISpecification() : isInverted(false){}
+
+    void Invert(bool invert = true)
+    {
+        isInverted = invert;
+    }
+
+    virtual bool IsSatisfied(const T &item) const
+    {
+        auto result = IsSatisfiedDoIt(item);
+        if(isInverted)
+            return !result;
+        else
+            return result;
+    }
+
+    protected:
+    virtual bool IsSatisfiedDoIt(const T &item) const = 0;
+    
+    private:
+    bool isInverted;
 };
 
 template <typename T>
@@ -13,9 +33,10 @@ class AndSpecification : ISpecification<T>
 {
     public:
     AndSpecification(ISpecification<T> &first, ISpecification<T> &second) : first{first}, second{second}{}
-    virtual bool IsSatisfied(const T &item) const override
+    protected:
+    virtual bool IsSatisfiedDoit(const T &item) const override
     {
-        return first.IsSatisfied(item) && second.IsSatisfied(item);
+        return first.IsSatisfiedDoIt(item) && second.IsSatisfiedDoIt(item);
     }
     private:
     ISpecification<T> &first;

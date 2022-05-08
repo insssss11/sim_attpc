@@ -17,7 +17,7 @@
 namespace TrainingDataTypes {
 
     typedef enum {
-        Emtpy,
+        Empty,
         Gamma,
         Electron,
         Proton,
@@ -32,10 +32,12 @@ namespace TrainingDataTypes {
     static constexpr std::array<int, nParticles> kAtomicNum = {
         -1, // Empty
         0, // Gamma
+        0, // Electron
         1, // Proton
         2, // Alhpa
         6, // Carbon
-        8  // Oxygen
+        8, // Oxygen
+        -1 // Unknown
     };
 
     inline EParticle FromAtomNum(int atomicNum)
@@ -88,6 +90,7 @@ namespace TrainingDataTypes {
         std::unique_ptr<TTreeReaderValue<float> > trkLen;
         std::unique_ptr<TTreeReaderValue<std::vector<float> > > qdc;
         std::unique_ptr<TTreeReaderValue<std::vector<float> > > tSig;
+        std::unique_ptr<TTreeReaderValue<std::vector<int> > > secFlags;
     }DataReaderValue;
     
 
@@ -98,6 +101,7 @@ namespace TrainingDataTypes {
         float xv, yv, zv;
         float theta;
         float trkLen;
+        std::vector<unsigned char> secFlags;
     }Output;
 }
 #endif

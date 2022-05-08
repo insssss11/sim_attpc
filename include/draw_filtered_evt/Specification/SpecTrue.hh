@@ -6,8 +6,8 @@
 template <typename T>
 class SpecTrue : public ISpecification<typename T>
 {
-    public:
-    virtual bool IsSatisfied(const T &item) const
+    protected:
+    virtual bool IsSatisfiedDoIt(const T &item) const override
     {
         return true;
     }

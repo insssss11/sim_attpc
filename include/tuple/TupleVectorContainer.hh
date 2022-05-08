@@ -28,18 +28,18 @@ class TupleVectorContainer
     virtual ~TupleVectorContainer();
 
     template<typename String, typename... Strings>
-    void AddVectorsI(String vecName, Strings ... vecNames);
+    TupleVectorContainer *AddVectorsI(String vecName, Strings ... vecNames);
     template<typename String, typename... Strings>
-    void AddVectorsF(String vecName, Strings ... vecNames);
+    TupleVectorContainer *AddVectorsF(String vecName, Strings ... vecNames);
     template<typename String, typename... Strings>
-    void AddVectorsD(String vecName, Strings ... vecNames);
+    TupleVectorContainer *AddVectorsD(String vecName, Strings ... vecNames);
     template<typename String, typename... Strings>
-    void AddVectorsS(String vecName, Strings ... vecNames);
+    TupleVectorContainer *AddVectorsS(String vecName, Strings ... vecNames);
 
-    void AddVectorI(const std::string &vecName);
-    void AddVectorF(const std::string &vecName);
-    void AddVectorD(const std::string &vecName);
-    void AddVectorS(const std::string &vecName);
+    TupleVectorContainer *AddVectorI(const std::string &vecName);
+    TupleVectorContainer *AddVectorF(const std::string &vecName);
+    TupleVectorContainer *AddVectorD(const std::string &vecName);
+    TupleVectorContainer *AddVectorS(const std::string &vecName);
 
     std::vector<G4int> &GetVectorRefI(const std::string &vecName);
     std::vector<G4float> &GetVectorRefF(const std::string &vecName);
@@ -82,36 +82,40 @@ class TupleVectorContainer
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 template<typename String, typename... Strings>
-void TupleVectorContainer::AddVectorsI(String vecName, Strings ... vecNames)
+TupleVectorContainer *TupleVectorContainer::AddVectorsI(String vecName, Strings ... vecNames)
 {
     AddVectorI(vecName);
     AddVectorsI(vecNames...);
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 template<typename String, typename... Strings>
-void TupleVectorContainer::AddVectorsF(String vecName, Strings ... vecNames)
+TupleVectorContainer *TupleVectorContainer::AddVectorsF(String vecName, Strings ... vecNames)
 {
     AddVectorF(vecName);
     AddVectorsF(vecNames...);
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 template<typename String, typename... Strings>
-void TupleVectorContainer::AddVectorsD(String vecName, Strings ... vecNames)
+TupleVectorContainer *TupleVectorContainer::AddVectorsD(String vecName, Strings ... vecNames)
 {
     AddVectorD(vecName);
     AddVectorsD(vecNames...);
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 template<typename String, typename... Strings>
-void TupleVectorContainer::AddVectorsS(String vecName, Strings ... vecNames)
+TupleVectorContainer *TupleVectorContainer::AddVectorsS(String vecName, Strings ... vecNames)
 {
     AddVectorS(vecName);
     AddVectorsS(vecNames...);
+    return this;
 }
 #endif

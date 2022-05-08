@@ -17,6 +17,8 @@
 #include "G4VSensitiveDetector.hh"
 #include "G4GenericMessenger.hh"
 
+#include "training_data/TrainingDataTypes.hh"
+
 class GasChamberSD : public G4VSensitiveDetector
 {
     public:
@@ -30,7 +32,10 @@ class GasChamberSD : public G4VSensitiveDetector
     private:
     void InitManagers();
     void InitDigitizer();
-    
+
+    void ProcessTrack(const G4Step*);    
+    void ProcessSecondaries(const G4Step*);
+
     void FillHitTuples();
     void FillDigiTuples();
     void FillHitHist(); // for hit dist histogram
@@ -57,6 +62,7 @@ class GasChamberSD : public G4VSensitiveDetector
     
     G4bool flag;
     G4double theta, Ek, pxv, pyv, pzv, xv, yv, zv, trkLen;
+    std::vector<G4int> secFlags;
     G4double padPlaneX, padPlaneY, padPlaneZ;
     G4double padCenterX, padCenterY, padCenterZ;
 

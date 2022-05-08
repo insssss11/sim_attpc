@@ -51,7 +51,7 @@ TupleVectorContainer::~TupleVectorContainer()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TupleVectorContainer::AddVectorI(const std::string &vecName)
+TupleVectorContainer *TupleVectorContainer::AddVectorI(const std::string &vecName)
 {
     if(VectorExists(vecName))
         throw TupleVectorContainerException("AddVectorI(const std::string &)", VECTOR_DUPLICATED, vecName);
@@ -60,11 +60,12 @@ void TupleVectorContainer::AddVectorI(const std::string &vecName)
         vectorNameMap->insert(std::make_pair(vecName, "I"));
         vectorMapI->insert(std::make_pair(vecName, std::vector<G4int>{}));
     }
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TupleVectorContainer::AddVectorF(const std::string &vecName)
+TupleVectorContainer *TupleVectorContainer::AddVectorF(const std::string &vecName)
 {
     if(VectorExists(vecName))
         throw TupleVectorContainerException("AddVectorF(const std::string &)", VECTOR_DUPLICATED, vecName);
@@ -73,11 +74,12 @@ void TupleVectorContainer::AddVectorF(const std::string &vecName)
         vectorNameMap->insert(std::make_pair(vecName, "F"));
         vectorMapF->insert(std::make_pair(vecName, std::vector<G4float>{}));
     }
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TupleVectorContainer::AddVectorD(const std::string &vecName)
+TupleVectorContainer *TupleVectorContainer::AddVectorD(const std::string &vecName)
 {
     if(VectorExists(vecName))
         throw TupleVectorContainerException("AddVectorD(const std::string &)", VECTOR_DUPLICATED, vecName);
@@ -87,11 +89,12 @@ void TupleVectorContainer::AddVectorD(const std::string &vecName)
         vectorNameMap->insert(std::make_pair(vecName, "D"));
         vectorMapD->insert(std::make_pair(vecName, std::vector<G4double>{}));
     }
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void TupleVectorContainer::AddVectorS(const std::string &vecName)
+TupleVectorContainer *TupleVectorContainer::AddVectorS(const std::string &vecName)
 {
     if(VectorExists(vecName))
         throw TupleVectorContainerException("AddVectorS(const std::string &)", VECTOR_DUPLICATED, vecName);
@@ -100,6 +103,7 @@ void TupleVectorContainer::AddVectorS(const std::string &vecName)
         vectorNameMap->insert(std::make_pair(vecName, "S"));
         vectorMapS->insert(std::make_pair(vecName, std::vector<G4String>{}));
     }
+    return this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

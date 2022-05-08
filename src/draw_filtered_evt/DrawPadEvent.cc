@@ -93,7 +93,7 @@ void DrawPadEvent::DrawTracks(const PadEvent &padEvent)
         }
         catch(std::exception const &e)
         {
-            cerr << e.what() << endl;
+            cerr << "DrawPadEvent::DrawTracks : Track buffer full(maximum size " << trackBuffer << ") : " << e.what() << endl;
         }
     }
 }

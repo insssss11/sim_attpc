@@ -1,5 +1,5 @@
 #include "draw_filtered_evt/Specification/SpecParticleNum.hh"
-#include "draw_filtered_evt/Specification/SpecParticleType.hh"
+#include "draw_filtered_evt/Specification/SpecParticleSecondary.hh"
 #include "draw_filtered_evt/FilterNext/FilterNext.hh"
 #include "draw_filtered_evt/Iterator/EventIterator.hh"
 #include "draw_filtered_evt/DrawPadEvent.hh"
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     EventIterator iter(file1, file2);
     FilterNextEvent filter;
     SpecParticleNum specNum(0);
-    SpecParticleType specType(Oxygen);
+    SpecParticleSecondary specType(Carbon);
     char key;
     while(true)
     {
@@ -32,15 +32,13 @@ int main(int argc, char **argv)
         key = getchar();
         if(key == 'q')
             break;
-        else if(!filter.NextFiltered(iter, specNum))
+        else if(!filter.NextFiltered(iter, specType))
         {
             printf("Reached the end of root files.\n");
             break;
         }
         else
-        {
             drawer.Draw(filter.GetFiltered());
-        }
     }
     return -1;
 }

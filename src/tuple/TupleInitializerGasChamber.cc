@@ -15,7 +15,7 @@ TupleInitializerGasChamber::TupleInitializerGasChamber() : TupleInitializerBase(
         tupleVectorManager->AddTupleVectorContainer("tree_gc2")
             ->AddVectorsF("x", "y", "z", "px", "py", "pz", "eDep", "t", "q", "stepLen");
         tupleVectorManager->AddTupleVectorContainer("tree_gc3")
-            ->AddVectorsF("qdc", "tSig");
+            ->AddVectorsF("qdc", "tSig")->AddVectorsI("secFlags");
         tupleVectorManager->AddTupleVectorContainer("tree_gc4")
             ->AddVectorsI("hits");
     }
@@ -48,7 +48,7 @@ void TupleInitializerGasChamber::InitHitTuples()
         analysisManager->CreateNtupleIColumn("evtId"); // 1 0
         analysisManager->CreateNtupleIColumn("trkId"); // 1 1
         analysisManager->CreateNtupleIColumn("Nstep"); // 1 2
-        analysisManager->CreateNtupleIColumn("pEnum"); // 1 3
+        analysisManager->CreateNtupleIColumn("parEnum"); // 1 3
         analysisManager->CreateNtupleFColumn("mass"); // 1 4
         analysisManager->CreateNtupleFColumn("trkLen"); // 1 5
         analysisManager->CreateNtupleFColumn("eDepSum"); // 1 6
@@ -91,6 +91,7 @@ void TupleInitializerGasChamber::InitDigiTuples()
         analysisManager->CreateNtupleFColumn("trkLen"); // 2 9 
         analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
         analysisManager->CreateNtupleFColumn("tSig", tupleVector3->GetVectorRefF("tSig"));
+        analysisManager->CreateNtupleIColumn("secFlags", tupleVector3->GetVectorRefI("secFlags"));
         analysisManager->FinishNtuple();
     }
     catch(Exception const &e)

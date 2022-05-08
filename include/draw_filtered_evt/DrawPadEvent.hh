@@ -41,7 +41,7 @@ class DrawPadEvent{
 
     std::string dir;
 
-    static constexpr size_t trackBuffer = 20;
+    static constexpr size_t trackBuffer = 200;
     // pad plane dimension
     int nPadX, nPadY;
     double padPlaneX, padPlaneY;

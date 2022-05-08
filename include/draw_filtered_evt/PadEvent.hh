@@ -7,9 +7,12 @@
 struct PadEvent
 {
     std::vector<float> qdc;
+    std::vector<float> tSig;
+    std::vector<int> secFlags;
+    // Particle enum and step points of tracks
+    std::vector<TrainingDataTypes::EParticle> parEnums;
     std::vector<std::vector<float>> x;
     std::vector<std::vector<float>> y;
-    std::vector<TrainingDataTypes::EParticle> parEnums;
 };
 
 #endif

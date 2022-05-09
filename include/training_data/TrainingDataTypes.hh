@@ -76,33 +76,6 @@ namespace TrainingDataTypes {
         else
             return Unknown;
     }
-
-    typedef struct {
-        std::unique_ptr<TTreeReader> reader;
-    }DataReader;
-
-    typedef struct {
-        std::unique_ptr<TTreeReaderValue<int> > flag;
-        std::unique_ptr<TTreeReaderValue<float> > Ek;
-        std::unique_ptr<TTreeReaderValue<float> > pxv, pyv, pzv;
-        std::unique_ptr<TTreeReaderValue<float> > xv, yv, zv;
-        std::unique_ptr<TTreeReaderValue<float> > theta;
-        std::unique_ptr<TTreeReaderValue<float> > trkLen;
-        std::unique_ptr<TTreeReaderValue<std::vector<float> > > qdc;
-        std::unique_ptr<TTreeReaderValue<std::vector<float> > > tSig;
-        std::unique_ptr<TTreeReaderValue<std::vector<int> > > secFlags;
-    }DataReaderValue;
-    
-
-    typedef struct {
-        int flag;
-        float Ek;
-        float pxv, pyv, pzv;
-        float xv, yv, zv;
-        float theta;
-        float trkLen;
-        std::vector<unsigned char> secFlags;
-    }Output;
 }
 #endif
 

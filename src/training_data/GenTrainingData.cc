@@ -38,7 +38,6 @@ void GenTrainingData::Init()
     try {
         InitDataInfo();
         InitDataReaders();
-        InitDataReaderValues();
     }
     catch(ParamContainerException const &e)
     {
@@ -73,28 +72,20 @@ void GenTrainingData::InitDataReaders()
 void GenTrainingData::InitDataReader(DataReader &dataReader, TFile *file)
 {
     dataReader.reader = make_unique<TTreeReader>("tree_gc3", file);
-}
 
-void GenTrainingData::InitDataReaderValues()
-{
-    InitDataReaderValue(evtReaderValues, evtReaders);
-    InitDataReaderValue(bgReaderValues, bgReaders);
-}
-
-void GenTrainingData::InitDataReaderValue(DataReaderValue &dataReaderValue, DataReader &dataReader)
-{
-    dataReaderValue.flag = make_unique<TTreeReaderValue<int> >(*dataReader.reader, "flag");
-    dataReaderValue.Ek = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "Ek");
-    dataReaderValue.pxv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pxv");
-    dataReaderValue.pyv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pyv");
-    dataReaderValue.pzv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pzv");
-    dataReaderValue.xv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "xv");
-    dataReaderValue.yv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "yv");
-    dataReaderValue.zv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "zv");
-    dataReaderValue.theta = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "theta");
-    dataReaderValue.trkLen = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "trkLen");
-    dataReaderValue.qdc = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "qdc");
-    dataReaderValue.tSig = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "tSig");
+    dataReader.flag = make_unique<TTreeReaderValue<int> >(*dataReader.reader, "flag");
+    dataReader.Ek = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "Ek");
+    dataReader.pxv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pxv");
+    dataReader.pyv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pyv");
+    dataReader.pzv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "pzv");
+    dataReader.xv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "xv");
+    dataReader.yv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "yv");
+    dataReader.zv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "zv");
+    dataReader.theta = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "theta");
+    dataReader.trkLen = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "trkLen");
+    dataReader.qdc = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "qdc");
+    dataReader.tSig = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "tSig");
+    dataReader.secFlags = make_unique<TTreeReaderValue<std::vector<int> > >(*dataReader.reader, "secFlags");
 }
 
 G4bool GenTrainingData::CheckEventNum() const
@@ -190,10 +181,11 @@ G4bool GenTrainingData::NextAll()
 void GenTrainingData::ReadAndMergeInput()
 {
     input.clear();
-    vector<float> qdcEvt = **evtReaderValues.qdc;
-    vector<float> qdcBg = **bgReaderValues.qdc;
-    vector<float> tSigEvt = **evtReaderValues.tSig;
-    vector<float> tSigBg = **bgReaderValues.tSig;
+    vector<float> qdcEvt = **evtReaders.qdc;
+    vector<float> qdcBg = **bgReaders.qdc;
+    vector<float> tSigEvt = **evtReaders.tSig;
+    vector<float> tSigBg = **bgReaders.tSig;
+
     if(qdcEvt.size() != inputSize || qdcEvt.size() != qdcBg.size())
         throw GenTrainingDataException("ReadAndMergeInput()", PAD_SIZES_MISMATCH);
     for(size_t i = 0;i < inputSize;++i)
@@ -215,16 +207,41 @@ void GenTrainingData::ReadAndMergeInput()
 
 void GenTrainingData::ReadTracks()
 {
-    output.flag = **evtReaderValues.flag;
-    output.Ek = **evtReaderValues.Ek;
-    output.pxv = **evtReaderValues.pxv;
-    output.pyv = **evtReaderValues.pyv;
-    output.pzv = **evtReaderValues.pzv;
-    output.xv = **evtReaderValues.xv;
-    output.yv = **evtReaderValues.yv;
-    output.zv = **evtReaderValues.zv;
-    output.theta = **evtReaderValues.theta;
-    output.trkLen = **evtReaderValues.trkLen;
+    output.Ek = **evtReaders.Ek;
+    output.pxv = **evtReaders.pxv;
+    output.pyv = **evtReaders.pyv;
+    output.pzv = **evtReaders.pzv;
+    output.xv = **evtReaders.xv;
+    output.yv = **evtReaders.yv;
+    output.zv = **evtReaders.zv;
+    output.theta = **evtReaders.theta;
+    output.trkLen = **evtReaders.trkLen;
+
+    vector<int> secFlagsEvt = **evtReaders.secFlags;
+    vector<int> secFlagsBg = **bgReaders.secFlags;
+    output.reactionFlags.fill(0);
+    ProcessSecondaries(secFlagsEvt);
+    ProcessSecondaries(secFlagsBg);
+}
+
+void GenTrainingData::ProcessSecondaries(const vector<int> &secFlags)
+{
+    if(**evtReaders.flag == 1)
+            output.reactionFlags.at(0) = 1;
+
+    // reactionCondis[parEnum] = a particle required to set reaction flag on
+    constexpr int reactionCondis[nReactionTypes] = 
+    {
+        Oxygen, // carbonAlpha
+        Proton, // protonScat
+        Alpha, // alphaScat
+        Carbon, // carbonScat
+    };
+    for(int i = 0;i <  static_cast<int>(nReactionTypes);++i)
+    {
+        if(secFlags.at(reactionCondis[i]) == 1)
+            output.reactionFlags.at(i) = 1;
+    }
 }
 
 void GenTrainingData::WriteInputHeader(std::ofstream &stream)
@@ -239,9 +256,9 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 {
-    stream << "# [Reaction Flag] [Ek] [pxv] [pyv] [pzv] [xv] [yv] [zv] [theta] [trkLen]" << endl;
-    stream << setw(10) << "nEvents" << G4endl;
-    stream << setw(10) << GetEventNum() << G4endl;;
+    stream << "# [Reaction Flags] [Ek] [pxv] [pyv] [pzv] [xv] [yv] [zv] [theta] [trkLen]" << endl;
+    stream << setw(10) << "nEvents"  << setw(15) << "nReactionTypes" << G4endl;
+    stream << setw(10) << GetEventNum()  << setw(15) << nReactionTypes << G4endl;
 }
 
 void GenTrainingData::WriteInputData(std::ofstream &stream)
@@ -253,8 +270,9 @@ void GenTrainingData::WriteInputData(std::ofstream &stream)
 
 void GenTrainingData::WriteOutputData(std::ofstream &stream)
 {
-    stream << output.flag << " "
-    << output.Ek << " "
+    for(const auto &reactionFlag : output.reactionFlags)
+        stream << reactionFlag << " ";
+    stream << output.Ek << " "
     << output.pxv << " "
     << output.pyv << " "
     << output.pzv << " "

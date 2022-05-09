@@ -123,7 +123,6 @@ void GasChamberSD::ProcessTrack(const G4Step *step)
     hit->AppendStepLen(step->GetStepLength());
     hit->AddEdepSum(step->GetTotalEnergyDeposit());
     hit->AddTrackLength(step->GetStepLength());
-
     ++fNbOfStepPoints;    
 }
 
@@ -140,7 +139,7 @@ void GasChamberSD::ProcessSecondaries(const G4Step* step)
             {
                 case Oxygen:
                 {
-                    flag = 1;
+                    secFlags[parEnum] = 1;
                     auto pos = track->GetPosition();
                     theta = trackSec->GetMomentumDirection().angle(pDynamic->GetMomentumDirection());
                     Ek = trackSec->GetKineticEnergy();

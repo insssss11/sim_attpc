@@ -27,21 +27,5 @@ class ISpecification
     private:
     bool isInverted;
 };
-
-template <typename T>
-class AndSpecification : ISpecification<T>
-{
-    public:
-    AndSpecification(ISpecification<T> &first, ISpecification<T> &second) : first{first}, second{second}{}
-    protected:
-    virtual bool IsSatisfiedDoit(const T &item) const override
-    {
-        return first.IsSatisfiedDoIt(item) && second.IsSatisfiedDoIt(item);
-    }
-    private:
-    ISpecification<T> &first;
-    ISpecification<T> &second;
-};
-
 #endif
 

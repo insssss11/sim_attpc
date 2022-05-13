@@ -10,7 +10,7 @@ DrawPadEvent::DrawPadEvent(ParamContainerTable *paramTable)
 {
     InitPadDimensions();
     qdcHist = make_unique<TH2D>("", "Mulplicated ionized charge on pads", nPadX, 0, padPlaneX, nPadY, 0, padPlaneY);
-    qdcHist->SetTitle("Mulplicated ionized charge on pads;#it{z} [mm];#it{y} [mm];#it{charge} [pC]");
+    qdcHist->SetTitle("Mulplicated ionized charge on pads;#it{z} [mm];#it{y} [mm];#charge [pC]");
     qdcHist->GetXaxis()->SetTitleOffset(1.0);
     qdcHist->GetXaxis()->SetTickLength(0.);
     qdcHist->GetYaxis()->SetTitleOffset(1.2);

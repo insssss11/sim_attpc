@@ -76,6 +76,24 @@ namespace TrainingDataTypes {
         else
             return Unknown;
     }
+
+    inline EParticle FromParticleName(const std::string &parName)
+    {
+        if(parName == "gamma")
+            return Gamma;
+        else if(parName == "e-" || parName == "eletron")
+            return Electron;
+        else if(parName == "proton")
+            return Proton;
+        else if(parName == "alpha" || parName == "He" || parName == "alpha")
+            return Alpha;
+        else if(parName == "C12" || parName == "c12" || parName == "carbon")
+            return Carbon;
+        else if(parName == "O16" || parName == "o16" || parName == "oxygen")
+            return Oxygen;
+        else
+            return Unknown;
+    }
 }
 #endif
 

@@ -26,15 +26,12 @@ class EventIterator : public IIterator<PadEvent>
         parEnums = new std::vector<TrainingDataTypes::EParticle>;
 
         fileEvt = TFile::Open(item.c_str(), "READ");
-        fileBg = TFile::Open(bg.c_str(), "READ");
         treeEvt1 = (TTree*)fileEvt->Get("tree_gc1");
         treeEvt2 = (TTree*)fileEvt->Get("tree_gc2");
         treeEvt3 = (TTree*)fileEvt->Get("tree_gc3");
-        treeBg1 = (TTree*)fileBg->Get("tree_gc1");
-        treeBg2 = (TTree*)fileBg->Get("tree_gc2");
-        treeBg3 = (TTree*)fileBg->Get("tree_gc3");
+
         entries = treeEvt1->GetEntries();
-        
+
         treeEvt1->SetBranchAddress("Ntrk", &nTrk);
         treeEvt2->SetBranchAddress("parEnum", &parEnum);
         treeEvt2->SetBranchAddress("z", &x);
@@ -43,6 +40,11 @@ class EventIterator : public IIterator<PadEvent>
         treeEvt3->SetBranchAddress("qdc", &qdc);
         treeEvt3->SetBranchAddress("tSig", &tSig);
         treeEvt3->SetBranchAddress("secFlags", &secFlags);
+
+        fileBg = TFile::Open(bg.c_str(), "READ");
+        treeBg1 = (TTree*)fileBg->Get("tree_gc1");
+        treeBg2 = (TTree*)fileBg->Get("tree_gc2");
+        treeBg3 = (TTree*)fileBg->Get("tree_gc3");
 
         treeBg1->SetBranchAddress("Ntrk", &nTrk);
         treeBg2->SetBranchAddress("parEnum", &parEnum);
@@ -69,6 +71,11 @@ class EventIterator : public IIterator<PadEvent>
         delete y;
         delete secFlags;
         delete parEnums;
+    }
+
+    long long GetEventNum() const
+    {
+        return curEntry;
     }
 
     virtual bool Next() override
@@ -118,7 +125,6 @@ class EventIterator : public IIterator<PadEvent>
             ++curEntry2;
         }
 
-        
         // data associated with tree_gc3
         if(item.qdc.empty())
             item.qdc = *qdc;

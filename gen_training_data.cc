@@ -8,7 +8,6 @@
 #include "TTree.h"
 
 using namespace std;
-
 void PrintUsage()
 {
     cout << "Usage : gen_training_data <prefix> <evt root file> <bg root file> [<parameter configure name> = parameters/config.txt]" << endl;

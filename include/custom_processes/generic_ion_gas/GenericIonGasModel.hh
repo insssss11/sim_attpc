@@ -281,6 +281,7 @@ class GenericIonGasModel : public G4VEmModel {
     G4double cacheChargeSquare;                // Charge squared
     G4int cacheTrackId;                          
     G4int cacheEvtId;
+    G4int cacheRunId;
 
     // Cached parameters needed during range computations:
     const G4ParticleDefinition* rangeCacheParticle; // Key: 1) Current ion,

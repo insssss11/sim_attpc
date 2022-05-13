@@ -34,7 +34,7 @@ CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
     messenger = std::make_unique<CarbonAlphaProcessMessenger>(this);    
     fGenPhaseSpace = new TGenPhaseSpace();
     SetProcessSubType(fCapture);
-    ForceAtKinE(8.0*MeV);
+    ForceAtRndmTrkLenUniform(0., 100.);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

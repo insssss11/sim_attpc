@@ -12,7 +12,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     fPosX(0.*mm), fPosY(-50.*mm), fPosZ(-300*mm)
 {
     fParticleGun = new G4ParticleGun();
-    fParticleGun->SetParticleEnergy(10*MeV);
+    fParticleGun->SetParticleEnergy(6.0*MeV);
     fParticleGun->SetParticleMomentumDirection(G4ParticleMomentum(0., 0., 1.));
     DefindCommands();
 }

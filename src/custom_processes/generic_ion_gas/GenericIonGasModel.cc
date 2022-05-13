@@ -55,6 +55,7 @@ GenericIonGasModel::GenericIonGasModel(
     cacheStrippedRatio = 0.;
     cacheTrackId = -1;
     cacheEvtId = -1;
+    cacheRunId = -1;
 
     // Cache parameters are set
     rangeCacheParticle = nullptr;
@@ -131,21 +132,21 @@ G4double GenericIonGasModel::GetParticleCharge(
 }
 
 #include "G4EventManager.hh"
+#include "G4RunManager.hh"
 #include "G4Event.hh"
+#include "G4Run.hh"
 G4bool GenericIonGasModel::CheckNewTrack(const G4Track &track)
-{
-    G4int evtId = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
-    // if new event
-    if(cacheEvtId != evtId)
+{ 
+    const G4int runId = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
+    const G4int evtId = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
+    const G4int trkId = track.GetTrackID();
+    // G4cout << runId << " " << evtId << " " << track.GetTrackID() << " " << cacheEvtId << " " << cacheTrackId << " " << track.GetParticleDefinition()->GetParticleName() << G4endl;
+    // if a new run or a new event
+    if(runId != cacheRunId || evtId != cacheEvtId || trkId != cacheTrackId)
     {
+        cacheRunId = runId;
         cacheEvtId = evtId;
-        cacheTrackId = -1;
-        return true;
-    }
-    // if new track
-    else if(cacheTrackId != track.GetTrackID())
-    {
-        cacheTrackId = track.GetTrackID();
+        cacheTrackId = trkId;
         return true;
     }
     return false;

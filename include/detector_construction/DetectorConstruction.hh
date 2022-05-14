@@ -74,7 +74,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     G4UserLimits *fUserLimits;
 
-    static G4ThreadLocal G4UniformMagField *fMagneticField;
+    static G4UniformMagField *fMagneticField;
     static G4ThreadLocal G4FieldManager *fFieldManager;
 
     G4RotationMatrix *fGeoRotation;

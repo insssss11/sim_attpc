@@ -62,7 +62,7 @@ using namespace DetectorConstructionErrorNum;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4ThreadLocal G4UniformMagField *DetectorConstruction::fMagneticField = nullptr;
+G4UniformMagField *DetectorConstruction::fMagneticField = nullptr;
 G4ThreadLocal G4FieldManager *DetectorConstruction::fFieldManager = nullptr;
 
 DetectorConstruction::DetectorConstruction()
@@ -74,6 +74,7 @@ DetectorConstruction::DetectorConstruction()
     fVisAttributes(),
     fGasMat(nullptr), gasMixtureProperties(std::make_unique<GasMixtureProperties>())
 {
+    fMagneticField = new G4UniformMagField(G4ThreeVector(2.5*tesla, 0., 0.));
     gasMixtureProperties->PrintGasFileList();
     Initialize();
 }
@@ -311,7 +312,6 @@ void DetectorConstruction::ConstructSDandField()
     sdManager->AddNewDetector(gasChamberSD);
     fLogicChamber->SetSensitiveDetector(gasChamberSD);
 
-    fMagneticField = new G4UniformMagField(G4ThreeVector(2.5*tesla, 0., 0.));
     fFieldManager = new G4FieldManager();
     fFieldManager->SetDetectorField(fMagneticField);
     fFieldManager->CreateChordFinder(fMagneticField);

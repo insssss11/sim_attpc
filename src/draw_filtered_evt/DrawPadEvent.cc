@@ -39,7 +39,7 @@ void DrawPadEvent::InitPadDimensions()
     gridDrawer = make_unique<DrawPadGrid>(nPadX, nPadY, padPlaneX, padPlaneY);
 }
 
-void DrawPadEvent::Draw(const PadEvent &padEvent)
+void DrawPadEvent::Draw(const PadEvent &padEvent, const TString &name)
 {
     static int figNum = 0;
     if(canvas == nullptr)
@@ -47,12 +47,20 @@ void DrawPadEvent::Draw(const PadEvent &padEvent)
     canvas->cd();
     DrawCharges(padEvent);
     DrawTracks(padEvent);
-    char figName[256];
-    if(dir.back() != '/')
-        snprintf(figName, 256, "%s/figure%04d.png", dir.c_str(), figNum);
-    else
-        snprintf(figName, 256, "%sfigure%04d.png", dir.c_str(), figNum);
-    canvas->Print(figName, "png");
+    if(name.EndsWith(".eps"))
+        canvas->Print(name, "eps");
+    else if(name.EndsWith(".png"))
+        canvas->Print(name, "png");
+    else if(name.EndsWith(".svg"))
+        canvas->Print(name, "svg");
+    else if(name.EndsWith(".jpg"))
+        canvas->Print(name, "jpg");
+    else if(name.EndsWith(".pdf"))
+        canvas->Print(name, "pdf");
+    else{
+        cout << "Cannot identify file extension to save : " << name << endl;
+        return;
+    }
     ++figNum;
 }
 

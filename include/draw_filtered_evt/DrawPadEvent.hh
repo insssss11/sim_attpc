@@ -11,6 +11,7 @@
 #include "TAttLine.h"
 #include "TH2D.h"
 #include "TCanvas.h"
+#include "TString.h"
 
 #include <memory>
 #include <vector>
@@ -20,7 +21,7 @@ class DrawPadEvent{
     public:
     DrawPadEvent(ParamContainerTable *paramTable);
     ~DrawPadEvent();
-    void Draw(const PadEvent &padEvent);
+    void Draw(const PadEvent &padEvent, const TString &name);
     
     private:
     void CheckCanvas();

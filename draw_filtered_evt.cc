@@ -64,6 +64,7 @@ int main(int argc, char **argv)
     FilterNextEvent filter;
 
     char key;
+    char buffer[256];
     while(true)
     {
         printf("Enter q to escape : ");
@@ -78,7 +79,8 @@ int main(int argc, char **argv)
         else
         {
             printf("Draing event %8lld ...", iter.GetEventNum());
-            drawer.Draw(filter.GetFiltered());
+            snprintf(buffer, 256, "figure%08lld.png", iter.GetEventNum());
+            drawer.Draw(filter.GetFiltered(), buffer);
         }
     }
     return -1;

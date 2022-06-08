@@ -67,6 +67,8 @@ namespace TrainingDataTypes {
             return Electron;
         else if(parDef->GetParticleName() == "proton")
             return Proton;
+        else if(parDef->GetParticleName() == "gamma")
+            return Gamma;
         else if(parDef->GetParticleName() == "alpha")
             return Alpha;
         else if(parDef->IsGeneralIon() && parDef->GetAtomicNumber() == 6)

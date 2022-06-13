@@ -205,16 +205,20 @@ void GasChamberDigitizer::FillPadsStep(const G4ThreeVector &ePos, G4double eDep,
                 pad.AddCharge(partialCharge);
                 pad.AddWeightedTime(driftTime, partialCharge);
                 
-                if(CheckFillHist(ePos, eDep, parEnum))
+                if(CheckFillHist(pad, ePos, eDep, parEnum))
                     pad.Hit();
             }
         }
 }
 
-G4bool GasChamberDigitizer::CheckFillHist(const G4ThreeVector &, G4double, TrainingDataTypes::EParticle parEnum) const
+G4bool GasChamberDigitizer::CheckFillHist(const GasChamberDigi &pad, const G4ThreeVector &ePos, G4double, TrainingDataTypes::EParticle) const
 {
-    // if hit on pad is by Oxygen track.
-    return true;
+    double min[2], max[2];
+    pad.GetRange(min, max);
+    return min[0] < ePos[2] &&
+        ePos[2] < max[0] &&
+        min[1] < ePos[1] &&
+        ePos[1] < max[1];
 }
 
 

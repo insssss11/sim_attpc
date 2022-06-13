@@ -58,7 +58,7 @@ class GasChamberDigitizer : public G4VDigitizerModule
     void FillPadsTrack(const GasChamberHit *hit);
     void FillPadsStep(const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum);
 
-    G4bool CheckFillHist(const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum) const;
+    G4bool CheckFillHist(const GasChamberDigi &pad, const G4ThreeVector &ePos, G4double eDep, TrainingDataTypes::EParticle parEnum) const;
     private:
     // for the integration of 2D gaussian on readout x-y plane
     std::unique_ptr<ROOT::Math::IntegratorMultiDim> totalChargeIntegrator;

@@ -230,9 +230,13 @@ void DetectorConstruction::BuildGas()
 
     fLogicGas = new G4LogicalVolume(solidGas, fGasMat, "LogicGas");
     fLogicGas->SetUserLimits(fUserLimits);
-
+    
+    G4Region *region = new G4Region("gas_chamber");
+    fLogicGas->SetRegion(region);
+    region->AddRootLogicalVolume(fLogicGas);
+    
     fPhysGas = new G4PVPlacement(
-        fGeoRotation, position, fLogicGas, "PhysGas", fLogicMagField,
+        nullptr, position, fLogicGas, "PhysGas", fLogicMagField,
         false, 0, fCheckOverlaps);
 }
 
@@ -252,13 +256,10 @@ void DetectorConstruction::BuildChamber()
 
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);
-    G4Region *region = new G4Region("gas_chamber");
-    fLogicChamber->SetRegion(region);
-    region->AddRootLogicalVolume(fLogicChamber);
-
+    /*
     fPhysChamber = new G4PVPlacement(
-        fGeoRotation, G4ThreeVector(), fLogicChamber, "PhysChamber", fLogicGas,
-        false, 0, fCheckOverlaps);
+        nullptr, position, fLogicChamber, "PhysChamber", fLogicGas,
+        false, 0, fCheckOverlaps);*/
 }
 
 void DetectorConstruction::BuildBeamPipe()
@@ -310,7 +311,7 @@ void DetectorConstruction::ConstructSDandField()
     auto sdManager = G4SDManager::GetSDMpointer();
     auto gasChamberSD = new GasChamberSD("/gasChamber", gasMixtureProperties.get());
     sdManager->AddNewDetector(gasChamberSD);
-    fLogicChamber->SetSensitiveDetector(gasChamberSD);
+    fLogicGas->SetSensitiveDetector(gasChamberSD);
 
     fFieldManager = new G4FieldManager();
     fFieldManager->SetDetectorField(fMagneticField);

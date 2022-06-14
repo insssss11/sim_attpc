@@ -26,4 +26,4 @@ gasPosY         double      0
 gasPosZ         double      0
 gasX            double      150
 gasY            double      150
-gasZ            double      150
+gasZ            double      120

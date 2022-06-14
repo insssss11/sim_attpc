@@ -39,6 +39,7 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
     CarbonAlphaProcess(const CarbonAlphaProcess&) = delete;
 
     void Activate(G4bool enable = true);
+    void ApplyOnlyPrimary(G4bool onlyPrimary = true);
 
     void ForceAtKinE(G4double kinE);
     void ForceAtTrkLen(G4double trkLen);
@@ -51,6 +52,7 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
     void SetOxygenCharge(G4double charge) { fOxygenCharge = charge; }
     
     protected:
+    G4bool CheckApplicable(const G4Track *track) const;
     void StartTracking(G4Track *track) override;
     void EndTracking() override;
     private:
@@ -64,6 +66,7 @@ class CarbonAlphaProcess final : public G4VDiscreteProcess
     private:
     std::unique_ptr<MeanFreePathEval> meanFreePathEval;
     G4bool activated;
+    G4bool onlyPrimary;
     G4Region const *reactionRegion;
     
     TGenPhaseSpace *fGenPhaseSpace;

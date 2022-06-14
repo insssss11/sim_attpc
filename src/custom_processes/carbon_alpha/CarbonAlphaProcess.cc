@@ -16,7 +16,7 @@
 
 CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
     : G4VDiscreteProcess(name, fHadronic),
-    activated(true),
+    activated(true), onlyPrimary(true),
     reactionRegion(region),
     fGenPhaseSpace(nullptr),
     fDynamicOxygen(nullptr), fDynamicGamma(nullptr),
@@ -31,7 +31,7 @@ CarbonAlphaProcess::CarbonAlphaProcess(G4String name, const G4Region *region)
     if(reactionRegion == nullptr)
         reactionRegion = G4RegionStore::GetInstance()->GetRegion("DefaultRegionForTheWorld");
     SetVerboseLevel(0);
-    messenger = std::make_unique<CarbonAlphaProcessMessenger>(this);    
+    messenger = std::make_unique<CarbonAlphaProcessMessenger>(this);
     fGenPhaseSpace = new TGenPhaseSpace();
     SetProcessSubType(fCapture);
     ForceAtRndmTrkLenUniform(0., 100.);
@@ -116,7 +116,7 @@ void CarbonAlphaProcess::InitParticleChange(const G4Track &aTrack)
 G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
     const G4Track &track, G4double previousStepSize, G4ForceCondition *condition)
 {
-    if(!activated || track.GetParticleDefinition()->GetParticleName() != "C12")
+    if(!CheckApplicable(&track))
     {
         *condition = InActivated;
         return DBL_MAX;
@@ -133,6 +133,16 @@ G4double CarbonAlphaProcess::PostStepGetPhysicalInteractionLength(
     G4double value = theNumberOfInteractionLengthLeft*currentInteractionLength;
     return value;
 }
+
+G4bool CarbonAlphaProcess::CheckApplicable(const G4Track *track) const
+{
+    if(!activated || track->GetParticleDefinition()->GetParticleName() != "C12")
+        return false;
+    if(onlyPrimary)
+        return track->GetCreatorProcess() == nullptr;
+    return true;    
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

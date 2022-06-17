@@ -61,7 +61,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // individuals
     void BuildMagnet();
     void BuildMagField();
-    void BuildGas();
     void BuildChamber();
     void BuildBeamPipe();
 
@@ -82,7 +81,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // Option to switch on/off checking of volumes overlaps    
     const G4bool fCheckOverlaps;
 
-    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicGas, *fLogicChamber, *fLogicPipe;
+    G4LogicalVolume *fLogicWorld, *fLogicMagnet, *fLogicMagField, *fLogicChamber, *fLogicPipe;
     G4PVPlacement *fPhysWorld, *fPhysMagnet, *fPhysMagField, *fPhysGas, *fPhysChamber, *fPhysPipe;
 
     std::vector<G4VisAttributes*> fVisAttributes;

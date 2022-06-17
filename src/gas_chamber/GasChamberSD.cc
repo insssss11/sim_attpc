@@ -40,8 +40,8 @@ GasChamberSD::GasChamberSD(G4String name, GasMixtureProperties *_gasMixturePrope
 void GasChamberSD::InitDigitizer()
 {
     auto container = ParamContainerTable::Instance()->GetContainer("gas_chamber");
-    padPlaneX = container->GetParamD("chamberX"), padPlaneY = container->GetParamD("chamberY"), padPlaneZ = container->GetParamD("chamberZ");
-    padCenterX = container->GetParamD("chamberPosX"), padCenterY = container->GetParamD("chamberPosY"), padCenterZ = container->GetParamD("chamberPosZ");
+    padPlaneX = container->GetParamD("padPlaneX"), padPlaneY = container->GetParamD("padPlaneY"), padPlaneZ = container->GetParamD("padPlaneZ");
+    padCenterX = container->GetParamD("padCenterX"), padCenterY = container->GetParamD("padCenterY"), padCenterZ = container->GetParamD("padCenterZ");
 
     // Digitizer    
     digitizer = new GasChamberDigitizer("GasChamberDigitizer");

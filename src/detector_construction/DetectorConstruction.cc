@@ -70,7 +70,7 @@ DetectorConstruction::DetectorConstruction()
     gasMaterialTable(GasMaterialTable::Instance()),
     fMessenger(nullptr), fUserLimits(nullptr),
     fCheckOverlaps(true),
-    fLogicWorld(nullptr), fLogicGas(nullptr), fLogicChamber(nullptr),
+    fLogicWorld(nullptr), fLogicChamber(nullptr),
     fVisAttributes(),
     fGasMat(nullptr), gasMixtureProperties(std::make_unique<GasMixtureProperties>())
 {
@@ -125,7 +125,6 @@ void DetectorConstruction::ConstructGeometry()
 {
     BuildMagnet();
     BuildMagField();
-    BuildGas();
     BuildChamber();
     BuildBeamPipe();
     SetVisAttributes();
@@ -214,32 +213,6 @@ void DetectorConstruction::BuildMagField()
         false, 0, fCheckOverlaps);
 }
 
-void DetectorConstruction::BuildGas()
-{
-    const G4double
-        xGas = paramContainer->GetParamD("gasX")/2,
-        yGas = paramContainer->GetParamD("gasY")/2,
-        zGas = paramContainer->GetParamD("gasZ")/2;
-
-    G4ThreeVector position(
-        paramContainer->GetParamD("gasPosX"),
-        paramContainer->GetParamD("gasPosY"),
-        paramContainer->GetParamD("gasPosZ"));
-
-    auto solidGas = new G4Box("SolidGas", xGas, yGas, zGas);
-
-    fLogicGas = new G4LogicalVolume(solidGas, fGasMat, "LogicGas");
-    fLogicGas->SetUserLimits(fUserLimits);
-    
-    G4Region *region = new G4Region("gas_chamber");
-    fLogicGas->SetRegion(region);
-    region->AddRootLogicalVolume(fLogicGas);
-    
-    fPhysGas = new G4PVPlacement(
-        nullptr, position, fLogicGas, "PhysGas", fLogicMagField,
-        false, 0, fCheckOverlaps);
-}
-
 void DetectorConstruction::BuildChamber()
 {
     const G4double
@@ -248,18 +221,22 @@ void DetectorConstruction::BuildChamber()
         zChamber = paramContainer->GetParamD("chamberZ")/2;
 
     G4ThreeVector position(
-        paramContainer->GetParamD("chamberPosX"),
-        paramContainer->GetParamD("chamberPosY"),
-        paramContainer->GetParamD("chamberPosZ"));
+        paramContainer->GetParamD("padCenterX"),
+        paramContainer->GetParamD("padCenterY"),
+        paramContainer->GetParamD("padCenterZ"));
 
     auto solidChamber = new G4Box("SolidChamber", xChamber, yChamber, zChamber);
 
     fLogicChamber = new G4LogicalVolume(solidChamber, fGasMat, "LogicChamber");
     fLogicChamber->SetUserLimits(fUserLimits);
-    /*
+
+    G4Region *region = new G4Region("gas_chamber");
+    fLogicChamber->SetRegion(region);
+    region->AddRootLogicalVolume(fLogicChamber);
+
     fPhysChamber = new G4PVPlacement(
-        nullptr, position, fLogicChamber, "PhysChamber", fLogicGas,
-        false, 0, fCheckOverlaps);*/
+        nullptr, position, fLogicChamber, "PhysChamber", fLogicMagField,
+        false, 0, fCheckOverlaps);
 }
 
 void DetectorConstruction::BuildBeamPipe()
@@ -293,10 +270,6 @@ void DetectorConstruction::SetVisAttributes()
     fLogicMagField->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
 
-    visAttributes = new G4VisAttributes(G4Colour(1, 1, 1, 0.1));
-    fLogicGas->SetVisAttributes(visAttributes);
-    fVisAttributes.push_back(visAttributes);
-
     visAttributes = new G4VisAttributes(G4Colour(0.9, 0.5, 0.3, 0.2));
     fLogicChamber->SetVisAttributes(visAttributes);
     fVisAttributes.push_back(visAttributes);
@@ -311,7 +284,7 @@ void DetectorConstruction::ConstructSDandField()
     auto sdManager = G4SDManager::GetSDMpointer();
     auto gasChamberSD = new GasChamberSD("/gasChamber", gasMixtureProperties.get());
     sdManager->AddNewDetector(gasChamberSD);
-    fLogicGas->SetSensitiveDetector(gasChamberSD);
+    fLogicChamber->SetSensitiveDetector(gasChamberSD);
 
     fFieldManager = new G4FieldManager();
     fFieldManager->SetDetectorField(fMagneticField);
@@ -360,14 +333,12 @@ GasMixtureProperties *DetectorConstruction::GetGasMixtureProperties() const
 void DetectorConstruction::UpdateGasMaterial()
 {
     fGasMat = gasMixtureProperties->GetGasMaterial();
-    if(fLogicGas != nullptr)
+    if(fLogicChamber != nullptr)
         UpdateLogicVolumes();
     gasMixtureProperties->DumpProperties();
 }
 
 void DetectorConstruction::UpdateLogicVolumes()
 {
-    fLogicGas->SetMaterial(fGasMat);
     fLogicChamber->SetMaterial(fGasMat);
-    // fLogicMagnet->SetMaterial(fGasMat);
 }

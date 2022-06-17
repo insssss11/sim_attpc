@@ -32,10 +32,10 @@ void DrawPadEvent::InitPadDimensions()
     auto container = paramTable->GetContainer("gas_chamber");
     nPadX = container->GetParamI("nPadX");
     nPadY = container->GetParamI("nPadY");
-    padPlaneX = container->GetParamD("chamberX");
-    padPlaneY = container->GetParamD("chamberY");
-    planeCenterX = container->GetParamD("chamberPosX");
-    planeCenterY = container->GetParamD("chamberPosY");
+    padPlaneX = container->GetParamD("padPlaneX");
+    padPlaneY = container->GetParamD("padPlaneY");
+    planeCenterX = container->GetParamD("padCenterX");
+    planeCenterY = container->GetParamD("padCenterY");
     gridDrawer = make_unique<DrawPadGrid>(nPadX, nPadY, padPlaneX, padPlaneY);
 }
 

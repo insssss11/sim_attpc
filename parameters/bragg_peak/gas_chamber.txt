@@ -1,12 +1,12 @@
 magFieldRad     double      300
 
 # position and dimensions of gas chamber
-chamberPosX     double      0
-chamberPosY     double      0
-chamberPosZ     double      0
-chamberX        double      498
-chamberY        double      200
-chamberZ        double      80
+padCenterX     double      0
+padCenterY     double      0
+padCenterZ     double      0
+padPlaneX        double      498
+padPlaneY        double      200
+padPlaneZ        double      80
 
 nPadX           int         40
 nPadY           int         40
@@ -21,9 +21,9 @@ timeFSR         double      500
 timeOffset      double      1500
 
 # position and dimensions of gas volume
-gasPosX         double      0
-gasPosY         double      0
-gasPosZ         double      0
-gasX            double      499
-gasY            double      200
-gasZ            double      499
+chamberPosX         double      0
+chamberPosY         double      0
+chamberPosZ         double      0
+chamberX            double      499
+chamberY            double      200
+chamberZ            double      499

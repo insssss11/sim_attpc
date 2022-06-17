@@ -50,7 +50,7 @@ class GasChamberDigi : public G4VDigi
     const G4double xHalf, yHalf;
     G4double margin;
     G4int padNum;
-
+    public:
     G4double charge;
     G4double timeWeightedSum;
 };

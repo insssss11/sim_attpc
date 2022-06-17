@@ -48,6 +48,8 @@ void GenTrainingData::Init()
 
 void GenTrainingData::InitDataInfo()
 {
+    padPlaneX = parContainer->GetParamD("padPlaneX");
+    padPlaneY = parContainer->GetParamD("padPlaneY");
     inputX = parContainer->GetParamI("nPadX");
     inputY = parContainer->GetParamI("nPadY");
     inputSize = inputX*inputY;
@@ -242,6 +244,8 @@ void GenTrainingData::ProcessSecondaries(const vector<int> &secFlags)
         if(secFlags.at(reactionCondis[i]) == 1)
             output.reactionFlags.at(i) = 1;
     }
+    if(output.xv > padPlaneX || output.yv > padPlaneY)
+        output.reactionFlags.at(0) = 0;
 }
 
 void GenTrainingData::WriteInputHeader(std::ofstream &stream)
@@ -264,7 +268,12 @@ void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 void GenTrainingData::WriteInputData(std::ofstream &stream)
 {
     for(const auto &p : input)
-        stream << "(" << p.first << "," << p.second.first << "," << p.second.second << ")";
+    {
+        if(!isnan(p.second.second))
+            stream << "(" << p.first << "," << p.second.first << "," << p.second.second << ")";
+        else
+            stream << "(" << p.first << "," << p.second.first << "," << 0. << ")";
+    }
     stream << endl;
 }
 

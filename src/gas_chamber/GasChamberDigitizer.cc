@@ -48,17 +48,17 @@ void GasChamberDigitizer::Init()
 
 void GasChamberDigitizer::InitPads(const ParamContainer *container)
 {
-    padPlaneX = container->GetParamD("chamberX");
-    padPlaneY = container->GetParamD("chamberY");
-    chamberH = container->GetParamD("chamberZ");
+    padPlaneX = container->GetParamD("padPlaneX");
+    padPlaneY = container->GetParamD("padPlaneY");
+    chamberH = container->GetParamD("padPlaneZ");
 
     nPadX = container->GetParamI("nPadX");
     nPadY = container->GetParamI("nPadY");
 
     centerPos = G4ThreeVector(
-        container->GetParamD("chamberPosX"),
-        container->GetParamD("chamberPosY"),
-        container->GetParamD("chamberPosZ"));
+        container->GetParamD("padCenterX"),
+        container->GetParamD("padCenterY"),
+        container->GetParamD("padCenterZ"));
 
     padMargin = container->GetParamD("margin");
 

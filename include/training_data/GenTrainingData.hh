@@ -97,6 +97,7 @@ class GenTrainingData
 
     Long64_t nEvents;
     size_t inputSize;
+    G4double padPlaneX, padPlaneY;
     size_t inputX, inputY;
     // [idx, [charge, time]]
     std::vector<std::pair<size_t, std::pair<G4float, G4float> > > input;

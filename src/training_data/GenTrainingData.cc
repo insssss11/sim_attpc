@@ -85,6 +85,11 @@ void GenTrainingData::InitDataReader(DataReader &dataReader, TFile *file)
     dataReader.zv = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "zv");
     dataReader.theta = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "theta");
     dataReader.trkLen = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "trkLen");
+    dataReader.Ebeam = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "Ebeam");
+    dataReader.Egm = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "Egm");
+    dataReader.thetaGm = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "thetaGm");
+    dataReader.phiGm = make_unique<TTreeReaderValue<float> >(*dataReader.reader, "phiGm");
+
     dataReader.qdc = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "qdc");
     dataReader.tSig = make_unique<TTreeReaderValue<std::vector<float> > >(*dataReader.reader, "tSig");
     dataReader.secFlags = make_unique<TTreeReaderValue<std::vector<int> > >(*dataReader.reader, "secFlags");
@@ -218,6 +223,10 @@ void GenTrainingData::ReadTracks()
     output.zv = **evtReaders.zv;
     output.theta = **evtReaders.theta;
     output.trkLen = **evtReaders.trkLen;
+    output.Ebeam = **evtReaders.Ebeam;
+    output.Egm = **evtReaders.Egm;
+    output.thetaGm = **evtReaders.thetaGm;
+    output.phiGm = **evtReaders.phiGm;
 
     vector<int> secFlagsEvt = **evtReaders.secFlags;
     vector<int> secFlagsBg = **bgReaders.secFlags;
@@ -260,7 +269,7 @@ void GenTrainingData::WriteInputHeader(std::ofstream &stream)
 
 void GenTrainingData::WriteOutputHeader(std::ofstream &stream)
 {
-    stream << "# [Reaction Flags] [Ek] [pxv] [pyv] [pzv] [xv] [yv] [zv] [theta] [trkLen]" << endl;
+    stream << "# [Reaction Flags] [Ek] [pxv] [pyv] [pzv] [xv] [yv] [zv] [theta] [trkLen] [Ebeam] [Egm] [thetaGm] [phiGm]" << endl;
     stream << setw(10) << "nEvents"  << setw(15) << "nReactionTypes" << G4endl;
     stream << setw(10) << GetEventNum()  << setw(15) << nReactionTypes << G4endl;
 }
@@ -289,7 +298,11 @@ void GenTrainingData::WriteOutputData(std::ofstream &stream)
     << output.yv << " "
     << output.zv << " "
     << output.theta*180./3.141592 << " "
-    << output.trkLen << " " << endl;
+    << output.trkLen << " "
+    << output.Ebeam << " "
+    << output.Egm << " "
+    << output.thetaGm << " "
+    << output.phiGm << " " << endl;
 }
 
 Long64_t GenTrainingData::GetEventNum() const

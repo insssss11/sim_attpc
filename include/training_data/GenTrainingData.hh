@@ -29,6 +29,11 @@ typedef struct {
     std::unique_ptr<TTreeReaderValue<float> > xv, yv, zv;
     std::unique_ptr<TTreeReaderValue<float> > theta;
     std::unique_ptr<TTreeReaderValue<float> > trkLen;
+    std::unique_ptr<TTreeReaderValue<float> > Ebeam;
+    std::unique_ptr<TTreeReaderValue<float> > Egm;
+    std::unique_ptr<TTreeReaderValue<float> > thetaGm;
+    std::unique_ptr<TTreeReaderValue<float> > phiGm;
+
     std::unique_ptr<TTreeReaderValue<std::vector<float> > > qdc;
     std::unique_ptr<TTreeReaderValue<std::vector<float> > > tSig;
     std::unique_ptr<TTreeReaderValue<std::vector<int> > > secFlags;
@@ -36,11 +41,12 @@ typedef struct {
 
 typedef struct {
     std::array<int, nReactionTypes> reactionFlags;
-    float Ek;
+    float Ek, Ebeam, Egm;
     float pxv, pyv, pzv;
     float xv, yv, zv;
     float theta;
     float trkLen;
+    float thetaGm, phiGm;
 }Output;
 
 // this class reads a pair of root file saved by pad_charges.mac and generates training data for DNN.

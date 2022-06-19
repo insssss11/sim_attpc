@@ -74,6 +74,8 @@ void GasChamberSD::Initialize(G4HCofThisEvent *hce)
     pxv = 0., pyv = 0., pzv = 0.;
     xv = 0., yv = 0., zv = 0.;
     theta = 0., trkLen = 0.;
+    Egm = 0., thetaGm = 0., phiGm = 0.;
+
     secFlags.assign(static_cast<int>(nParticles), static_cast<int>(Empty));
 
     fNbOfStepPoints = 0;
@@ -149,7 +151,20 @@ void GasChamberSD::ProcessSecondaries(const G4Step* step)
                     pxv = trackSec->GetMomentum().getZ();
                     pyv = trackSec->GetMomentum().getY();
                     pzv = trackSec->GetMomentum().getX();
+                    G4cout << pDynamic->GetMass() << G4endl;;
                     break;
+                }
+                case Carbon:
+                {
+                    G4cout << pDynamic->GetMass() << G4endl;;
+                    break;
+                }
+                case Gamma:
+                {
+                    Egm = trackSec->GetTotalEnergy();
+                    thetaGm = trackSec->GetMomentumDirection().getTheta();
+                    phiGm = trackSec->GetMomentumDirection().getPhi();
+                    break;                    
                 }
                 default:
                 {
@@ -224,6 +239,9 @@ void GasChamberSD::FillDigiTuples()
         analysisManager->FillNtupleFColumn(2, 7, zv);
         analysisManager->FillNtupleFColumn(2, 8, theta);
         analysisManager->FillNtupleFColumn(2, 9, trkLen);
+        analysisManager->FillNtupleFColumn(2, 10, Egm);
+        analysisManager->FillNtupleFColumn(2, 11, thetaGm);
+        analysisManager->FillNtupleFColumn(2, 12, phiGm);
         digitizer->FillChargeOnPads(tupleVector3->GetVectorRefF("qdc"));
         digitizer->FillTimeOnPads(tupleVector3->GetVectorRefF("tSig"));
         tupleVector3->FillVectorI("secFlags", secFlags);

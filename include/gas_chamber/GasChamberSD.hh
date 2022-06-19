@@ -61,7 +61,7 @@ class GasChamberSD : public G4VSensitiveDetector
     G4int fNbOfStepPoints;
     
     G4bool flag;
-    G4double theta, Ek, pxv, pyv, pzv, xv, yv, zv, trkLen;
+    G4double theta, Ek, pxv, pyv, pzv, xv, yv, zv, trkLen, Egm, thetaGm, phiGm;
     std::vector<G4int> secFlags;
     G4double padPlaneX, padPlaneY, padPlaneZ;
     G4double padCenterX, padCenterY, padCenterZ;

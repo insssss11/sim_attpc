@@ -89,6 +89,10 @@ void TupleInitializerGasChamber::InitDigiTuples()
         analysisManager->CreateNtupleFColumn("zv"); // 2 7 
         analysisManager->CreateNtupleFColumn("theta"); // 2 8 
         analysisManager->CreateNtupleFColumn("trkLen"); // 2 9 
+        analysisManager->CreateNtupleFColumn("Egm"); // 2 10
+        analysisManager->CreateNtupleFColumn("thetaGm"); // 2 11 
+        analysisManager->CreateNtupleFColumn("phiGm"); // 2 12
+
         analysisManager->CreateNtupleFColumn("qdc", tupleVector3->GetVectorRefF("qdc"));
         analysisManager->CreateNtupleFColumn("tSig", tupleVector3->GetVectorRefF("tSig"));
         analysisManager->CreateNtupleIColumn("secFlags", tupleVector3->GetVectorRefI("secFlags"));
